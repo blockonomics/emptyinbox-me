@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+flask-cors = "*"
+gunicorn = "*"
+redis = "*"
+
+[scripts]
+start="gunicorn -b :5000 tempmail_api:app"  
+
+[dev-packages]
+
+[requires]
+python_version = "3"
