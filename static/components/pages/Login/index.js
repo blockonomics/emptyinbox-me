@@ -2,29 +2,181 @@ export function renderLoginPage() {
   const main = document.createElement('main');
 
   const container = document.createElement('div');
-  container.classList.add('container', 'login-page'); // extra class if you need specific styling
+  container.classList.add('container', 'login-page');
 
   container.innerHTML = `
     <section class="login">
       <h1>Welcome Back</h1>
-      <p>Log in to continue your journey with EmptyInbox.me</p>
+      <p>Connect your wallet to continue your journey with EmptyInbox.me</p>
       
-      <form class="login-form">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required placeholder="you@example.com" />
+      <div class="wallet-connect-section">
+        <button id="connect-wallet-btn" type="button" class="wallet-connect-btn">
+          <span class="wallet-icon">🔗</span>
+          Connect Wallet
+        </button>
+        
+        <div id="wallet-status" class="wallet-status hidden">
+          <p>Connected: <span id="wallet-address"></span></p>
+          <button id="sign-in-btn" type="button" class="sign-in-btn">Sign In</button>
+        </div>
+        
+        <div id="loading" class="loading hidden">
+          <p>Connecting to wallet...</p>
+        </div>
+        
+        <div id="error-message" class="error-message hidden">
+          <p></p>
+        </div>
+      </div>
 
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required placeholder="••••••••" />
-
-        <button type="submit">Login</button>
-      </form>
+      <div class="supported-wallets">
+        <p class="wallet-info">Supported wallets:</p>
+        <div class="wallet-icons">
+          <span>MetaMask</span> • <span>Trust Wallet</span> • <span>Coinbase Wallet</span>
+        </div>
+      </div>
 
       <p class="login-footer">
-        Don’t have an account? <a href="/signup">Sign up</a>
+        New to crypto wallets? <a href="/wallet-guide">Learn how to get started</a>
       </p>
     </section>
   `;
 
   main.appendChild(container);
   document.body.appendChild(main);
+  
+  // Initialize wallet connection functionality
+  initializeWalletAuth();
+}
+
+async function initializeWalletAuth() {
+  const connectBtn = document.getElementById('connect-wallet-btn');
+  const signInBtn = document.getElementById('sign-in-btn');
+  const walletStatus = document.getElementById('wallet-status');
+  const walletAddress = document.getElementById('wallet-address');
+  const loading = document.getElementById('loading');
+  const errorMessage = document.getElementById('error-message');
+
+  let userAddress = null;
+  let challenge = null;
+
+  // Check if wallet is already connected
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length > 0) {
+        showConnectedState(accounts[0]);
+      }
+    } catch (error) {
+      console.log('No wallet connected');
+    }
+  }
+
+  connectBtn.addEventListener('click', async () => {
+    if (!window.ethereum) {
+      showError('No crypto wallet detected. Please install MetaMask or another Web3 wallet.');
+      return;
+    }
+
+    try {
+      showLoading(true);
+      
+      // Request account access
+      const accounts = await window.ethereum.request({ 
+        method: 'eth_requestAccounts' 
+      });
+      
+      if (accounts.length > 0) {
+        showConnectedState(accounts[0]);
+      }
+    } catch (error) {
+      showError('Failed to connect wallet: ' + error.message);
+    } finally {
+      showLoading(false);
+    }
+  });
+
+  signInBtn.addEventListener('click', async () => {
+    if (!userAddress) return;
+
+    try {
+      showLoading(true);
+      
+      // Get challenge from backend
+      challenge = await getAuthChallenge(userAddress);
+      
+      // Sign the challenge
+      const signature = await signMessage(challenge.message);
+      
+      // Verify signature with backend
+      const authResult = await verifySignature(userAddress, signature, challenge.message);
+      
+      if (authResult.success) {
+        // Store auth token and redirect
+        localStorage.setItem('authToken', authResult.token);
+        window.location.href = '/dashboard';
+      } else {
+        showError('Authentication failed. Please try again.');
+      }
+    } catch (error) {
+      showError('Sign in failed: ' + error.message);
+    } finally {
+      showLoading(false);
+    }
+  });
+
+  function showConnectedState(address) {
+    userAddress = address;
+    walletAddress.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
+    connectBtn.classList.add('hidden');
+    walletStatus.classList.remove('hidden');
+    hideError();
+  }
+
+  function showLoading(show) {
+    loading.classList.toggle('hidden', !show);
+  }
+
+  function showError(message) {
+    errorMessage.querySelector('p').textContent = message;
+    errorMessage.classList.remove('hidden');
+  }
+
+  function hideError() {
+    errorMessage.classList.add('hidden');
+  }
+}
+
+async function getAuthChallenge(address) {
+  const response = await fetch('/api/auth/challenge', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ address })
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to get authentication challenge');
+  }
+  
+  return response.json();
+}
+
+async function signMessage(message) {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
+  return await signer.signMessage(message);
+}
+
+async function verifySignature(address, signature, message) {
+  const response = await fetch('/api/auth/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ address, signature, message })
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to verify signature');
+  }
+  
+  return response.json();
 }
