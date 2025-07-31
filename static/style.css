@@ -4,6 +4,12 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
 .site-header {
   background-color: #B2F2BB; /* Light Seafoam */
   color: #333;
