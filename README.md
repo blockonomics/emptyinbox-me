@@ -27,5 +27,5 @@ SECRET=<YOUR_SECRET>`
 `echo "Subject: hello" | sendmail "busy.clean.kiss@emptyinbox.me"`
 
 ### Check inbox contents via token
-`curl http://emptyinbox.me/api/f5506d12-1ab1-484f-8b77-7829e26c248e`
+`curl http://emptyinbox.me/api/f5506d12-1ab1-484f-8b77-7829e26c248e`  
 `{"emails":[{"body":"Received: by emptyinbox.me (Postfix, from userid 1000)\r\n\tid B2F6340498; Thu, 31 Jul 2025 05:59:39 +0000 (UTC)\r\nSubject: hello\r\nMessage-Id: <20250731055939.B2F6340498@emptyinbox.me>\r\nDate: Thu, 31 Jul 2025 05:59:39 +0000 (UTC)\r\nFrom: Ubuntu <ubuntu@emptyinbox.me>\r\n\r\n","headers":{"Date":"Thu, 31 Jul 2025 05:59:39 +0000","From":"Ubuntu <ubuntu@emptyinbox.me>","Message-Id":"<20250731055939.B2F6340498@emptyinbox.me>","Received":"by emptyinbox.me (Postfix, from userid 1000)\tid B2F6340498; Thu, 31 Jul 2025 05:59:39 +0000 (UTC)","Subject":"hello"},"recipients":["busy.clean.kiss@emptyinbox.me"],"sender":"ubuntu@emptyinbox.me"}],"mailbox":"busy.clean.kiss@emptyinbox.me"}`
