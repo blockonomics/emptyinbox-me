@@ -4,14 +4,15 @@ Install nginx on ubuntu if not already and enable site using nginx/emptyinbox_ng
 ## Setup postfix
 - sudo apt install postfix  
 - It will give selection select *No configuration*
-- sudo cp /usr/share/postfix/main.cf.debian /etc/postfix/main.cf
-- sudo postfix/setup_postfix.sh [POSTFIX_HOSTNAME] [YOUR_DOMAIN] [YOUR_SECRET]
-- You should get the followd
-`postfix configured. Starting up` 
+- `sudo cp /usr/share/postfix/main.cf.debian /etc/postfix/main.cf`
+- `sudo postfix/setup_postfix.sh [POSTFIX_HOSTNAME] [YOUR_DOMAIN] [YOUR_SECRET]`
+- You should get the following message  
+*postfix configured. Starting up*
 
 ## Run gunicorn
-Inside API directory create .env file with following entry
+Inside API directory create .env file with following entry    
 `
 DOMAIN=<YOUR_DOMAIN>
 SECRET=<YOUR_SECRET>`
-pipenv run start
+- First setup python packages using `pipenv install`
+- Run server using `pipenv run start`
