@@ -1,36 +1,16 @@
 #!/bin/bash
 set -e
 
-# usage: file_env VAR [DEFAULT]
-#    ie: file_env 'XYZ_PASSWORD' 'example'
-# (will allow for "$XYZ_PASSWORD_FILE" to fill in the value of
-#  "$XYZ_PASSWORD" from a file, especially for Docker's secrets feature)
-# copied from mariadb docker entrypoint file
-file_env() {
-	local var="$1"
-	local fileVar="${var}_FILE"
-	local def="${2:-}"
-	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
-		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
-		exit 1
-	fi
-	local val="$def"
-	if [ "${!var:-}" ]; then
-		val="${!var}"
-	elif [ "${!fileVar:-}" ]; then
-		val="$(< "${!fileVar}")"
-	fi
-	export "$var"="$val"
-	unset "$fileVar"
-}
+SCRIPT_PATH="$(realpath "$0")"
+CURRENT_DIR="$(dirname "$SCRIPT_PATH")"
 
-file_env 'POSTFIX_RELAY_PASSWORD'
-
-if [ -z "$POSTFIX_HOSTNAME" -a -z "$DOMAIN"  ]; then
-    echo >&2 'error: relay options are not specified '
-    echo >&2 '  You need to specify POSTFIX_HOSTNAME and POSTFIX_HOSTNAME'
+if [ $# -lt 3  ]; then
+    echo >&2 "Usage: ${0} POSTFIX_HOSTNAME DOMAIN SECRET "
     exit 1
 fi
+POSTFIX_HOSTNAME=$1
+DOMAIN=$2
+SECRET=$3
 
 # Create postfix folders
 mkdir -p /var/spool/postfix/
@@ -40,10 +20,10 @@ mkdir -p /var/spool/postfix/pid
 postconf -e "smtputf8_enable=no"
 
 # Log to stdout
-postconf -e "maillog_file=/dev/stdout"
+postconf -e "maillog_file=/var/log/mail.log"
 
 # Update aliases database. It's not used, but postfix complains if the .db file is missing
-postalias /etc/postfix/aliases
+postalias /etc/aliases
 
 # Disable local mail delivery
 postconf -e "mydestination=$DOMAIN"
@@ -82,14 +62,14 @@ postconf -e "export_environment= SECRET=$SECRET"
 
 # Create tempmail transport transport
 echo "tempmail   unix  -       n       n       -       -       pipe" >> /etc/postfix/master.cf
-echo '  flags=FX user=tempmail argv=/usr/bin/python3 /opt/email/process_email.py ${sender} ${original_recipient}' >> /etc/postfix/master.cf
+echo "  flags=FX user=ubuntu argv=/usr/bin/python3 ${CURRENT_DIR}"'/process_email.py ${sender} ${original_recipient}' >> /etc/postfix/master.cf
 
 # Configure aliases
-echo "postmaster: root" > /etc/postfix/aliases
-echo "root: tempmail" >> /etc/postfix/aliases
+echo "postmaster: root" > /etc/aliases
+echo "root: tempmail" >> /etc/aliases
 newaliases
-postconf -e "alias_maps=hash:/etc/postfix/aliases"
-postconf -e "alias_database=hash:/etc/postfix/aliases"
+postconf -e "alias_maps=hash:/etc/aliases"
+postconf -e "alias_database=hash:/etc/aliases"
 
 # Configure virtual aliases
 echo "@$DOMAIN root@$DOMAIN" > /etc/postfix/virtual_aliases
@@ -102,8 +82,7 @@ postmap /etc/postfix/transport
 postconf -e "transport_maps=hash:/etc/postfix/transport"
 
 echo
-echo 'postfix configured. Ready for start up.'
+echo 'postfix configured. Starting up'
 echo
 
-exec "$@"
-
+service postfix restart

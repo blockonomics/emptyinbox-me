@@ -24,4 +24,4 @@ data = {
     'body': email.get_body().as_string(),
 }
 
-requests.post(f'http://server/api/email', json=data, headers=headers)
+requests.post(f'http://locahost:5000/api/email', json=data, headers=headers)
