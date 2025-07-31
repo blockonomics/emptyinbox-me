@@ -1,2 +1,27 @@
-import { renderHomePage } from './components/pages/HomePage/index.js';
-document.addEventListener('DOMContentLoaded', renderHomePage);
+import { createHeader } from '../components/molecules/Header/index.js';
+import { createFooter } from '../components/molecules/Footer/index.js';
+import { renderHomePage } from '../components/pages/HomePage/index.js';
+import { renderAboutPage } from '../components/pages/About/index.js';
+import { renderLoginPage } from '../components/pages/Login/index.js'; // Uncomment when LoginPage is implemented
+import { ROUTES } from './utils/constants.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.body.prepend(createHeader());
+  
+  const path = location.pathname;
+  
+  switch (path) {
+    case ROUTES.HOME:
+      renderHomePage();
+      break;
+    case ROUTES.ABOUT:
+      renderAboutPage();
+      break;
+    case ROUTES.LOGIN:
+      renderLoginPage();
+      break;
+    default:
+      console.error('Page not found:', path);
+  }
+  document.body.appendChild(createFooter());
+});
