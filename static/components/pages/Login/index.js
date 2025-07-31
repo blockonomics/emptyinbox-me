@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "../../../utils/constants.js";
+
 export function renderLoginPage() {
   const main = document.createElement('main');
 
@@ -114,7 +116,7 @@ async function initializeWalletAuth() {
       if (authResult.success) {
         // Store auth token and redirect
         localStorage.setItem('authToken', authResult.token);
-        window.location.href = '/dashboard';
+        window.location.href = '/dashboard.html';
       } else {
         showError('Authentication failed. Please try again.');
       }
@@ -148,7 +150,7 @@ async function initializeWalletAuth() {
 }
 
 async function getAuthChallenge(address) {
-  const response = await fetch('/api/auth/challenge', {
+  const response = await fetch(`${API_BASE_URL}/api/auth/challenge`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ address })
@@ -168,7 +170,7 @@ async function signMessage(message) {
 }
 
 async function verifySignature(address, signature, message) {
-  const response = await fetch('/api/auth/verify', {
+  const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ address, signature, message })

@@ -4,6 +4,7 @@ export const ROUTES = {
   HOME: '/',
   ABOUT: '/about.html',
   LOGIN: '/login.html',
+  DASHBOARD: '/dashboard.html',
 };
 
 export const TEXT = {
@@ -27,3 +28,7 @@ export const LOGO = {
   src: '../assets/emptyinboxlogo.png',
   alt: 'EmptyInbox Logo',
 };
+
+export const API_BASE_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:5000'
+  : 'http://emptyinbox.me';

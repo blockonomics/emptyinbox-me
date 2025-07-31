@@ -1,8 +1,12 @@
 from flask import Flask, request
 app = Flask(__name__)
+
+# Temporary allow CORS for all routes when testing locally
+# from flask_cors import CORS
+# CORS(app)
 from email.parser import Parser
 from uuid import uuid4
-
+from auth import auth_bp
 import redis
 import os
 import json
@@ -12,6 +16,7 @@ from words import adjectives, nouns
 
 DOMAIN = os.getenv('DOMAIN')
 redis_client = redis.Redis(host='localhost')
+app.register_blueprint(auth_bp)
 
 if __name__ != '__main__':
     # if we are not running directly, we set the loggers
