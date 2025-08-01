@@ -1,5 +1,3 @@
-import { FEATURES } from '../../../utils/constants.js';
-
 export function renderFeaturesCarousel() {
   const section = document.createElement('section');
   section.className = 'features-section';
@@ -10,11 +8,11 @@ export function renderFeaturesCarousel() {
   
   const title = document.createElement('h2');
   title.className = 'features-title';
-  title.textContent = 'Why Choose EmptyInbox.me';
+  title.innerHTML = '<span>✓ Clean</span> <span>✓ Private</span> <span>✓ Reliable</span> <span>✓ Intelligent</span>';
   
   const subtitle = document.createElement('p');
   subtitle.className = 'features-subtitle';
-  subtitle.textContent = 'Simple, secure, and efficient tools to help you stay focused.';
+  subtitle.textContent = 'Premium temporary email service with smart integrations and cryptocurrency payments.';
   
   header.appendChild(title);
   header.appendChild(subtitle);
@@ -61,24 +59,57 @@ export function renderFeaturesCarousel() {
   return section;
 }
 
-// Simple icon function - you can customize these or use an icon library
 function getFeatureIcon(index) {
   const icons = [
-    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z"/>
-      <path d="M19 11h-4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z"/>
-      <path d="M7 9V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"/>
-    </svg>`, // Simple/Clean icon
-    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-      <circle cx="12" cy="16" r="1"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-    </svg>`, // Secure icon
-    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    // Multiple Aliases
+    `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 7l3 3-3 3"/>
+      <path d="M21 7l-3 3 3 3"/>
+      <path d="M9 6h6"/>
+      <path d="M9 18h6"/>
+    </svg>`,
+
+    // Auto-Delete in 7 Days
+    `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
       <circle cx="12" cy="12" r="10"/>
-      <polyline points="16,12 12,8 8,12"/>
-      <line x1="12" y1="16" x2="12" y2="8"/>
-    </svg>` // Efficient icon
+      <path d="M12 6v6l4 2"/>
+    </svg>`,
+
+    // Pay with USDT Only
+    `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <text x="12" y="16" text-anchor="middle" font-size="10" font-family="Arial" fill="currentColor">T</text>
+    </svg>`,
+
+    // Smart Integrations
+    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="6" cy="6" r="2"/>
+      <circle cx="18" cy="6" r="2"/>
+      <circle cx="6" cy="18" r="2"/>
+      <circle cx="18" cy="18" r="2"/>
+      <path d="M6 6 C12 6, 12 18, 18 18"/>
+      <path d="M18 6 C12 6, 12 18, 6 18"/>
+    </svg>`,
   ];
+
   return icons[index % icons.length];
 }
+
+export const FEATURES = [
+  { 
+    title: 'Multiple Aliases', 
+    description: 'Use up to 100 email aliases to sign up on websites. Get started with simple pricing: 10 USDT.' 
+  },
+  { 
+    title: 'Auto-Delete in 7 Days', 
+    description: 'Emails are automatically deleted after 7 days. No storage, no clutter.' 
+  },
+  { 
+    title: 'Privacy-First Payments', 
+    description: 'Use USDT for login and payment.'
+  },
+  {
+    title: 'Simple Integrations',
+    description: 'Browser extension and command-line tools help streamline activation flows.' 
+  }
+];

@@ -8,10 +8,10 @@ export function renderHomePageHero() {
   heroContent.className = 'hero-content';
 
   const title = document.createElement('h1');
-  title.textContent = 'Clear the clutter. Embrace calm.';
+  title.textContent = 'POOF... And it\'s Gone!';
 
   const subtitle = document.createElement('p');
-  subtitle.textContent = 'Your digital reset starts here—focus on what matters and leave the noise behind.';
+  subtitle.innerHTML = 'Emails vanish in 7 days. Stay anonymous.<br>Pay securely with USDT.';
 
   const ctaButton = document.createElement('a');
   ctaButton.href = ROUTES.LOGIN;
