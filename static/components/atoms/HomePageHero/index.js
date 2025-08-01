@@ -3,9 +3,11 @@ export function renderHomePageHero() {
   section.className = 'hero';
 
   section.innerHTML = `
-    <h1>Welcome to EmptyInbox.me</h1>
-    <p>A clutter-free space to help you reset, refocus, and stay in control. Whether you're managing emails, tasks, or ideas—we're here to simplify the noise.</p>
-    <button>Get Started</button>
+    <div class="hero-content">
+      <h1>Clear the clutter. Embrace calm.</h1>
+      <p>Your digital reset starts here—focus on what matters and leave the noise behind.</p>
+      <button class="btn btn-primary">Get Started</button>
+    </div>
   `;
 
   return section;
