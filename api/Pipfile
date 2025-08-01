@@ -8,6 +8,7 @@ flask = "*"
 flask-cors = "*"
 gunicorn = "*"
 redis = "*"
+eth_account= "*"
 
 [scripts]
 start="gunicorn -b :5000 tempmail_api:app"  

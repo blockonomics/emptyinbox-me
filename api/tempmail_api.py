@@ -7,15 +7,18 @@ app = Flask(__name__)
 from email.parser import Parser
 from uuid import uuid4
 from auth import auth_bp
+from functools import wraps
+from flask import abort
 import redis
 import os
 import json
 import random
+import re
 import logging
 from words import adjectives, nouns
 
 DOMAIN = os.getenv('DOMAIN')
-redis_client = redis.Redis(host='localhost')
+redis_client = redis.Redis(host='localhost', decode_responses=True)
 app.register_blueprint(auth_bp)
 
 if __name__ != '__main__':
@@ -24,27 +27,40 @@ if __name__ != '__main__':
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
 
-def get_mailbox():
-    adjective_part = '.'.join(random.choices(adjectives, k=2))
-    noun = random.choice(nouns)
-    return f'{adjective_part}.{noun}'
+def extract_apikey(s):
+  api_key = re.match(r'\s*Bearer\s+(\w+)', str(s))
+  if api_key:
+    return api_key.group(1)
+  return None
 
 
-@app.route('/mailbox', methods=['POST'])
-def create_mailbox():
-    token = str(uuid4())
+# Authentication decorator
+def auth_required(f):
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        token = extract_apikey(request.headers.get('Authorization'))
+        if not token:  
+            abort(401)
+        return f(token, *args, **kwargs)
+    return decorator
 
+
+@app.route('/inbox', methods=['POST'])
+@auth_required
+def create_mailbox(token):
     mailbox = get_mailbox()
-
     email_address = f'{mailbox}@{DOMAIN}'
-    redis_client.set(token, json.dumps({ 'mailbox': email_address, 'emails': []}))
-    redis_client.set(mailbox, token)
+    redis_client.lpush(token, email_address)
+    return email_address, 201
 
-    return ({
-        'mailbox': email_address,
-        'token':  token
-    }, 201)
-
+@app.route('/inboxes', methods=['GET'])
+@auth_required
+def get_mailboxes(token):
+    inboxes = redis_client.lrange(token, 0, -1)
+    print(inboxes)
+    if not inboxes:
+        inboxes = []
+    return inboxes
 
 @app.route('/email', methods=['POST'])
 def create_email():
