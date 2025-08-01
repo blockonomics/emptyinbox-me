@@ -4,7 +4,7 @@ export function renderLoginPage() {
   const main = document.createElement('main');
 
   const container = document.createElement('div');
-  container.classList.add('container', 'login-page');
+  container.classList.add('login-page');
 
   container.innerHTML = `
     <section class="login">
@@ -34,7 +34,7 @@ export function renderLoginPage() {
       <div class="supported-wallets">
         <p class="wallet-info">Supported wallets:</p>
         <div class="wallet-icons">
-          <span>MetaMask</span> • <span>Trust Wallet</span> • <span>Coinbase Wallet</span>
+          <span>MetaMask</span> <span>Trust Wallet</span> <span>Coinbase Wallet</span>
         </div>
       </div>
 
