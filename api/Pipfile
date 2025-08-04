@@ -9,9 +9,11 @@ flask-cors = "*"
 gunicorn = "*"
 redis = "*"
 eth_account= "*"
+flask_sqlalchemy="*"
 
 [scripts]
-start="gunicorn -b :5000 tempmail_api:app"  
+start="gunicorn --daemon --reload --error-logfile app.log --access-logfile app.log -b :5000 tempmail_api:app"  
+create_db="python db_model.py"
 
 [dev-packages]
 

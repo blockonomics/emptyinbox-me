@@ -1,9 +1,6 @@
-from flask import Flask, request
-app = Flask(__name__)
-
-# Temporary allow CORS for all routes when testing locally
-# from flask_cors import CORS
-# CORS(app)
+from flask import request
+from config import app,db
+from db_model import Message, Inbox
 from email.parser import Parser
 from uuid import uuid4
 from auth import auth_bp
@@ -15,6 +12,7 @@ import json
 import random
 import re
 import logging
+logging.basicConfig(filename='app.log', level=logging.DEBUG)
 from words import adjectives, nouns
 
 DOMAIN = os.getenv('DOMAIN')
@@ -44,22 +42,28 @@ def auth_required(f):
         return f(token, *args, **kwargs)
     return decorator
 
+def get_mailboxname():
+    adjective_part = '.'.join(random.choices(adjectives, k=2))
+    noun = random.choice(nouns)
+    return f'{adjective_part}.{noun}'
+
 
 @app.route('/inbox', methods=['POST'])
 @auth_required
 def create_mailbox(token):
-    mailbox = get_mailbox()
-    email_address = f'{mailbox}@{DOMAIN}'
-    redis_client.lpush(token, email_address)
+    email_address = f'{get_mailboxname()}@{DOMAIN}'
+    db.session.add(Inbox(api_key=token, inbox=email_address))
+    db.session.commit()
     return email_address, 201
 
 @app.route('/inboxes', methods=['GET'])
 @auth_required
 def get_mailboxes(token):
-    inboxes = redis_client.lrange(token, 0, -1)
-    print(inboxes)
+    inboxes = db.session.execute(db.select(Inbox.inbox)).all()
     if not inboxes:
         inboxes = []
+    else:
+        inboxes = [row.inbox for row in inboxes]
     return inboxes
 
 @app.route('/email', methods=['POST'])
