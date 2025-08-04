@@ -5,7 +5,7 @@ from eth_account.messages import encode_defunct
 from eth_account import Account
 
 from cleanup_manager import DatabaseManager
-from db_model import AuthChallenge, UserSession
+from db_models import AuthChallenge, UserSession
 from cleanup_manager import db  # import db from your setup
 
 # --- Setup ---

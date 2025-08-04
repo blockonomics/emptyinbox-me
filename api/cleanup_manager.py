@@ -1,6 +1,6 @@
 # database_manager.py
 from config import app, db
-from db_model import AuthChallenge, UserSession
+from db_models import AuthChallenge, UserSession
 import logging
 from datetime import datetime
 

@@ -1,6 +1,6 @@
 from flask import request
 from config import app,db
-from db_model import Message, Inbox
+from db_models import Message, Inbox
 from email.parser import Parser
 from uuid import uuid4
 from auth import auth_bp
@@ -13,6 +13,10 @@ import random
 import re
 import logging
 from words import adjectives, nouns
+
+
+from flask_cors import CORS
+CORS(app)
 
 DOMAIN = os.getenv('DOMAIN')
 app.register_blueprint(auth_bp)

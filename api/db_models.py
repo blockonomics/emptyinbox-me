@@ -2,12 +2,14 @@ from config import db
 from datetime import datetime, timedelta
 
 class Message(db.Model):
+    __tablename__ = 'messages'
     id = db.Column(db.String(16), primary_key=True)
     inbox = db.Column(db.String(250), index=True)
     timestamp = db.Column(db.BigInteger)
     content = db.Column(db.BLOB(8 << 20))
 
 class Inbox(db.Model):
+    __tablename__ = 'inboxes'
     api_key = db.Column(db.String(250), primary_key=True)
     inbox = db.Column(db.String(250), primary_key=True)
 
