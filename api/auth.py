@@ -1,201 +1,150 @@
 from flask import Blueprint, request, jsonify
-import redis
-import os
-import json
-import random
-import time
-import hashlib
-import logging
+from datetime import datetime
+import os, random, time, hashlib, logging
 from eth_account.messages import encode_defunct
 from eth_account import Account
 
-# Create blueprint for auth routes
+from cleanup_manager import DatabaseManager
+from db_model import AuthChallenge, UserSession
+from cleanup_manager import db  # import db from your setup
+
+# --- Setup ---
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
-
-# Redis connection
-redis_client = redis.Redis(host='localhost')
-DOMAIN = os.getenv('DOMAIN')
-
-# Configure logging
+db_manager = DatabaseManager()
+DOMAIN = os.getenv('DOMAIN', 'emptyinbox.me')
 logger = logging.getLogger(__name__)
 
-def generate_nonce():
-    """Generate a random nonce for authentication challenges"""
-    return str(random.randint(100000000, 999999999))
+# --- Utility Functions ---
+def generate_nonce() -> str:
+    return str(random.randint(100_000_000, 999_999_999))
 
-def create_auth_message(address, nonce):
-    """Create SIWE-style authentication message"""
+def create_auth_message(address: str, nonce: str) -> tuple[str, int]:
     timestamp = int(time.time())
-    message = f"""EmptyInbox.me wants you to sign in with your Ethereum account:
-{address}
-
-I accept the EmptyInbox.me Terms of Service: https://{DOMAIN}/tos
-
-URI: https://{DOMAIN}
-Version: 1
-Chain ID: 1
-Nonce: {nonce}
-Issued At: {timestamp}"""
-    
+    message = (
+        f"EmptyInbox.me wants you to sign in with your Ethereum account:\n"
+        f"{address}\n\n"
+        f"I accept the EmptyInbox.me Terms of Service: https://{DOMAIN}/tos\n\n"
+        f"URI: https://{DOMAIN}\nVersion: 1\nChain ID: 1\n"
+        f"Nonce: {nonce}\nIssued At: {timestamp}"
+    )
     return message, timestamp
 
-def verify_signature(message, signature, expected_address):
-    """Verify that the signature matches the expected address"""
+def verify_signature(message: str, signature: str, expected_address: str) -> bool:
     try:
-        # Encode the message for verification
         message_hash = encode_defunct(text=message)
-        
-        # Recover the address from the signature
-        recovered_address = Account.recover_message(message_hash, signature=signature)
-        
-        # Compare addresses (case insensitive)
-        return recovered_address.lower() == expected_address.lower()
+        recovered = Account.recover_message(message_hash, signature=signature)
+        return recovered.lower() == expected_address.lower()
     except Exception as e:
-        logger.error(f"Signature verification failed: {str(e)}")
+        logger.error(f"Signature verification failed: {e}")
         return False
 
-def create_user_token(address):
-    """Create a secure token for the authenticated user"""
-    timestamp = str(int(time.time()))
-    token_data = f"{address}:{timestamp}:{random.randint(100000, 999999)}"
-    return hashlib.sha256(token_data.encode()).hexdigest()
+def create_user_token(address: str) -> str:
+    raw = f"{address}:{int(time.time())}:{random.randint(100_000, 999_999)}"
+    return hashlib.sha256(raw.encode()).hexdigest()
 
+def get_token_from_header() -> str | None:
+    auth = request.headers.get('Authorization', '')
+    return auth.split(' ')[1] if auth.startswith('Bearer ') else None
+
+def error_response(message: str, code: int = 400):
+    return jsonify({'error': message}), code
+
+# --- Routes ---
 @auth_bp.route('/challenge', methods=['POST'])
 def auth_challenge():
-    """Generate authentication challenge for wallet sign-in"""
     try:
-        data = request.get_json()
-        address = data.get('address')
-        
-        if not address:
-            return {'error': 'Wallet address is required'}, 400
-        
-        # Validate Ethereum address format
-        if not address.startswith('0x') or len(address) != 42:
-            return {'error': 'Invalid Ethereum address format'}, 400
-        
-        # Generate nonce and message
+        db_manager.cleanup_expired_records()
+        address = request.json.get('address')
+
+        if not address or not address.startswith('0x') or len(address) != 42:
+            return error_response('Invalid or missing Ethereum address')
+
         nonce = generate_nonce()
         message, timestamp = create_auth_message(address, nonce)
-        
-        # Store challenge temporarily (expires in 5 minutes)
-        challenge_key = f"challenge:{address}:{nonce}"
-        challenge_data = {
-            'message': message,
-            'timestamp': timestamp,
-            'address': address,
-            'nonce': nonce
-        }
-        
-        redis_client.setex(challenge_key, 300, json.dumps(challenge_data))
-        
-        return {
-            'message': message,
-            'nonce': nonce
-        }, 200
-        
+
+        with db_manager.app.app_context():
+            challenge = AuthChallenge(address, nonce, message, timestamp)
+            db.session.add(challenge)
+            db.session.commit()
+
+        return jsonify({'message': message, 'nonce': nonce}), 200
     except Exception as e:
-        logger.error(f"Challenge generation failed: {str(e)}")
-        return {'error': 'Failed to generate challenge'}, 500
+        logger.error(f"Challenge generation error: {e}")
+        db.session.rollback()
+        return error_response('Failed to generate challenge', 500)
 
 @auth_bp.route('/verify', methods=['POST'])
 def auth_verify():
-    """Verify wallet signature and create user session"""
     try:
-        data = request.get_json()
-        address = data.get('address')
-        signature = data.get('signature')
-        message = data.get('message')
-        
+        data = request.json
+        address, signature, message = data.get('address'), data.get('signature'), data.get('message')
+
         if not all([address, signature, message]):
-            return {'error': 'Address, signature, and message are required'}, 400
-        
-        # Extract nonce from message
-        lines = message.split('\n')
-        nonce_line = next((line for line in lines if line.startswith('Nonce:')), None)
-        if not nonce_line:
-            return {'error': 'Invalid message format'}, 400
-        
-        nonce = nonce_line.split(': ')[1]
-        challenge_key = f"challenge:{address}:{nonce}"
-        
-        # Verify challenge exists and hasn't expired
-        if not redis_client.exists(challenge_key):
-            return {'error': 'Challenge expired or invalid'}, 400
-        
-        challenge_data = json.loads(redis_client.get(challenge_key))
-        
-        # Verify the message matches what we sent
-        if challenge_data['message'] != message:
-            return {'error': 'Message mismatch'}, 400
-        
-        # Verify signature
-        if not verify_signature(message, signature, address):
-            return {'error': 'Invalid signature'}, 401
-        
-        # Clean up used challenge
-        redis_client.delete(challenge_key)
-        
-        # Create user session token
-        user_token = create_user_token(address)
-        
-        # Store user session (expires in 30 days)
-        user_data = {
-            'address': address,
-            'login_time': int(time.time())
-        }
-        redis_client.setex(f"user:{user_token}", 2592000, json.dumps(user_data))
-        
-        return {
-            'success': True,
-            'token': user_token,
-            'address': address
-        }, 200
-        
+            return error_response('Address, signature, and message required')
+
+        try:
+            nonce = next(line for line in message.split('\n') if line.startswith('Nonce:')).split(': ')[1]
+        except StopIteration:
+            return error_response('Malformed authentication message')
+
+        with db_manager.app.app_context():
+            challenge_id = f"challenge:{address}:{nonce}"
+            challenge = db.session.query(AuthChallenge).filter_by(id=challenge_id)\
+                .filter(AuthChallenge.expires_at > datetime.utcnow()).first()
+
+            if not challenge or challenge.message != message:
+                return error_response('Challenge expired or mismatched')
+
+            if not verify_signature(message, signature, address):
+                return error_response('Invalid signature', 401)
+
+            db.session.delete(challenge)
+
+            token = create_user_token(address)
+            session_obj = UserSession(token, address, int(time.time()))
+            db.session.add(session_obj)
+            db.session.commit()
+
+        return jsonify({'success': True, 'token': token, 'address': address}), 200
     except Exception as e:
-        logger.error(f"Signature verification failed: {str(e)}")
-        return {'error': 'Authentication failed'}, 500
+        logger.error(f"Verification failed: {e}")
+        db.session.rollback()
+        return error_response('Authentication failed', 500)
 
 @auth_bp.route('/me', methods=['GET'])
 def auth_me():
-    """Get current user information"""
     try:
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return {'error': 'Authentication required'}, 401
-        
-        user_token = auth_header.split(' ')[1]
-        
-        if not redis_client.exists(f"user:{user_token}"):
-            return {'error': 'Invalid authentication token'}, 401
-        
-        user_data = json.loads(redis_client.get(f"user:{user_token}"))
-        
-        return {
-            'address': user_data['address'],
-            'login_time': user_data['login_time']
-        }, 200
-        
+        token = get_token_from_header()
+        if not token:
+            return error_response('Authentication required', 401)
+
+        with db_manager.app.app_context():
+            user = db.session.query(UserSession).filter_by(token=token)\
+                .filter(UserSession.expires_at > datetime.utcnow()).first()
+
+            if not user:
+                return error_response('Invalid authentication token', 401)
+
+            return jsonify({'address': user.address, 'login_time': user.login_time}), 200
     except Exception as e:
-        logger.error(f"Get user info failed: {str(e)}")
-        return {'error': 'Failed to get user information'}, 500
+        logger.error(f"User info retrieval failed: {e}")
+        return error_response('Failed to fetch user information', 500)
 
 @auth_bp.route('/logout', methods=['POST'])
 def auth_logout():
-    """Logout user and invalidate session"""
     try:
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return {'error': 'No authentication token provided'}, 401
-        
-        user_token = auth_header.split(' ')[1]
-        
-        # Clean up user session
-        if redis_client.exists(f"user:{user_token}"):
-            redis_client.delete(f"user:{user_token}")
-        
-        return {'success': True}, 200
-        
+        token = get_token_from_header()
+        if not token:
+            return error_response('No authentication token', 401)
+
+        with db_manager.app.app_context():
+            user = db.session.query(UserSession).filter_by(token=token).first()
+            if user:
+                db.session.delete(user)
+                db.session.commit()
+
+        return jsonify({'success': True}), 200
     except Exception as e:
-        logger.error(f"Logout failed: {str(e)}")
-        return {'error': 'Logout failed'}, 500
+        logger.error(f"Logout error: {e}")
+        db.session.rollback()
+        return error_response('Logout failed', 500)
