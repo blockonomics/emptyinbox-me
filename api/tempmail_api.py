@@ -43,6 +43,7 @@ def auth_required(f):
 @app.route('/messages', methods=['GET'])
 @auth_required
 def get_messages(token):
+    '''Returns message list(id, inbox)'''
     inboxes = db.session.query(Message.id, Message.inbox).join(Inbox, Message.inbox == Inbox.inbox).filter(Inbox.api_key==token).all()
     if not inboxes:
         inboxes = []
@@ -54,6 +55,7 @@ def get_messages(token):
 @app.route('/message/<msgid>', methods=['GET'])
 @auth_required
 def get_message(token, msgid):
+    '''Returns message content for the given message id'''
     row = db.session.query(Message.content).join(Inbox, Message.inbox == Inbox.inbox).filter(Inbox.api_key==token).filter(Message.id==msgid).first()
     if not row:
         return "msgid doesn't exist", 404
@@ -69,6 +71,7 @@ def get_mailboxname():
 @app.route('/inbox', methods=['POST'])
 @auth_required
 def create_mailbox(token):
+    '''Creates new inbox'''
     email_address = f'{get_mailboxname()}@{DOMAIN}'
     db.session.add(Inbox(api_key=token, inbox=email_address))
     db.session.commit()
@@ -77,6 +80,7 @@ def create_mailbox(token):
 @app.route('/inboxes', methods=['GET'])
 @auth_required
 def get_mailboxes(token):
+    '''Get all inboxes'''
     inboxes = db.session.execute(db.select(Inbox.inbox)).all()
     if not inboxes:
         inboxes = []
