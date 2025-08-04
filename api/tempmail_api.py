@@ -6,17 +6,15 @@ from uuid import uuid4
 from auth import auth_bp
 from functools import wraps
 from flask import abort
-import redis
+import time
 import os
 import json
 import random
 import re
 import logging
-logging.basicConfig(filename='app.log', level=logging.DEBUG)
 from words import adjectives, nouns
 
 DOMAIN = os.getenv('DOMAIN')
-redis_client = redis.Redis(host='localhost', decode_responses=True)
 app.register_blueprint(auth_bp)
 
 if __name__ != '__main__':
@@ -42,6 +40,12 @@ def auth_required(f):
         return f(token, *args, **kwargs)
     return decorator
 
+@app.route('/messages', methods=['GET'])
+@auth_required
+def get_messages(token):
+    inboxes = []
+    return inboxes
+
 def get_mailboxname():
     adjective_part = '.'.join(random.choices(adjectives, k=2))
     noun = random.choice(nouns)
@@ -66,6 +70,10 @@ def get_mailboxes(token):
         inboxes = [row.inbox for row in inboxes]
     return inboxes
 
+def query_inbox(inbox):
+    inbox = db.session.execute(db.select(Inbox).filter(Inbox.inbox==inbox)).first()
+    return inbox
+
 @app.route('/email', methods=['POST'])
 def create_email():
     email_data = request.json
@@ -73,16 +81,12 @@ def create_email():
 
     if secret != os.getenv('SECRET'):
        return '', 403
-
     for recipient in email_data['recipients']:
-        mailbox = recipient.split('@')[0].split('+')[0]
-
-        if redis_client.exists(mailbox):
-            token = redis_client.get(mailbox)
-            record  = json.loads(redis_client.get(token))
-            emails = record.get('emails')
-            emails.append(email_data)
-            redis_client.set(token, json.dumps(record))
+        if query_inbox(recipient):
+            msg_id = str(uuid4())[:8]
+            timestamp = int(time.time())
+            db.session.add(Message(id=msg_id, inbox=recipient, timestamp=timestamp, content=json.dumps(email_data).encode()))
+            db.session.commit()
 
     return '', 201
 
