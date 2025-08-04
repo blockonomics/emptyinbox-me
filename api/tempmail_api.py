@@ -43,8 +43,22 @@ def auth_required(f):
 @app.route('/messages', methods=['GET'])
 @auth_required
 def get_messages(token):
-    inboxes = []
+    inboxes = db.session.query(Message.id, Message.inbox).join(Inbox, Message.inbox == Inbox.inbox).filter(Inbox.api_key==token).all()
+    if not inboxes:
+        inboxes = []
+    else:
+        inboxes = [dict(id=row.id,inbox=row.inbox) for row in inboxes]
+        
     return inboxes
+
+@app.route('/message/<msgid>', methods=['GET'])
+@auth_required
+def get_message(token, msgid):
+    row = db.session.query(Message.content).join(Inbox, Message.inbox == Inbox.inbox).filter(Inbox.api_key==token).filter(Message.id==msgid).first()
+    if not row:
+        return "msgid doesn't exist", 404
+        
+    return row.content, 200
 
 def get_mailboxname():
     adjective_part = '.'.join(random.choices(adjectives, k=2))
@@ -89,13 +103,3 @@ def create_email():
             db.session.commit()
 
     return '', 201
-
-
-@ app.route('/<token>', methods=['GET'])
-def list_emails(token):
-
-    if not redis_client.exists(token):
-        return 'Mailbox does not exist', 404
-
-    mailbox_data = json.loads(redis_client.get(token))
-    return mailbox_data
