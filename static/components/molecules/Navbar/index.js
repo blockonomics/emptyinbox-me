@@ -1,11 +1,11 @@
 import { NAV_LINKS, LOGO, ROUTES } from '../../../utils/constants.js';
 
-export function createHeader() {
-  const header = document.createElement('header');
-  header.className = 'site-header';
+export function createNavbar() {
+  const navbar = document.createElement('navbar');
+  navbar.className = 'site-navbar';
 
   const container = document.createElement('div');
-  container.className = 'header-container';
+  container.className = 'navbar-container';
 
   // Logo section
   const logoLink = document.createElement('a');
@@ -58,17 +58,17 @@ export function createHeader() {
   container.appendChild(logoLink);
   container.appendChild(navToggle);
   container.appendChild(nav);
-  header.appendChild(container);
+  navbar.appendChild(container);
 
-  return header;
+  return navbar;
 }
 
-// Add scroll effect to header
+// Add scroll effect to navbar
 window.addEventListener('scroll', () => {
-  const header = document.querySelector('.site-header');
+  const navbar = document.querySelector('.site-navbar');
   if (window.scrollY > 50) {
-    header.classList.add('scrolled');
+    navbar.classList.add('scrolled');
   } else {
-    header.classList.remove('scrolled');
+    navbar.classList.remove('scrolled');
   }
 });

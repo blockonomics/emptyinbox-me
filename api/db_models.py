@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 class Message(db.Model):
     __tablename__ = 'messages'
+
     id = db.Column(db.String(16), primary_key=True)
     inbox = db.Column(db.String(250), index=True)
     timestamp = db.Column(db.BigInteger)
@@ -10,8 +11,16 @@ class Message(db.Model):
 
 class Inbox(db.Model):
     __tablename__ = 'inboxes'
+
     api_key = db.Column(db.String(250), primary_key=True)
     inbox = db.Column(db.String(250), primary_key=True)
+
+class User(db.Model):
+    __tablename__ = 'users'
+
+    eth_account = db.Column(db.String(42), primary_key=True)
+    api_key = db.Column(db.String(250), unique=True, nullable=False)
+    inbox_quota = db.Column(db.Integer, default=0)
 
 class AuthChallenge(db.Model):
     __tablename__ = 'auth_challenges'

@@ -1,4 +1,4 @@
-import { createHeader } from '../components/molecules/Header/index.js';
+import { createNavbar } from '../components/molecules/Navbar/index.js';
 import { createFooter } from '../components/molecules/Footer/index.js';
 import { renderHomePage } from '../components/pages/HomePage/index.js';
 import { renderAboutPage } from '../components/pages/About/index.js';
@@ -7,7 +7,7 @@ import { renderDashboardPage } from '../components/pages/Dashboard/index.js';
 import { ROUTES } from './utils/constants.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.body.prepend(createHeader());
+  document.body.prepend(createNavbar());
   
   const path = location.pathname;
   

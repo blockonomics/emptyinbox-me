@@ -5,8 +5,8 @@ from eth_account.messages import encode_defunct
 from eth_account import Account
 
 from cleanup_manager import DatabaseManager
-from db_models import AuthChallenge, UserSession
-from cleanup_manager import db  # import db from your setup
+from db_models import AuthChallenge, UserSession, User
+from cleanup_manager import db 
 
 # --- Setup ---
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -100,12 +100,29 @@ def auth_verify():
 
             db.session.delete(challenge)
 
-            token = create_user_token(address)
-            session_obj = UserSession(token, address, int(time.time()))
+            # Check if user exists, create if not (first-time login)
+            from db_models import User  # Import User model
+            user = db.session.query(User).filter_by(eth_account=address).first()
+            
+            if not user:
+                # Generate API key for new user
+                api_key = create_user_token(address)  # Reuse token generation logic
+                user = User(eth_account=address, api_key=api_key, inbox_quota=0)
+                db.session.add(user)
+                logger.info(f"Created new user for address: {address}")
+            
+            # Create session token (different from API key)
+            session_token = create_user_token(address)
+            session_obj = UserSession(session_token, address, int(time.time()))
             db.session.add(session_obj)
             db.session.commit()
-
-        return jsonify({'success': True, 'token': token, 'address': address}), 200
+            
+            return jsonify({
+                'success': True,
+                'token': session_token,
+                'address': address,
+                'api_key': user.api_key
+            }), 200
     except Exception as e:
         logger.error(f"Verification failed: {e}")
         db.session.rollback()
@@ -119,13 +136,27 @@ def auth_me():
             return error_response('Authentication required', 401)
 
         with db_manager.app.app_context():
-            user = db.session.query(UserSession).filter_by(token=token)\
+            # First, validate the session token
+            session = db.session.query(UserSession).filter_by(token=token)\
                 .filter(UserSession.expires_at > datetime.utcnow()).first()
 
-            if not user:
-                return error_response('Invalid authentication token', 401)
+            if not session:
+                return error_response('Invalid or expired authentication token', 401)
 
-            return jsonify({'address': user.address, 'login_time': user.login_time}), 200
+            # Then get the full user object
+            from db_models import User
+            user = db.session.query(User).filter_by(eth_account=session.address).first()
+            
+            if not user:
+                return error_response('User not found', 404)
+
+            return jsonify({
+                'address': user.eth_account,
+                'api_key': user.api_key,
+                'inbox_quota': user.inbox_quota,
+                'login_time': session.login_time,
+                'session_expires_at': session.expires_at.isoformat() if hasattr(session, 'expires_at') else None
+            }), 200
     except Exception as e:
         logger.error(f"User info retrieval failed: {e}")
         return error_response('Failed to fetch user information', 500)
