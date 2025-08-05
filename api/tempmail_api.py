@@ -14,6 +14,14 @@ import re
 import logging
 from words import adjectives, nouns
 
+FLASK_ENV = os.getenv('FLASK_ENV', 'production')
+
+# Allow CORS for development
+if FLASK_ENV == 'development':
+    from flask_cors import CORS
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    
+
 DOMAIN = os.getenv('DOMAIN')
 app.register_blueprint(auth_bp)
 
