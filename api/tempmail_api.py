@@ -14,10 +14,6 @@ import re
 import logging
 from words import adjectives, nouns
 
-
-from flask_cors import CORS
-CORS(app)
-
 DOMAIN = os.getenv('DOMAIN')
 app.register_blueprint(auth_bp)
 
