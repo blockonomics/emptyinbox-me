@@ -1367,13 +1367,6 @@ html {
   margin-bottom: 1.5rem;
 }
 
-.wallet-info {
-  font-size: 0.9rem;
-  color: #6b7280;
-  font-weight: 500;
-  margin-bottom: 0.75rem;
-}
-
 .wallet-icons {
   display: flex;
   justify-content: center;
@@ -1739,16 +1732,6 @@ html {
   justify-content: center;
   gap: 2rem;
   flex-wrap: wrap;
-}
-
-.wallet-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: rgba(16, 185, 129, 0.05);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 16px;
-  padding: 0.75rem 1.25rem;
 }
 
 .wallet-label {
