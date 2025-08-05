@@ -5,9 +5,7 @@ export function updateUserDisplay(userData) {
   // 📊 Stat elements
   const fullAddress = document.getElementById('full-address');
   const apiKeyDisplay = document.getElementById('api-key-display');
-  const quotaFill = document.getElementById('quota-fill');
   const quotaText = document.getElementById('quota-text');
-  const quotaRemaining = document.getElementById('quota-remaining');
   const lastLogin = document.getElementById('last-login');
   const sessionExpires = document.getElementById('session-expires');
 
@@ -21,14 +19,8 @@ export function updateUserDisplay(userData) {
   apiKeyDisplay.textContent = userData.api_key || 'Unavailable';
 
   // 📬 Quota
-  const usedQuota = userData.inbox_quota || 0;
-  const remainingQuota = userData.remaining_quota ?? 100;
-  const totalQuota = usedQuota + remainingQuota;
-  const quotaPercentage = totalQuota > 0 ? (usedQuota / totalQuota) * 100 : 0;
-
-  quotaFill.style.width = `${quotaPercentage}%`;
-  quotaText.textContent = `${usedQuota} / ${totalQuota}`;
-  quotaRemaining.textContent = `${remainingQuota} remaining`;
+  const inboxQuaota = userData.inbox_quota || 0;
+  quotaText.textContent = `${inboxQuaota} remaining`;
 
   // ⏱ Last login
   if (userData.login_time) {
