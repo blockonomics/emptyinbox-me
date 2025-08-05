@@ -9,7 +9,7 @@ from db_models import AuthChallenge, UserSession, User
 from cleanup_manager import db 
 
 # --- Setup ---
-auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 db_manager = DatabaseManager()
 DOMAIN = os.getenv('DOMAIN', 'emptyinbox.me')
 logger = logging.getLogger(__name__)
