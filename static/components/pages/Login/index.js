@@ -114,8 +114,10 @@ async function initializeWalletAuth() {
       const authResult = await verifySignature(userAddress, signature, challenge.message);
       
       if (authResult.success) {
+        const { token, api_key: apiKey } = authResult;
         // Store auth token and redirect
         localStorage.setItem('authToken', authResult.token);
+        localStorage.setItem('apiKey', apiKey);
         window.location.href = '/dashboard.html';
       } else {
         showError('Authentication failed. Please try again.');

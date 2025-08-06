@@ -4,6 +4,7 @@ from db_models import Message, Inbox
 from email.parser import Parser
 from uuid import uuid4
 from auth import auth_bp
+from payments import payments_bp
 from functools import wraps
 from flask import abort
 import time
@@ -13,6 +14,7 @@ import random
 import re
 import logging
 from words import adjectives, nouns
+from auth_utils import extract_apikey
 
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
 
@@ -24,18 +26,13 @@ if FLASK_ENV == 'development':
 
 DOMAIN = os.getenv('DOMAIN')
 app.register_blueprint(auth_bp)
+app.register_blueprint(payments_bp)
 
 if __name__ != '__main__':
     # if we are not running directly, we set the loggers
     gunicorn_logger = logging.getLogger('gunicorn.error')
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
-
-def extract_apikey(s):
-  api_key = re.match(r'\s*Bearer\s+(\w+)', str(s))
-  if api_key:
-    return api_key.group(1)
-  return None
 
 
 # Authentication decorator
