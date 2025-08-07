@@ -21,12 +21,12 @@ FLASK_ENV = os.getenv('FLASK_ENV', 'production')
 # Allow CORS for development
 if FLASK_ENV == 'development':
     from flask_cors import CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app)
     
 
 DOMAIN = os.getenv('DOMAIN')
-app.register_blueprint(auth_bp)
-app.register_blueprint(payments_bp)
+app.register_blueprint(auth_bp, url_prefix='/api/auth')
+app.register_blueprint(payments_bp, url_prefix='/api/payments')
 
 if __name__ != '__main__':
     # if we are not running directly, we set the loggers

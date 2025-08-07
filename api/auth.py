@@ -8,14 +8,7 @@ from cleanup_manager import DatabaseManager
 from db_models import AuthChallenge, UserSession, User
 from cleanup_manager import db 
 
-FLASK_ENV = os.getenv('FLASK_ENV', 'production')
-
-# Setup
-url_prefix = '/payments'
-if FLASK_ENV == 'development':
-    url_prefix = '/api' + url_prefix
-
-auth_bp = Blueprint('auth', __name__, url_prefix=url_prefix)
+auth_bp = Blueprint('auth', __name__)
 db_manager = DatabaseManager()
 DOMAIN = os.getenv('DOMAIN', 'emptyinbox.me')
 logger = logging.getLogger(__name__)

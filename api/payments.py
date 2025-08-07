@@ -7,14 +7,7 @@ from cleanup_manager import DatabaseManager, db
 from db_models import User, UserSession, PaymentIntent, PaymentStatus
 from auth_utils import extract_apikey
 
-FLASK_ENV = os.getenv('FLASK_ENV', 'production')
-
-# Setup
-url_prefix = '/payments'
-if FLASK_ENV == 'development':
-    url_prefix = '/api' + url_prefix
-
-payments_bp = Blueprint('payments', __name__, url_prefix=url_prefix)
+payments_bp = Blueprint('payments', __name__)
 db_manager = DatabaseManager()
 
 USDT_ADDRESS = os.getenv('USDT_RECEIVING_ADDRESS', '0x742d35Cc6634C0532925a3b8D9DDdB4D1f0B1b69')
