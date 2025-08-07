@@ -8,12 +8,13 @@ from cleanup_manager import DatabaseManager
 from db_models import AuthChallenge, UserSession, User
 from cleanup_manager import db 
 
-# --- Setup ---
+FLASK_ENV = os.getenv('FLASK_ENV', 'production')
 
-# TODO: Figure out why this is needed
-url_prefix = '/auth'
-if os.getenv('FLASK_ENV') == 'development':
+# Setup
+url_prefix = '/payments'
+if FLASK_ENV == 'development':
     url_prefix = '/api' + url_prefix
+
 auth_bp = Blueprint('auth', __name__, url_prefix=url_prefix)
 db_manager = DatabaseManager()
 DOMAIN = os.getenv('DOMAIN', 'emptyinbox.me')
