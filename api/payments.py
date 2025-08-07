@@ -48,6 +48,7 @@ def error_response(message: str, code: int = 400):
 
 @payments_bp.route('/monitor', methods=['POST'])
 def monitor_transaction():
+    # TODO: get current user
     current_user_eth = '0x5c0ed91604e92d7f488d62058293ce603bcc68ef'
     if not current_user_eth:
         return error_response("Unauthorized", 401)
@@ -71,7 +72,9 @@ def monitor_transaction():
             },
             json={
                 "txhash": txhash,
-                "match_callback": match_callback
+                "crypto": "USDT",
+                "match_callback": match_callback,
+                "testnet": 1,
             }
         )
 
@@ -89,17 +92,17 @@ def monitor_transaction():
 
 @payments_bp.route('/callback', methods=['GET'])
 def blockonomics_callback():
-    txhash = request.args.get('txhash')
+    txid = request.args.get('txid')
     value = request.args.get('value')
     addr  = request.args.get('addr')
 
-    if not txhash or not value or not addr:
+    if not txid or not value or not addr:
         return error_response("Missing required fields", 400)
 
     if addr.lower() != USDT_ADDRESS.lower():
         return error_response("Address mismatch", 400)
 
-    intent = db.session.query(PaymentIntent).filter_by(txhash=txhash).first()
+    intent = db.session.query(PaymentIntent).filter_by(txhash=txid).first()
     if not intent:
         return error_response("Payment intent not found", 404)
 
