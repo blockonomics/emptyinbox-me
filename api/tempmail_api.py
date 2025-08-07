@@ -17,16 +17,18 @@ from words import adjectives, nouns
 from auth_utils import extract_apikey
 
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
+IS_DEV = FLASK_ENV == 'development'
+url_prefix = '/api' if IS_DEV else ''
 
 # Allow CORS for development
-if FLASK_ENV == 'development':
+if IS_DEV:
     from flask_cors import CORS
     CORS(app)
-    
 
 DOMAIN = os.getenv('DOMAIN')
-app.register_blueprint(auth_bp, url_prefix='/api/auth')
-app.register_blueprint(payments_bp, url_prefix='/api/payments')
+
+app.register_blueprint(auth_bp, url_prefix=url_prefix + '/auth')
+app.register_blueprint(payments_bp, url_prefix=url_prefix + '/payments')
 
 if __name__ != '__main__':
     # if we are not running directly, we set the loggers
