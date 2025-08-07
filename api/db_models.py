@@ -1,5 +1,11 @@
 from config import db
 from datetime import datetime, timedelta
+from enum import Enum
+
+class PaymentStatus(Enum):
+    PENDING = "0"
+    PARTIALLY_CONFIRMED = "1"
+    CONFIRMED = "2"
 
 class Message(db.Model):
     __tablename__ = 'messages'
@@ -61,6 +67,7 @@ class PaymentIntent(db.Model):
     eth_account = db.Column(db.String(42), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     amount = db.Column(db.Integer)
+    status = db.Column(db.String(1), nullable=False, default="0")
 
 
 def main():

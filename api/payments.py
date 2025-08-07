@@ -4,7 +4,7 @@ import requests
 import os
 
 from cleanup_manager import DatabaseManager, db
-from db_models import User, UserSession, PaymentIntent
+from db_models import User, UserSession, PaymentIntent, PaymentStatus
 from auth_utils import extract_apikey
 
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
@@ -48,8 +48,7 @@ def error_response(message: str, code: int = 400):
 
 @payments_bp.route('/monitor', methods=['POST'])
 def monitor_transaction():
-    # TODO: get current user
-    current_user_eth = '0x5c0ed91604e92d7f488d62058293ce603bcc68ef'
+    current_user_eth = get_current_user()
     if not current_user_eth:
         return error_response("Unauthorized", 401)
 
@@ -95,9 +94,14 @@ def blockonomics_callback():
     txid = request.args.get('txid')
     value = request.args.get('value')
     addr  = request.args.get('addr')
+    status = request.args.get('status')
 
-    if not txid or not value or not addr:
+
+    if not txid or not value or not addr or not status:
         return error_response("Missing required fields", 400)
+
+    if status != PaymentStatus.CONFIRMED.value:
+        return jsonify({"message": "The payment is not confirmed"}), 200
 
     if addr.lower() != USDT_ADDRESS.lower():
         return error_response("Address mismatch", 400)
@@ -106,12 +110,17 @@ def blockonomics_callback():
     if not intent:
         return error_response("Payment intent not found", 404)
 
+    if intent.status == PaymentStatus.CONFIRMED.value:
+        return jsonify({"message": "Payment already confirmed"}), 200
+
     user = db.session.query(User).filter_by(eth_account=intent.eth_account).first()
     if not user:
         return error_response("User not found", 404)
 
     quota_increment = (int(value) // 1_000_000) * 10
     user.inbox_quota += quota_increment
+
+    intent.status = PaymentStatus.CONFIRMED.value
     db.session.commit()
 
     return jsonify({"message": "Callback processed"}), 200
