@@ -54,30 +54,14 @@ class UserSession(db.Model):
         self.login_time = login_time
         self.expires_at = datetime.utcnow() + timedelta(days=30)
 
-# Add this to your existing db_models.py file
+class PaymentIntent(db.Model):
+    __tablename__ = 'payment_intents'
 
-class PaymentRequest(db.Model):
-    __tablename__ = 'payment_requests'
-    
-    id = db.Column(db.String(36), primary_key=True)
-    user_address = db.Column(db.String(42), nullable=False)
-    amount_usdt = db.Column(db.Float, nullable=False)
-    quota_purchased = db.Column(db.Integer, nullable=False)  # 10 quota per 1 USDT
-    
-    # Status: pending, completed, expired
-    status = db.Column(db.String(20), default='pending')
-    tx_hash = db.Column(db.String(66), nullable=True)
-    
+    txhash = db.Column(db.String(66), primary_key=True)
+    eth_account = db.Column(db.String(42), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    expires_at = db.Column(db.DateTime, default=lambda: datetime.utcnow() + timedelta(hours=24))
-    completed_at = db.Column(db.DateTime, nullable=True)
-    
-    def __init__(self, user_address, amount_usdt):
-        import uuid
-        self.id = str(uuid.uuid4())
-        self.user_address = user_address
-        self.amount_usdt = amount_usdt
-        self.quota_purchased = int(amount_usdt * 10)  # 10 quota per 1 USDT
+    amount = db.Column(db.Integer)
+
 
 def main():
     from config import app, db

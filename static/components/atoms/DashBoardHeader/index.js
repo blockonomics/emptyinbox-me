@@ -29,9 +29,7 @@ export function renderHeader() {
 
 function setupPaymentModal() {
   const buyBtn = document.getElementById('buy-quota-btn');
-  let currentPaymentId = null;
 
-  // Create modal and append to body (not inside header)
   function createModal() {
     const modal = document.createElement('div');
     modal.id = 'payment-modal';
@@ -39,47 +37,22 @@ function setupPaymentModal() {
     modal.style.display = 'none';
     modal.innerHTML = `
       <div class="modal-content">
-        <span class="close-modal">&times;</span>
+        <span class="close-modal" style="cursor:pointer;float:right;">&times;</span>
         <h3>Buy Inbox Quota</h3>
         <p>Rate: 10 quota = 1 USDT</p>
-        
-        <div class="payment-form">
-          <label for="usdt-amount">USDT Amount:</label>
-          <input type="number" id="usdt-amount" min="1" step="0.1" value="1">
-          <p>You will get: <span id="quota-preview">10</span> quota</p>
-          
-          <button id="create-payment-btn" class="primary-btn">Create Payment</button>
-        </div>
-
-        <div id="payment-instructions" style="display: none;">
-          <h4>Payment Instructions</h4>
-          <p><strong>Send USDT to:</strong></p>
-          <p id="payment-address" class="address-display"></p>
-          <p><strong>Amount:</strong> <span id="payment-amount"></span> USDT</p>
-          <p><strong>Network:</strong> Ethereum (or testnet)</p>
-          
-          <div class="verification-section">
-            <label for="tx-hash">Transaction Hash:</label>
-            <input type="text" id="tx-hash" placeholder="0x...">
-            <button id="verify-payment-btn" class="primary-btn">Verify Payment</button>
-          </div>
-          
-          <p class="payment-id">Payment ID: <span id="current-payment-id"></span></p>
-        </div>
-
-        <div id="payment-success" style="display: none;">
-          <h4>✅ Payment Successful!</h4>
-          <p>Your quota has been updated.</p>
-          <button id="close-modal-btn" class="primary-btn">Close</button>
-        </div>
+        <script src="https://blockonomics.co/js/web3-payment.js"></script>
+        <web3-payment
+          order_amount="1"
+          receive_address="0x5C0ed91604E92D7f488d62058293ce603BCC68eF"
+          redirect_url="/dashboard.html?payment=success"
+          testnet="1">
+        </web3-payment>
       </div>
     `;
-    
     document.body.appendChild(modal);
     return modal;
   }
 
-  // Open modal
   buyBtn?.addEventListener('click', () => {
     let modal = document.getElementById('payment-modal');
     if (!modal) {
@@ -87,128 +60,64 @@ function setupPaymentModal() {
       setupModalEvents(modal);
     }
     modal.style.display = 'block';
-    resetModal();
   });
 
   function setupModalEvents(modal) {
     const closeBtn = modal.querySelector('.close-modal');
-    const usdtInput = modal.querySelector('#usdt-amount');
-    const quotaPreview = modal.querySelector('#quota-preview');
-    const createPaymentBtn = modal.querySelector('#create-payment-btn');
-    const verifyPaymentBtn = modal.querySelector('#verify-payment-btn');
-    const closeModalBtn = modal.querySelector('#close-modal-btn');
-
-    // Close modal
     closeBtn?.addEventListener('click', () => {
       modal.style.display = 'none';
     });
 
-    closeModalBtn?.addEventListener('click', () => {
-      modal.style.display = 'none';
-      location.reload(); // Refresh to update quota display
-    });
-
-    // Close on outside click
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.style.display = 'none';
       }
     });
-
-    // Update quota preview
-    usdtInput?.addEventListener('input', () => {
-      const amount = parseFloat(usdtInput.value) || 0;
-      quotaPreview.textContent = Math.floor(amount * 10);
-    });
-
-    // Create payment
-    createPaymentBtn?.addEventListener('click', async () => {
-      const amount = parseFloat(usdtInput.value);
-      if (!amount || amount <= 0) {
-        alert('Please enter a valid amount');
-        return;
-      }
-
-      try {
-        const apiKey = localStorage.getItem('apiKey');
-        const response = await fetch(`${API_BASE_URL}/api/payments/create`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            amount_usdt: amount
-          })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-          currentPaymentId = data.payment_id;
-          showPaymentInstructions(data);
-        } else {
-          alert('Error: ' + data.error);
-        }
-      } catch (error) {
-        alert('Network error: ' + error.message);
-      }
-    });
-
-    // Verify payment
-    verifyPaymentBtn?.addEventListener('click', async () => {
-      const txHash = modal.querySelector('#tx-hash').value;
-      if (!txHash || !currentPaymentId) {
-        alert('Please enter transaction hash');
-        return;
-      }
-
-      try {
-        const apiKey = localStorage.getItem('apiKey');
-        const response = await fetch(`${API_BASE_URL}/api/payments/verify`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            payment_id: currentPaymentId,
-            tx_hash: txHash
-          })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok && data.success) {
-          showPaymentSuccess();
-        } else {
-          alert('Verification failed: ' + (data.error || 'Unknown error'));
-        }
-      } catch (error) {
-        alert('Network error: ' + error.message);
-      }
-    });
-
-    function resetModal() {
-      modal.querySelector('#payment-instructions').style.display = 'none';
-      modal.querySelector('#payment-success').style.display = 'none';
-      modal.querySelector('.payment-form').style.display = 'block';
-      modal.querySelector('#tx-hash').value = '';
-      currentPaymentId = null;
-    }
-
-    function showPaymentInstructions(paymentData) {
-      modal.querySelector('.payment-form').style.display = 'none';
-      modal.querySelector('#payment-instructions').style.display = 'block';
-      
-      modal.querySelector('#payment-address').textContent = paymentData.recipient_address;
-      modal.querySelector('#payment-amount').textContent = paymentData.amount_usdt;
-      modal.querySelector('#current-payment-id').textContent = paymentData.payment_id;
-    }
-
-    function showPaymentSuccess() {
-      modal.querySelector('#payment-instructions').style.display = 'none';
-      modal.querySelector('#payment-success').style.display = 'block';
-    }
   }
 }
+
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const paymentSuccess = params.get('payment');
+  const txhash = params.get('txhash');
+  const crypto = params.get('crypto');
+
+  if (paymentSuccess === 'success' && txhash && crypto === 'usdt') {
+    // Get the API key from storage
+    const apiKey = localStorage.getItem('apiKey');
+    
+    if (!apiKey) {
+      console.error('No API key found in localStorage');
+      return;
+    }
+
+    console.log('Starting payment monitoring for txhash:', txhash);
+
+    fetch(`${API_BASE_URL}/api/payments/monitor`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // Send just the API key without "Bearer" prefix if that's what your backend expects
+        'Authorization': apiKey  // or keep 'Bearer ' + apiKey if you fix the backend
+      },
+      body: JSON.stringify({ txhash })
+    })
+    .then(res => {
+      console.log('Response status:', res.status);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      console.log('Monitoring started:', data);
+      // Optionally show a success message to the user
+      alert('Payment monitoring started successfully!');
+    })
+    .catch(err => {
+      console.error('Error starting monitoring:', err);
+      // Optionally show an error message to the user
+      alert('Error starting payment monitoring. Please contact support.');
+    });
+  }
+});
