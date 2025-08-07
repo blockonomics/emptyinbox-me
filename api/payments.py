@@ -87,12 +87,11 @@ def monitor_transaction():
         db.session.rollback()
         return error_response("Internal server error", 500)
 
-@payments_bp.route('/callback', methods=['POST'])
+@payments_bp.route('/callback', methods=['GET'])
 def blockonomics_callback():
-    data = request.get_json()
-    txhash = data.get('txhash')
-    value = data.get('value')
-    addr  = data.get('addr ')
+    txhash = request.args.get('txhash')
+    value = request.args.get('value')
+    addr  = request.args.get('addr')
 
     if not txhash or not value or not addr:
         return error_response("Missing required fields", 400)
