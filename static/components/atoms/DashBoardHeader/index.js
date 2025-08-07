@@ -10,11 +10,7 @@ export function renderHeader() {
         <span class="wallet-label">Connected Wallet:</span>
         <span id="user-address" class="wallet-address">Loading...</span>
       </div>
-      <div class="quota-info">
-        <span class="quota-label">Inbox Quota:</span>
-        <span id="user-quota" class="quota-value">Loading...</span>
-        <button id="buy-quota-btn" class="buy-quota-btn">Buy More Quota</button>
-      </div>
+      <button id="buy-quota-btn" class="buy-quota-btn">Buy More Quota</button>
       <button id="logout-btn" class="logout-btn">Disconnect</button>
     </div>
   `;
@@ -111,13 +107,9 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     .then(data => {
       console.log('Monitoring started:', data);
-      // Optionally show a success message to the user
-      alert('Payment monitoring started successfully!');
     })
     .catch(err => {
       console.error('Error starting monitoring:', err);
-      // Optionally show an error message to the user
-      alert('Error starting payment monitoring. Please contact support.');
     });
   }
 });

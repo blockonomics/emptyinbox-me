@@ -2096,19 +2096,35 @@ html {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #10b981, #059669);
+  padding: 0.75rem 1.5rem; /* Match sign-in-btn */
+  background: linear-gradient(135deg, #10b981, #059669); /* Keep green theme */
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 0.8rem;
+  border-radius: 12px; /* Match sign-in-btn */
+  font-size: 1rem; /* Match sign-in-btn */
   font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  cursor: pointer;
+  transition: all 0.3s ease; /* Match sign-in-btn */
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); /* Match depth */
   position: relative;
   overflow: hidden;
-  min-width: 80px;
+  min-width: 70px;
+}
+
+.buy-quota-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); /* Match sign-in-btn hover */
+}
+
+.buy-quota-btn:active {
+  transform: translateY(0);
+}
+
+.buy-quota-btn:focus {
+  outline: none;
+  box-shadow:
+    0 4px 12px rgba(16, 185, 129, 0.3),
+    0 0 0 3px rgba(16, 185, 129, 0.2); /* Match sign-in-btn focus style */
 }
 
 .buy-quota-btn::before {
@@ -2122,24 +2138,8 @@ html {
   transition: left 0.5s ease;
 }
 
-.buy-quota-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
-}
-
 .buy-quota-btn:hover::before {
   left: 100%;
-}
-
-.buy-quota-btn:active {
-  transform: translateY(0);
-}
-
-.buy-quota-btn:focus {
-  outline: none;
-  box-shadow: 
-    0 2px 8px rgba(16, 185, 129, 0.25),
-    0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
 /* === Modern Payment Modal Styles === */
