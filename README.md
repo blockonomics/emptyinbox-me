@@ -13,7 +13,12 @@ Install nginx on ubuntu if not already and enable site using nginx/emptyinbox_ng
 Inside API directory create .env file with following entry    
 `
 DOMAIN=<YOUR_DOMAIN>
-SECRET=<YOUR_SECRET>`
+SECRET=<YOUR_SECRET>
+FLASK_ENV=<development|production>
+BLOCKONOMICS_API_KEY=<YOUR_BLOCKONOMICS_API_KEY>
+USDT_RECEIVING_ADDRESS=<YOUR_USDT_RECEIVING_ADDRESS>
+MATCH_CALLBACK=<YOUR_MATCH_CALLBACK>
+`
 - First setup python packages using `pipenv install`
 - Setup db_model `pipenv run create_db` 
 - Run server using `pipenv run start`
