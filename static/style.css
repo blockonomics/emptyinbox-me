@@ -2503,3 +2503,65 @@ html {
     padding: 1rem;
   }
 }
+
+/* Wallet Connect Button Base Styles */
+.wallet-connect-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallet-connect-btn:hover:not(:disabled) {
+  background: #1565c0;
+  transform: translateY(-1px);
+}
+
+/* Disabled State Styles */
+.wallet-connect-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #666;
+  transform: none;
+}
+
+.wallet-connect-btn:disabled .wallet-icon {
+  animation: spin 1s linear infinite;
+}
+
+/* Loading Animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Sign In Button Disabled State */
+.sign-in-btn {
+  padding: 8px 16px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.sign-in-btn:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.sign-in-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #666;
+}

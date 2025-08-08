@@ -14,7 +14,7 @@ export function renderLoginPage() {
       <div class="wallet-connect-section">
         <button id="connect-wallet-btn" type="button" class="wallet-connect-btn">
           <span class="wallet-icon">🔗</span>
-          Connect Wallet
+          <span class="button-text">Connect Wallet</span>
         </button>
         
         <div id="wallet-status" class="wallet-status hidden">
@@ -61,6 +61,37 @@ async function initializeWalletAuth() {
 
   let userAddress = null;
   let challenge = null;
+  let isConnecting = false;
+
+  // Helper function to update connect button state
+  function updateConnectButtonState(state) {
+    const buttonText = connectBtn.querySelector('.button-text');
+    const walletIcon = connectBtn.querySelector('.wallet-icon');
+    
+    switch(state) {
+      case 'connecting':
+        connectBtn.disabled = true;
+        buttonText.textContent = 'Connecting...';
+        walletIcon.textContent = '⏳';
+        connectBtn.classList.add('connecting');
+        break;
+        
+      case 'error':
+      case 'idle':
+      default:
+        connectBtn.disabled = false;
+        buttonText.textContent = 'Connect Wallet';
+        walletIcon.textContent = '🔗';
+        connectBtn.classList.remove('connecting');
+        break;
+    }
+  }
+
+  // Helper function to update sign-in button state
+  function updateSignInButtonState(isLoading) {
+    signInBtn.disabled = isLoading;
+    signInBtn.textContent = isLoading ? 'Signing In...' : 'Sign In';
+  }
 
   // Check if wallet is already connected
   if (window.ethereum) {
@@ -75,13 +106,29 @@ async function initializeWalletAuth() {
   }
 
   connectBtn.addEventListener('click', async () => {
+    // Prevent multiple simultaneous connection attempts
+    if (isConnecting) {
+      showError('Connection already in progress. Please wait...');
+      return;
+    }
+
     if (!window.ethereum) {
       showError('No crypto wallet detected. Please install MetaMask or another Web3 wallet.');
       return;
     }
 
     try {
+      isConnecting = true;
+      updateConnectButtonState('connecting');
       showLoading(true);
+      hideError();
+      
+      // Check if already connected first
+      const existingAccounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (existingAccounts.length > 0) {
+        showConnectedState(existingAccounts[0]);
+        return;
+      }
       
       // Request account access
       const accounts = await window.ethereum.request({ 
@@ -92,8 +139,19 @@ async function initializeWalletAuth() {
         showConnectedState(accounts[0]);
       }
     } catch (error) {
-      showError('Failed to connect wallet: ' + error.message);
+      console.error('Wallet connection error:', error);
+      
+      // Handle specific error types
+      if (error.code === -32002) {
+        showError('Wallet connection request is already pending. Please check your wallet and approve the connection.');
+      } else if (error.code === 4001) {
+        showError('Wallet connection was rejected by user.');
+      } else {
+        showError('Failed to connect wallet: ' + error.message);
+      }
     } finally {
+      isConnecting = false;
+      updateConnectButtonState('idle');
       showLoading(false);
     }
   });
@@ -102,7 +160,9 @@ async function initializeWalletAuth() {
     if (!userAddress) return;
 
     try {
+      updateSignInButtonState(true);
       showLoading(true);
+      hideError();
       
       // Get challenge from backend
       challenge = await getAuthChallenge(userAddress);
@@ -123,11 +183,38 @@ async function initializeWalletAuth() {
         showError('Authentication failed. Please try again.');
       }
     } catch (error) {
-      showError('Sign in failed: ' + error.message);
+      console.error('Sign in error:', error);
+      if (error.code === 4001) {
+        showError('Message signing was rejected by user.');
+      } else {
+        showError('Sign in failed: ' + error.message);
+      }
     } finally {
+      updateSignInButtonState(false);
       showLoading(false);
     }
   });
+
+  // Listen for account changes
+  if (window.ethereum) {
+    window.ethereum.on('accountsChanged', (accounts) => {
+      if (accounts.length > 0) {
+        showConnectedState(accounts[0]);
+      } else {
+        // Wallet disconnected
+        userAddress = null;
+        connectBtn.classList.remove('hidden');
+        walletStatus.classList.add('hidden');
+        updateConnectButtonState('idle');
+      }
+    });
+
+    // Listen for chain changes
+    window.ethereum.on('chainChanged', () => {
+      // Reload the page when chain changes
+      window.location.reload();
+    });
+  }
 
   function showConnectedState(address) {
     userAddress = address;
