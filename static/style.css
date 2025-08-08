@@ -1861,36 +1861,40 @@ html {
 
 /* API Key Display */
 .api-key-container {
-  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
 }
 
-.api-key-toggle {
-  display: inline-flex;
+.api-key {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  flex: 1;
+  word-break: break-all;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.api-key-copy {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s ease;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
-  background: rgba(107, 114, 128, 0.1);
-  border: 1px solid rgba(107, 114, 128, 0.2);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 1rem;
-  min-width: 36px;
-  height: 36px;
+  flex-shrink: 0;
 }
 
-.api-key-toggle:hover {
-  background: rgba(107, 114, 128, 0.2);
+.api-key-copy:hover {
+  color: #374151;
 }
-
-.api-key-hidden {
-  filter: blur(4px);
-  transition: filter 0.2s ease;
-}
-
 /* Inbox Quota Display */
 .quota-display {
   display: flex;
@@ -2038,8 +2042,7 @@ html {
 
 /* Focus states for accessibility */
 .logout-btn:focus,
-.copy-btn:focus,
-.api-key-toggle:focus {
+.copy-btn:focus {
   outline: none;
   box-shadow: 
     0 4px 12px rgba(16, 185, 129, 0.3),
