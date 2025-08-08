@@ -51,11 +51,11 @@ def auth_required(f):
 @auth_required
 def get_messages(token):
     '''Returns message list(id, inbox)'''
-    inboxes = db.session.query(Message.id, Message.inbox).join(Inbox, Message.inbox == Inbox.inbox).filter(Inbox.api_key==token).all()
+    inboxes = db.session.query(Message.id, Message.inbox, Message.subject).join(Inbox, Message.inbox == Inbox.inbox).filter(Inbox.api_key==token).order_by(Message.timestamp.desc()).all()
     if not inboxes:
         inboxes = []
     else:
-        inboxes = [dict(id=row.id,inbox=row.inbox) for row in inboxes]
+        inboxes = [dict(id=row.id,inbox=row.inbox, subject=row.subject) for row in inboxes]
         
     return inboxes
 
@@ -110,7 +110,10 @@ def create_email():
         if query_inbox(recipient):
             msg_id = str(uuid4())[:8]
             timestamp = int(time.time())
-            db.session.add(Message(id=msg_id, inbox=recipient, timestamp=timestamp, content=json.dumps(email_data).encode()))
+            subject = email_data.get("headers", {}).get("Subject")
+            db.session.add(Message(id=msg_id, inbox=recipient, timestamp=timestamp, 
+                                   subject = subject,
+                                   content=json.dumps(email_data).encode()))
             db.session.commit()
 
     return '', 201

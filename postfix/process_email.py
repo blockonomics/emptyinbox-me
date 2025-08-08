@@ -21,7 +21,12 @@ data = {
     'sender':sys.argv[1],
     'recipients' : sys.argv[2:],
     'headers': { k:v  for k,v in email.items()},
-    'body': email.get_body().as_string(),
-}
+
+    }
+if email.get_body(('plain',)):
+    data['text_body'] = email.get_body(('plain',)).get_content()
+
+if email.get_body(('html',)):
+    data['html_body'] = email.get_body(('html',)).get_content()
 
 requests.post(f'http://localhost/api/email', json=data, headers=headers)
