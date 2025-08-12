@@ -26,3 +26,9 @@ export const LOGO = {
 export const API_BASE_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:5000'
   : 'https://emptyinbox.me';
+
+  export const TOAST_TYPES = {
+    SUCCESS: 'success',
+    ERROR: 'error',
+    INFO: 'info'
+  }

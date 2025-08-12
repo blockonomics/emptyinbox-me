@@ -3,6 +3,7 @@ from datetime import datetime
 import requests
 import os
 
+from constants import USDT_DECIMALS, QUOTA_PER_USDT
 from cleanup_manager import DatabaseManager, db
 from db_models import User, UserSession, PaymentIntent, PaymentStatus
 from auth_utils import extract_apikey
@@ -50,6 +51,7 @@ def monitor_transaction():
         return error_response("No JSON data provided", 400)
 
     txhash = data.get('txhash')
+    inbox_quota = data.get("quotaAmount")
     if not txhash:
         return error_response("Missing txhash", 400)
 
@@ -71,7 +73,7 @@ def monitor_transaction():
         )
 
         if response.status_code == 200:
-            payment_intent = PaymentIntent(txhash=txhash, eth_account=current_user_eth)
+            payment_intent = PaymentIntent(txhash=txhash, eth_account=current_user_eth, amount=inbox_quota)
             db.session.add(payment_intent)
             db.session.commit()
             return jsonify({"message": "Monitoring started"})
@@ -88,7 +90,6 @@ def blockonomics_callback():
     value = request.args.get('value')
     addr  = request.args.get('addr')
     status = request.args.get('status')
-
 
     if not txid or not value or not addr or not status:
         return error_response("Missing required fields", 400)
@@ -110,8 +111,12 @@ def blockonomics_callback():
     if not user:
         return error_response("User not found", 404)
 
-    quota_increment = (int(value) // 1_000_000) * 10
-    user.inbox_quota += quota_increment
+    # Calculate expected payment value based on intended quota amount
+    expected_value = (intent.amount * USDT_DECIMALS) // QUOTA_PER_USDT  # Reverse the calculation
+    if int(value) != expected_value:
+        return error_response("Payment value mismatch", 400)
+    
+    user.inbox_quota += intent.amount
 
     intent.status = PaymentStatus.CONFIRMED.value
     db.session.commit()

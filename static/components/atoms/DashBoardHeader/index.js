@@ -1,4 +1,5 @@
-import { API_BASE_URL } from '../../../utils/constants.js';
+import { API_BASE_URL, TOAST_TYPES } from '../../../utils/constants.js';
+import { showToast } from '../Toast/index.js';
 
 export function renderHeader() {
   const header = document.createElement('div');
@@ -201,12 +202,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const paymentSuccess = params.get('payment');
   const txhash = params.get('txhash');
   const crypto = params.get('crypto');
-  const quotaAmount = params.get('quota'); // Get the quota amount from URL
+  const quotaAmount = params.get('quota');
 
   if (paymentSuccess === 'success' && txhash && crypto === 'usdt') {
-    // Get the API key from storage
     const apiKey = localStorage.getItem('apiKey');
-    
+
     if (!apiKey) {
       console.error('No API key found in localStorage');
       return;
@@ -231,14 +231,15 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
+      // Remove query parameters from URL on success
+      console.log('Removing query parameters from URL');
+      window.history.replaceState({}, document.title, window.location.pathname);
       return res.json();
     })
     .then(data => {
       console.log('Monitoring started:', data);
-      
-      // Show success message with quota amount
       if (quotaAmount) {
-        alert(`Payment submitted! You will receive ${quotaAmount} quota once the transaction is confirmed.`);
+        showToast(`Payment submitted! You will receive ${quotaAmount} quota once the transaction is confirmed.`, TOAST_TYPES.SUCCESS);
       }
     })
     .catch(err => {
