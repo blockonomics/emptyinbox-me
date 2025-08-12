@@ -78,7 +78,7 @@ def get_mailboxname():
     return f'{adjective_part}.{noun}'
 
 def is_quota_available(token):
-    row = db.session(User).filter(User.api_key==token),(User.inbox_quota>0).first()
+    row = db.session.query(User).filter(User.api_key==token,User.inbox_quota>0).first()
     if row:
         return True
     return False
@@ -87,13 +87,13 @@ def is_quota_available(token):
 @auth_required
 def create_mailbox(token):
     '''Creates new inbox'''
-    if not is_quote_available(token):
+    if not is_quota_available(token):
         return "Insufficient Inbox quota", 403
     email_address = f'{get_mailboxname()}@{DOMAIN}'
     db.session.add(Inbox(api_key=token, inbox=email_address))
-    db.session.commit()
     #We used one inbox, decrease quota
-    User.update().values(inbox_quota=User.inbox_quota-1).where(User.api_key==token)
+    db.session.query(User).filter(User.api_key==token).update({"inbox_quota":User.inbox_quota-1}) 
+    db.session.commit()
     return email_address, 201
 
 @app.route('/inboxes', methods=['GET'])
