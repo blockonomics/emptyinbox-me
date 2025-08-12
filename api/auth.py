@@ -110,7 +110,14 @@ def auth_verify():
                 db.session.add(user)
                 logger.info(f"Created new user for address: {address}")
             
-            # Create session token (different from API key)
+            # CLEAN UP OLD SESSIONS FOR THIS USER
+            old_sessions = db.session.query(UserSession).filter_by(address=address).all()
+            if old_sessions:
+                for old_session in old_sessions:
+                    db.session.delete(old_session)
+                logger.info(f"Cleaned up {len(old_sessions)} old sessions for {address}")
+            
+            # Create NEW session token (different from API key)
             session_token = create_user_token(address)
             session_obj = UserSession(session_token, address, int(time.time()))
             db.session.add(session_obj)

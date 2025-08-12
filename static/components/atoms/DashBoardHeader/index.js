@@ -1,4 +1,4 @@
-import { API_BASE_URL, TOAST_TYPES } from '../../../utils/constants.js';
+import { API_BASE_URL, LOCAL_STORAGE_KEYS, ROUTES, TOAST_TYPES } from '../../../utils/constants.js';
 import { showToast } from '../Toast/index.js';
 
 export function renderHeader() {
@@ -19,6 +19,7 @@ export function renderHeader() {
   // Add event listeners
   setTimeout(() => {
     setupPaymentModal();
+    setupDisconnect();
   }, 0);
 
   return header;
@@ -197,6 +198,66 @@ function setupPaymentModal() {
   }
 }
 
+function setupDisconnect() {
+  const logoutBtn = document.getElementById('logout-btn');
+  
+  logoutBtn?.addEventListener('click', async () => {
+    try {
+      // Disable button during logout
+      logoutBtn.disabled = true;
+      logoutBtn.textContent = 'Disconnecting...';
+
+      // 1. Call backend logout
+      const token = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+      if (token) {
+        await fetch(`${API_BASE_URL}/api/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+
+      // 2. Disconnect wallet properly
+      await disconnectWallet();
+
+      // 3. Clear all local storage
+      clearAllAuthData();
+
+      // 4. Redirect to login/home page
+      window.location.href = ROUTES.HOME;
+
+    } catch (error) {
+      console.error('Disconnect error:', error);
+      
+      // Even if backend call fails, still clear local data and redirect
+      await disconnectWallet();
+      clearAllAuthData();
+      window.location.href = ROUTES.HOME;
+    }
+  });
+}
+
+async function disconnectWallet() {
+  try {
+    // Clear any wallet connection indicators in your app
+    if (window.ethereum) {
+      window.ethereum.selectedAddress = null;
+    }
+
+  } catch (error) {
+    console.error('Wallet disconnect error:', error);
+  }
+}
+
+// Function to clear all authentication data
+function clearAllAuthData() {
+  Object.values(LOCAL_STORAGE_KEYS).forEach(item => {
+    localStorage.removeItem(item);
+  });
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const paymentSuccess = params.get('payment');
@@ -205,7 +266,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const quotaAmount = params.get('quota');
 
   if (paymentSuccess === 'success' && txhash && crypto === 'usdt') {
-    const apiKey = localStorage.getItem('apiKey');
+    const apiKey = localStorage.getItem(LOCAL_STORAGE_KEYS.API_KEY);
 
     if (!apiKey) {
       console.error('No API key found in localStorage');
@@ -247,3 +308,37 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+async function checkAuthStatus() {
+  const token = localStorage.getItem('authToken');
+  
+  if (!token) {
+    return { isAuthenticated: false };
+  }
+
+  try {
+    // Verify token with backend
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (response.ok) {
+      const userData = await response.json();
+      return { 
+        isAuthenticated: true, 
+        address: userData.address,
+        userData 
+      };
+    } else {
+      // Token is invalid, clear it
+      clearAllAuthData();
+      return { isAuthenticated: false };
+    }
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    clearAllAuthData();
+    return { isAuthenticated: false };
+  }
+}

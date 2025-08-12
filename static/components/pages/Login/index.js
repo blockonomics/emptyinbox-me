@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "../../../utils/constants.js";
+import { API_BASE_URL, LOCAL_STORAGE_KEYS } from "../../../utils/constants.js";
 
 export function renderLoginPage() {
   const main = document.createElement('main');
@@ -176,8 +176,8 @@ async function initializeWalletAuth() {
       if (authResult.success) {
         const { token, api_key: apiKey } = authResult;
         // Store auth token and redirect
-        localStorage.setItem('authToken', authResult.token);
-        localStorage.setItem('apiKey', apiKey);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN, authResult.token);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.API_KEY, apiKey);
         window.location.href = '/dashboard.html';
       } else {
         showError('Authentication failed. Please try again.');

@@ -32,3 +32,8 @@ export const API_BASE_URL = window.location.hostname === 'localhost'
     ERROR: 'error',
     INFO: 'info'
   }
+
+  export const LOCAL_STORAGE_KEYS = {
+    AUTH_TOKEN: 'authToken',
+    API_KEY: 'apiKey'
+  }

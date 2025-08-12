@@ -1,4 +1,4 @@
-import { API_BASE_URL, ROUTES } from '../utils/constants.js';
+import { API_BASE_URL, LOCAL_STORAGE_KEYS, ROUTES } from '../utils/constants.js';
 
 export function setupDashboardEventListeners() {
   const logoutBtn = document.getElementById('logout-btn');
@@ -8,7 +8,7 @@ export function setupDashboardEventListeners() {
   // 🔓 Logout functionality
   logoutBtn?.addEventListener('click', async () => {
     try {
-      const authToken = localStorage.getItem('authToken');
+      const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
       await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: 'POST',
         headers: {
@@ -18,7 +18,7 @@ export function setupDashboardEventListeners() {
     } catch (error) {
       console.error('Logout request failed:', error);
     } finally {
-      localStorage.removeItem('authToken');
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
       window.location.href = ROUTES.LOGIN;
     }
   });

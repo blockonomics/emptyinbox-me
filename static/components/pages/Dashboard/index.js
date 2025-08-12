@@ -1,7 +1,7 @@
 import { renderHeader } from '../../atoms/DashBoardHeader/index.js';
 import { renderStats } from '../../molecules/DashboardStats/index.js';
 import { fetchUserData } from '../../../services/index.js';
-import { ROUTES } from '../../../utils/constants.js';
+import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
 import { setupDashboardEventListeners } from '../../../events/index.js';
 import { updateUserDisplay } from './helper.js';
 
@@ -20,7 +20,7 @@ export async function renderDashboardPage() {
   main.appendChild(container);
   document.body.appendChild(main);
 
-  const authToken = localStorage.getItem('authToken');
+  const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
   if (!authToken) {
     window.location.href = ROUTES.LOGIN;
     return;
@@ -32,7 +32,7 @@ export async function renderDashboardPage() {
     setupDashboardEventListeners();
   } catch (error) {
     console.error('User fetch failed:', error);
-    localStorage.removeItem('authToken');
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
     window.location.href = ROUTES.LOGIN;
   }
 }
