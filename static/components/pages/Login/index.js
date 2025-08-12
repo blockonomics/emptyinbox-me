@@ -34,7 +34,7 @@ export function renderLoginPage() {
       <div class="supported-wallets">
         <p class="wallet-info">Supported wallets:</p>
         <div class="wallet-icons">
-          <span>MetaMask</span> <span>Trust Wallet</span> <span>Coinbase Wallet</span>
+          <span>MetaMask</span>
         </div>
       </div>
 
