@@ -309,36 +309,36 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-async function checkAuthStatus() {
-  const token = localStorage.getItem('authToken');
+// async function checkAuthStatus() {
+//   const token = localStorage.getItem('authToken');
   
-  if (!token) {
-    return { isAuthenticated: false };
-  }
+//   if (!token) {
+//     return { isAuthenticated: false };
+//   }
 
-  try {
-    // Verify token with backend
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+//   try {
+//     // Verify token with backend
+//     const response = await fetch(`${API_BASE_URL}/auth/me`, {
+//       headers: {
+//         'Authorization': `Bearer ${token}`
+//       }
+//     });
 
-    if (response.ok) {
-      const userData = await response.json();
-      return { 
-        isAuthenticated: true, 
-        address: userData.address,
-        userData 
-      };
-    } else {
-      // Token is invalid, clear it
-      clearAllAuthData();
-      return { isAuthenticated: false };
-    }
-  } catch (error) {
-    console.error('Auth check failed:', error);
-    clearAllAuthData();
-    return { isAuthenticated: false };
-  }
-}
+//     if (response.ok) {
+//       const userData = await response.json();
+//       return { 
+//         isAuthenticated: true, 
+//         address: userData.address,
+//         userData 
+//       };
+//     } else {
+//       // Token is invalid, clear it
+//       clearAllAuthData();
+//       return { isAuthenticated: false };
+//     }
+//   } catch (error) {
+//     console.error('Auth check failed:', error);
+//     clearAllAuthData();
+//     return { isAuthenticated: false };
+//   }
+// }

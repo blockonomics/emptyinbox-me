@@ -51,6 +51,15 @@ export function renderLoginPage() {
   initializeWalletAuth();
 }
 
+const requestAccountsWithTimeout = async (timeout = 10000) => {
+  return Promise.race([
+    window.ethereum.request({ method: 'eth_requestAccounts' }),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Wallet unlock timeout')), timeout)
+    )
+  ]);
+};
+
 async function initializeWalletAuth() {
   const connectBtn = document.getElementById('connect-wallet-btn');
   const signInBtn = document.getElementById('sign-in-btn');
@@ -106,7 +115,6 @@ async function initializeWalletAuth() {
   }
 
   connectBtn.addEventListener('click', async () => {
-    // Prevent multiple simultaneous connection attempts
     if (isConnecting) {
       showError('Connection already in progress. Please wait...');
       return;
@@ -122,32 +130,32 @@ async function initializeWalletAuth() {
       updateConnectButtonState('connecting');
       showLoading(true);
       hideError();
-      
-      // Check if already connected first
+
       const existingAccounts = await window.ethereum.request({ method: 'eth_accounts' });
       if (existingAccounts.length > 0) {
         showConnectedState(existingAccounts[0]);
         return;
       }
-      
-      // Request account access
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_requestAccounts' 
-      });
-      
+
+      const accounts = await requestAccountsWithTimeout();
       if (accounts.length > 0) {
         showConnectedState(accounts[0]);
       }
     } catch (error) {
       console.error('Wallet connection error:', error);
-      
-      // Handle specific error types
-      if (error.code === -32002) {
-        showError('Wallet connection request is already pending. Please check your wallet and approve the connection.');
-      } else if (error.code === 4001) {
-        showError('Wallet connection was rejected by user.');
-      } else {
-        showError('Failed to connect wallet: ' + error.message);
+
+      switch (error.code) {
+        case -32002:
+          showError('Wallet connection request is already pending. Please check your wallet and approve the connection.');
+          break;
+        case 4001:
+          showError('Wallet connection was rejected by user.');
+          break;
+        case 'TIMEOUT':
+          showError('Still waiting for wallet unlock… Please check your MetaMask extension and enter your password.');
+          break;
+        default:
+          showError('Failed to connect wallet: ' + error.message);
       }
     } finally {
       isConnecting = false;
