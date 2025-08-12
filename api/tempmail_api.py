@@ -1,6 +1,6 @@
 from flask import request
 from config import app,db
-from db_models import Message, Inbox
+from db_models import Message, Inbox, User
 from email.parser import Parser
 from uuid import uuid4
 from auth import auth_bp
@@ -44,6 +44,9 @@ def auth_required(f):
         token = extract_apikey(request.headers.get('Authorization'))
         if not token:  
             abort(401)
+        row = db.session.query(User.api_key).filter(User.api_key==token).first()
+        if not row:
+            abort(401)
         return f(token, *args, **kwargs)
     return decorator
 
@@ -74,14 +77,23 @@ def get_mailboxname():
     noun = random.choice(nouns)
     return f'{adjective_part}.{noun}'
 
+def is_quota_available(token):
+    row = db.session(User).filter(User.api_key==token),(User.inbox_quota>0).first()
+    if row:
+        return True
+    return False
 
 @app.route('/inbox', methods=['POST'])
 @auth_required
 def create_mailbox(token):
     '''Creates new inbox'''
+    if not is_quote_available(token):
+        return "Insufficient Inbox quota", 403
     email_address = f'{get_mailboxname()}@{DOMAIN}'
     db.session.add(Inbox(api_key=token, inbox=email_address))
     db.session.commit()
+    #We used one inbox, decrease quota
+    User.update().values(inbox_quota=User.inbox_quota-1).where(User.api_key==token)
     return email_address, 201
 
 @app.route('/inboxes', methods=['GET'])

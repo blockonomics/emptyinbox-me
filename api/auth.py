@@ -105,7 +105,7 @@ def auth_verify():
             
             if not user:
                 # Generate API key for new user
-                api_key = create_user_token(address)  # Reuse token generation logic
+                api_key = create_user_token(address)[:32]  # Reuse token generation logic
                 user = User(eth_account=address, api_key=api_key, inbox_quota=0)
                 db.session.add(user)
                 logger.info(f"Created new user for address: {address}")
