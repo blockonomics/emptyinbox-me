@@ -1,15 +1,14 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
 import requests
 import os
+from config import db
 
 from constants import USDT_DECIMALS, QUOTA_PER_USDT
-from cleanup_manager import DatabaseManager, db
 from db_models import User, UserSession, PaymentIntent, PaymentStatus
 from auth_utils import extract_apikey
 
 payments_bp = Blueprint('payments', __name__)
-db_manager = DatabaseManager()
 
 USDT_ADDRESS = os.getenv('USDT_RECEIVING_ADDRESS', '0x742d35Cc6634C0532925a3b8D9DDdB4D1f0B1b69')
 

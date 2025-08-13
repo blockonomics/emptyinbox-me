@@ -3,14 +3,12 @@ from datetime import datetime
 import os, random, time, hashlib
 from eth_account.messages import encode_defunct
 from eth_account import Account
+from config import db  
 
-from cleanup_manager import DatabaseManager
 from db_models import AuthChallenge, UserSession, User
-from cleanup_manager import db 
 from constants import USER_STARTING_QUOTA
 
 auth_bp = Blueprint('auth', __name__)
-db_manager = DatabaseManager()
 DOMAIN = os.getenv('DOMAIN', 'emptyinbox.me')
 
 # --- Utility Functions ---
@@ -27,6 +25,38 @@ def create_auth_message(address: str, nonce: str) -> tuple[str, int]:
         f"Nonce: {nonce}\nIssued At: {timestamp}"
     )
     return message, timestamp
+
+def cleanup_expired_auth_records():
+    """Deletes expired AuthChallenge and UserSession records from the database."""
+    try:
+        now = datetime.utcnow()
+
+        expired_challenges = AuthChallenge.query.filter(
+            AuthChallenge.expires_at < now
+        ).count()
+        AuthChallenge.query.filter(
+            AuthChallenge.expires_at < now
+        ).delete()
+
+        expired_sessions = UserSession.query.filter(
+            UserSession.expires_at < now
+        ).count()
+        UserSession.query.filter(
+            UserSession.expires_at < now
+        ).delete()
+
+        db.session.commit()
+
+        if expired_challenges > 0 or expired_sessions > 0:
+            current_app.logger.info(
+                f"Cleaned up {expired_challenges} expired challenges and "
+                f"{expired_sessions} expired sessions"
+            )
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception("Cleanup failed")
+        raise
+
 
 def verify_signature(message: str, signature: str, expected_address: str) -> bool:
     try:
@@ -51,9 +81,9 @@ def error_response(message: str, code: int = 400):
 # --- Routes ---
 @auth_bp.route('/challenge', methods=['POST'])
 def auth_challenge():
-    current_app.logger.error("Received challenge request")
+    current_app.logger.info("Received challenge request")
     try:
-        db_manager.cleanup_expired_records()
+        cleanup_expired_auth_records()
         address = request.json.get('address')
 
         if not address or not address.startswith('0x') or len(address) != 42:
@@ -62,7 +92,7 @@ def auth_challenge():
         nonce = generate_nonce()
         message, timestamp = create_auth_message(address, nonce)
 
-        with db_manager.app.app_context():
+        with current_app.app_context():
             challenge = AuthChallenge(address, nonce, message, timestamp)
             db.session.add(challenge)
             db.session.commit()
@@ -87,7 +117,7 @@ def auth_verify():
         except StopIteration:
             return error_response('Malformed authentication message')
 
-        with db_manager.app.app_context():
+        with current_app.app_context():
             challenge_id = f"challenge:{address}:{nonce}"
             challenge = db.session.query(AuthChallenge).filter_by(id=challenge_id)\
                 .filter(AuthChallenge.expires_at > datetime.utcnow()).first()
@@ -142,7 +172,7 @@ def auth_me():
         if not token:
             return error_response('Authentication required', 401)
 
-        with db_manager.app.app_context():
+        with current_app.app_context():
             # First, validate the session token
             session = db.session.query(UserSession).filter_by(token=token)\
                 .filter(UserSession.expires_at > datetime.utcnow()).first()
@@ -175,7 +205,7 @@ def auth_logout():
         if not token:
             return error_response('No authentication token', 401)
 
-        with db_manager.app.app_context():
+        with current_app.app_context():
             user = db.session.query(UserSession).filter_by(token=token).first()
             if user:
                 db.session.delete(user)
