@@ -4,6 +4,7 @@ import { renderHomePage } from '../components/pages/HomePage/index.js';
 import { renderAboutPage } from '../components/pages/About/index.js';
 import { renderLoginPage } from '../components/pages/Login/index.js';
 import { renderDashboardPage } from '../components/pages/Dashboard/index.js';
+import { renderApiDocsPage } from './components/pages/ApiDocs/index.js';
 import { ROUTES } from './utils/constants.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -23,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
       break;
     case ROUTES.DASHBOARD:
       renderDashboardPage();
+      break;
+    case ROUTES.API_DOCS:
+      renderApiDocsPage();
       break;
     default:
       console.error('Page not found:', path);

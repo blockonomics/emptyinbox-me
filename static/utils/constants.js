@@ -5,6 +5,7 @@ export const ROUTES = {
   ABOUT: '/about.html',
   LOGIN: '/login.html',
   DASHBOARD: '/dashboard.html',
+  API_DOCS: '/api-docs.html',
 };
 
 export const TEXT = {
@@ -12,9 +13,11 @@ export const TEXT = {
   TAGLINE: 'A clutter-free space to help you reset, refocus, and stay in control.',
 };
 
+// Update your NAV_LINKS constant
 export const NAV_LINKS = [
   { label: 'Home', href: ROUTES.HOME },
   { label: 'About', href: ROUTES.ABOUT },
+  { label: 'API Docs', href: ROUTES.API_DOCS }, // Add this line
   { label: 'Login', href: ROUTES.LOGIN },
   {
     label: 'Fork on GitHub',
@@ -22,7 +25,7 @@ export const NAV_LINKS = [
     external: true, 
     icon: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg',
     className: 'fork-button'
-  },
+  }
 ];
 
 export const LOGO = {
