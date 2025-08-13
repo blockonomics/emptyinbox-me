@@ -1,11 +1,3 @@
-import logging
-# Simple logging setup
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-
-
 from flask import request
 from config import app,db
 from db_models import Message, Inbox, User
@@ -18,6 +10,7 @@ import os
 import json
 import random
 import re
+import logging
 from words import adjectives, nouns
 from auth_utils import extract_apikey
 

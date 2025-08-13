@@ -1,9 +1,6 @@
-# database_manager.py
 from config import app, db
 from db_models import AuthChallenge, UserSession
-import logging
 from datetime import datetime
-
 
 class DatabaseManager:
     def __init__(self):
@@ -31,13 +28,13 @@ class DatabaseManager:
                 db.session.commit()
 
                 if expired_challenges > 0 or expired_sessions > 0:
-                    logger.info(
+                    self.app.logger.info(
                         f"Cleaned up {expired_challenges} expired challenges and "
                         f"{expired_sessions} expired sessions"
                     )
             except Exception:
                 db.session.rollback()
-                logger.exception("Cleanup failed")
+                self.app.logger.exception("Cleanup failed")
                 raise
 
     def close(self):
