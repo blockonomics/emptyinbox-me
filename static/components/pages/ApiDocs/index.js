@@ -42,7 +42,7 @@ export function renderApiDocsPage() {
           <span class="endpoint-path">/inbox</span>
         </div>
         <div class="endpoint-body">
-          <p class="endpoint-description">Creates a new temporary email inbox. Each inbox is assigned a unique email address that can receive messages.</p>
+          <p class="endpoint-description">Creates a new email inbox. Each inbox is assigned a unique email address that can receive messages.</p>
           
           <div class="response-example">
             <h4>Example Request</h4>
