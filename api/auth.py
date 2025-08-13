@@ -81,9 +81,8 @@ def error_response(message: str, code: int = 400):
 # --- Routes ---
 @auth_bp.route('/challenge', methods=['POST'])
 def auth_challenge():
-    app.logger.info("Received challenge request")
     try:
-        cleanup_expired_auth_records()
+        # cleanup_expired_auth_records()
         address = request.json.get('address')
 
         if not address or not address.startswith('0x') or len(address) != 42:
