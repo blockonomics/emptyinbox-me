@@ -1,5 +1,4 @@
 // Site-wide constants
-
 export const ROUTES = {
   HOME: '/',
   ABOUT: '/about.html',
@@ -13,11 +12,10 @@ export const TEXT = {
   TAGLINE: 'A clutter-free space to help you reset, refocus, and stay in control.',
 };
 
-// Update your NAV_LINKS constant
 export const NAV_LINKS = [
   { label: 'Home', href: ROUTES.HOME },
   { label: 'About', href: ROUTES.ABOUT },
-  { label: 'API Docs', href: ROUTES.API_DOCS }, // Add this line
+  { label: 'API Docs', href: ROUTES.API_DOCS },
   { label: 'Login', href: ROUTES.LOGIN },
   {
     label: 'Fork on GitHub',
