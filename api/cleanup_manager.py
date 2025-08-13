@@ -4,8 +4,6 @@ from db_models import AuthChallenge, UserSession
 import logging
 from datetime import datetime
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 class DatabaseManager:
     def __init__(self):

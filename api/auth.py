@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
 import os, random, time, hashlib, logging
 from eth_account.messages import encode_defunct
@@ -34,7 +34,7 @@ def verify_signature(message: str, signature: str, expected_address: str) -> boo
         recovered = Account.recover_message(message_hash, signature=signature)
         return recovered.lower() == expected_address.lower()
     except Exception as e:
-        logger.error(f"Signature verification failed: {e}")
+        current_app.logger.error(f"Signature verification failed: {e}")
         return False
 
 def create_user_token(address: str) -> str:
@@ -51,6 +51,7 @@ def error_response(message: str, code: int = 400):
 # --- Routes ---
 @auth_bp.route('/challenge', methods=['POST'])
 def auth_challenge():
+    current_app.current_app.logger.error("Received challenge request")
     try:
         db_manager.cleanup_expired_records()
         address = request.json.get('address')
@@ -68,7 +69,7 @@ def auth_challenge():
 
         return jsonify({'message': message, 'nonce': nonce}), 200
     except Exception as e:
-        logger.error(f"Challenge generation error: {e}")
+        current_app.logger.error(f"Challenge generation error: {e}")
         db.session.rollback()
         return error_response('Failed to generate challenge', 500)
 
@@ -130,7 +131,7 @@ def auth_verify():
                 'api_key': user.api_key
             }), 200
     except Exception as e:
-        logger.error(f"Verification failed: {e}")
+        current_app.logger.error(f"Verification failed: {e}")
         db.session.rollback()
         return error_response('Authentication failed', 500)
 
@@ -164,7 +165,7 @@ def auth_me():
                 'session_expires_at': session.expires_at.isoformat() if hasattr(session, 'expires_at') else None
             }), 200
     except Exception as e:
-        logger.error(f"User info retrieval failed: {e}")
+        current_app.logger.error(f"User info retrieval failed: {e}")
         return error_response('Failed to fetch user information', 500)
 
 @auth_bp.route('/logout', methods=['POST'])
@@ -182,6 +183,6 @@ def auth_logout():
 
         return jsonify({'success': True}), 200
     except Exception as e:
-        logger.error(f"Logout error: {e}")
+        current_app.logger.error(f"Logout error: {e}")
         db.session.rollback()
         return error_response('Logout failed', 500)

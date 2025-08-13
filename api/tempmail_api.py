@@ -1,10 +1,16 @@
+import logging
+# Simple logging setup
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+
 from flask import request
 from config import app,db
 from db_models import Message, Inbox, User
 from email.parser import Parser
 from uuid import uuid4
-from auth import auth_bp
-from payments import payments_bp
 from functools import wraps
 from flask import abort
 import time
@@ -12,9 +18,17 @@ import os
 import json
 import random
 import re
-import logging
 from words import adjectives, nouns
 from auth_utils import extract_apikey
+
+if __name__ != '__main__':
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
+
+# Import blueprints
+from auth import auth_bp
+from payments import payments_bp
 
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
 IS_DEV = FLASK_ENV == 'development'
@@ -29,13 +43,6 @@ DOMAIN = os.getenv('DOMAIN')
 
 app.register_blueprint(auth_bp, url_prefix=url_prefix + '/auth')
 app.register_blueprint(payments_bp, url_prefix=url_prefix + '/payments')
-
-if __name__ != '__main__':
-    # if we are not running directly, we set the loggers
-    gunicorn_logger = logging.getLogger('gunicorn.error')
-    app.logger.handlers = gunicorn_logger.handlers
-    app.logger.setLevel(gunicorn_logger.level)
-
 
 # Authentication decorator
 def auth_required(f):
