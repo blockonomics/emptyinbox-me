@@ -7,6 +7,7 @@ from eth_account import Account
 from cleanup_manager import DatabaseManager
 from db_models import AuthChallenge, UserSession, User
 from cleanup_manager import db 
+from constants import USER_STARTING_QUOTA
 
 auth_bp = Blueprint('auth', __name__)
 db_manager = DatabaseManager()
@@ -107,7 +108,7 @@ def auth_verify():
             if not user:
                 # Generate API key for new user
                 api_key = create_user_token(address)[:32]  # Reuse token generation logic
-                user = User(eth_account=address, api_key=api_key, inbox_quota=0)
+                user = User(eth_account=address, api_key=api_key, inbox_quota=USER_STARTING_QUOTA)
                 db.session.add(user)
                 logger.info(f"Created new user for address: {address}")
             

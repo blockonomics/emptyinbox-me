@@ -27,7 +27,7 @@ class User(db.Model):
 
     eth_account = db.Column(db.String(42), primary_key=True)
     api_key = db.Column(db.String(250), unique=True, nullable=False)
-    inbox_quota = db.Column(db.Integer, default=5)
+    inbox_quota = db.Column(db.Integer, default=0)
 
 class AuthChallenge(db.Model):
     __tablename__ = 'auth_challenges'
