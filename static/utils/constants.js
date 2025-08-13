@@ -16,6 +16,13 @@ export const NAV_LINKS = [
   { label: 'Home', href: ROUTES.HOME },
   { label: 'About', href: ROUTES.ABOUT },
   { label: 'Login', href: ROUTES.LOGIN },
+  {
+    label: 'Fork on GitHub',
+    href: 'https://github.com/blockonomics/emptyinbox-me',
+    external: true, 
+    icon: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg',
+    className: 'fork-button'
+  },
 ];
 
 export const LOGO = {

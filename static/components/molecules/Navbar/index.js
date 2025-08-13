@@ -39,19 +39,33 @@ export function createNavbar() {
     navToggle.classList.toggle('nav-toggle-active');
   };
 
-  // Create nav links
-  NAV_LINKS.forEach(({ label, href }) => {
+  NAV_LINKS.forEach(({ label, href, external, className, icon }) => {
     const link = document.createElement('a');
     link.href = href;
-    link.textContent = label;
-    link.className = 'nav-link';
-    
-    // Close mobile menu when link is clicked
+    link.className = `${className || 'nav-link'}`;
+
+    if (icon) {
+      const iconImg = document.createElement('img');
+      iconImg.src = icon;
+      iconImg.alt = `${label} icon`;
+      iconImg.className = 'nav-icon'; // Style this in CSS
+      link.appendChild(iconImg);
+    }
+
+    const textSpan = document.createElement('span');
+    textSpan.textContent = label;
+    link.appendChild(textSpan);
+
+    if (external) {
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+    }
+
     link.onclick = () => {
       nav.classList.remove('nav-open');
       navToggle.classList.remove('nav-toggle-active');
     };
-    
+
     nav.appendChild(link);
   });
 

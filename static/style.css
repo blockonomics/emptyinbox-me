@@ -2775,3 +2775,26 @@ html {
 .btn-icon {
   font-size: 18px;
 }
+
+.fork-button {
+  background-color: #24292e;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.fork-button:hover {
+  background-color: #444c56;
+}
+
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: middle;
+  filter: invert(1);
+  margin-bottom: 2px;
+}
