@@ -1,19 +1,14 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
-import os, random, time, hashlib, logging
+import os, random, time, hashlib
 from eth_account.messages import encode_defunct
 from eth_account import Account
 
 from cleanup_manager import DatabaseManager
 from db_models import AuthChallenge, UserSession, User
-from cleanup_manager import db
+from cleanup_manager import db 
 from constants import USER_STARTING_QUOTA
 
-# --- Logger Setup ---
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
-logger = logging.getLogger(__name__)
-
-# --- Blueprint & Config ---
 auth_bp = Blueprint('auth', __name__)
 db_manager = DatabaseManager()
 DOMAIN = os.getenv('DOMAIN', 'emptyinbox.me')
@@ -39,7 +34,7 @@ def verify_signature(message: str, signature: str, expected_address: str) -> boo
         recovered = Account.recover_message(message_hash, signature=signature)
         return recovered.lower() == expected_address.lower()
     except Exception as e:
-        logger.error(f"Signature verification failed: {e}")
+        current_app.logger.error(f"Signature verification failed: {e}")
         return False
 
 def create_user_token(address: str) -> str:
@@ -56,11 +51,10 @@ def error_response(message: str, code: int = 400):
 # --- Routes ---
 @auth_bp.route('/challenge', methods=['POST'])
 def auth_challenge():
-    logger.info("Received challenge request")
+    current_app.logger.error("Received challenge request")
     try:
         db_manager.cleanup_expired_records()
         address = request.json.get('address')
-        logger.debug(f"Challenge requested for address: {address}")
 
         if not address or not address.startswith('0x') or len(address) != 42:
             return error_response('Invalid or missing Ethereum address')
@@ -73,10 +67,9 @@ def auth_challenge():
             db.session.add(challenge)
             db.session.commit()
 
-        logger.info(f"Challenge created for address: {address}")
         return jsonify({'message': message, 'nonce': nonce}), 200
     except Exception as e:
-        logger.error(f"Challenge generation error: {e}")
+        current_app.logger.error(f"Challenge generation error: {e}")
         db.session.rollback()
         return error_response('Failed to generate challenge', 500)
 
@@ -85,7 +78,6 @@ def auth_verify():
     try:
         data = request.json
         address, signature, message = data.get('address'), data.get('signature'), data.get('message')
-        logger.debug(f"Verification attempt for address: {address}")
 
         if not all([address, signature, message]):
             return error_response('Address, signature, and message required')
@@ -108,25 +100,30 @@ def auth_verify():
 
             db.session.delete(challenge)
 
+            # Check if user exists, create if not (first-time login)
+            from db_models import User  # Import User model
             user = db.session.query(User).filter_by(eth_account=address).first()
+            
             if not user:
-                api_key = create_user_token(address)[:32]
+                # Generate API key for new user
+                api_key = create_user_token(address)[:32]  # Reuse token generation logic
                 user = User(eth_account=address, api_key=api_key, inbox_quota=USER_STARTING_QUOTA)
                 db.session.add(user)
-                logger.info(f"Created new user for address: {address}")
-
+                current_app.logger.info(f"Created new user for address: {address}")
+            
+            # CLEAN UP OLD SESSIONS FOR THIS USER
             old_sessions = db.session.query(UserSession).filter_by(address=address).all()
             if old_sessions:
                 for old_session in old_sessions:
                     db.session.delete(old_session)
-                logger.info(f"Cleaned up {len(old_sessions)} old sessions for {address}")
-
+                current_app.logger.info(f"Cleaned up {len(old_sessions)} old sessions for {address}")
+            
+            # Create NEW session token (different from API key)
             session_token = create_user_token(address)
             session_obj = UserSession(session_token, address, int(time.time()))
             db.session.add(session_obj)
             db.session.commit()
-
-            logger.info(f"User {address} successfully authenticated")
+            
             return jsonify({
                 'success': True,
                 'token': session_token,
@@ -134,7 +131,7 @@ def auth_verify():
                 'api_key': user.api_key
             }), 200
     except Exception as e:
-        logger.error(f"Verification failed: {e}")
+        current_app.logger.error(f"Verification failed: {e}")
         db.session.rollback()
         return error_response('Authentication failed', 500)
 
@@ -142,22 +139,24 @@ def auth_verify():
 def auth_me():
     try:
         token = get_token_from_header()
-        logger.debug(f"Fetching user info for token: {token}")
         if not token:
             return error_response('Authentication required', 401)
 
         with db_manager.app.app_context():
+            # First, validate the session token
             session = db.session.query(UserSession).filter_by(token=token)\
                 .filter(UserSession.expires_at > datetime.utcnow()).first()
 
             if not session:
                 return error_response('Invalid or expired authentication token', 401)
 
+            # Then get the full user object
+            from db_models import User
             user = db.session.query(User).filter_by(eth_account=session.address).first()
+            
             if not user:
                 return error_response('User not found', 404)
 
-            logger.info(f"User info retrieved for address: {user.eth_account}")
             return jsonify({
                 'address': user.eth_account,
                 'api_key': user.api_key,
@@ -166,14 +165,13 @@ def auth_me():
                 'session_expires_at': session.expires_at.isoformat() if hasattr(session, 'expires_at') else None
             }), 200
     except Exception as e:
-        logger.error(f"User info retrieval failed: {e}")
+        current_app.logger.error(f"User info retrieval failed: {e}")
         return error_response('Failed to fetch user information', 500)
 
 @auth_bp.route('/logout', methods=['POST'])
 def auth_logout():
     try:
         token = get_token_from_header()
-        logger.debug(f"Logout attempt for token: {token}")
         if not token:
             return error_response('No authentication token', 401)
 
@@ -182,10 +180,9 @@ def auth_logout():
             if user:
                 db.session.delete(user)
                 db.session.commit()
-                logger.info(f"User session deleted for token: {token}")
 
         return jsonify({'success': True}), 200
     except Exception as e:
-        logger.error(f"Logout error: {e}")
+        current_app.logger.error(f"Logout error: {e}")
         db.session.rollback()
         return error_response('Logout failed', 500)
