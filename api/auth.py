@@ -110,14 +110,14 @@ def auth_verify():
                 api_key = create_user_token(address)[:32]  # Reuse token generation logic
                 user = User(eth_account=address, api_key=api_key, inbox_quota=USER_STARTING_QUOTA)
                 db.session.add(user)
-                logger.info(f"Created new user for address: {address}")
+                current_app.logger.info(f"Created new user for address: {address}")
             
             # CLEAN UP OLD SESSIONS FOR THIS USER
             old_sessions = db.session.query(UserSession).filter_by(address=address).all()
             if old_sessions:
                 for old_session in old_sessions:
                     db.session.delete(old_session)
-                logger.info(f"Cleaned up {len(old_sessions)} old sessions for {address}")
+                current_app.logger.info(f"Cleaned up {len(old_sessions)} old sessions for {address}")
             
             # Create NEW session token (different from API key)
             session_token = create_user_token(address)
