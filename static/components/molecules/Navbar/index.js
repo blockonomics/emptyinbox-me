@@ -33,10 +33,11 @@ export function createNavbar() {
   nav.className = 'site-nav';
   nav.setAttribute('aria-label', 'Main navigation');
 
-  // Toggle functionality with animation
+  // Enhanced toggle functionality with outside click
   navToggle.onclick = () => {
     nav.classList.toggle('nav-open');
     navToggle.classList.toggle('nav-toggle-active');
+    document.body.classList.toggle('nav-open-body'); // Prevent scrolling
   };
 
   NAV_LINKS.forEach(({ label, href, external, className, icon }) => {
@@ -64,6 +65,7 @@ export function createNavbar() {
     link.onclick = () => {
       nav.classList.remove('nav-open');
       navToggle.classList.remove('nav-toggle-active');
+      document.body.classList.remove('nav-open-body');
     };
 
     nav.appendChild(link);
@@ -73,6 +75,15 @@ export function createNavbar() {
   container.appendChild(navToggle);
   container.appendChild(nav);
   navbar.appendChild(container);
+
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!navbar.contains(e.target) && nav.classList.contains('nav-open')) {
+      nav.classList.remove('nav-open');
+      navToggle.classList.remove('nav-toggle-active');
+      document.body.classList.remove('nav-open-body');
+    }
+  });
 
   return navbar;
 }
