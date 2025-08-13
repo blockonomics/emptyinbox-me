@@ -120,12 +120,48 @@ export function renderApiDocsPage() {
             </div>
           </div>
 
-          <div class="response-example">
-            <h4>Response</h4>
-            <p><span class="status-code status-200">200 OK</span></p>
-            <div class="code-block" data-lang="json">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>
-              [
+          <h4>Response Fields (per message)</h4>
+          <table class="parameter-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>id</code></td>
+                <td>string</td>
+                <td>Unique identifier of the message</td>
+              </tr>
+              <tr>
+                <td><code>inbox</code></td>
+                <td>string</td>
+                <td>Email address that received the message</td>
+              </tr>
+              <tr>
+                <td><code>subject</code></td>
+                <td>string</td>
+                <td>Subject line of the email</td>
+              </tr>
+              <tr>
+                <td><code>text_body</code></td>
+                <td>string</td>
+                <td>Plain text version of the email body (if available)</td>
+              </tr>
+              <tr>
+                <td><code>html_body</code></td>
+                <td>string (escaped HTML)</td>
+                <td>HTML version of the email body (if available). Tags are escaped for safe rendering.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4>Example Response</h4>
+          <div class="code-block" data-lang="json">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            [
         {
           "id": "a1b2c3d4",
           "inbox": "clever.sunny.butterfly@emptyinbox.me",
@@ -138,10 +174,9 @@ export function renderApiDocsPage() {
           "inbox": "quick.blue.elephant@emptyinbox.me",
           "subject": "Password Reset Request",
           "text_body": "Click the link below to reset your password.",
-          "html_body": "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Welcome!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;"
+          "html_body": "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Reset your password&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;"
         }
       ]
-            </div>
           </div>
         </div>
       </div>
@@ -185,12 +220,43 @@ export function renderApiDocsPage() {
             </div>
           </div>
 
-          <div class="response-example">
-            <h4>Response</h4>
-            <p><span class="status-code status-200">200 OK</span> - Returns the complete email data as JSON</p>
-            <div class="code-block" data-lang="json">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>
-              {
+          <h4>Response Fields</h4>
+          <table class="parameter-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>recipients</code></td>
+                <td>array of strings</td>
+                <td>List of recipient email addresses</td>
+              </tr>
+              <tr>
+                <td><code>headers</code></td>
+                <td>object</td>
+                <td>Key-value pairs of email headers (e.g. Subject, From, Date)</td>
+              </tr>
+              <tr>
+                <td><code>text_body</code></td>
+                <td>string</td>
+                <td>Plain text version of the email body (if available)</td>
+              </tr>
+              <tr>
+                <td><code>html_body</code></td>
+                <td>string (escaped HTML)</td>
+                <td>HTML version of the email body (if available). Tags are escaped for safe rendering.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4>Example Response</h4>
+          <div class="code-block" data-lang="json">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            {
         "recipients": ["clever.sunny.butterfly@emptyinbox.me"],
         "headers": {
           "Subject": "Welcome to our service",
@@ -200,13 +266,12 @@ export function renderApiDocsPage() {
         "text_body": "Welcome! Thank you for signing up. We're excited to have you.",
         "html_body": "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Welcome!&lt;/h1&gt;&lt;p&gt;Thank you for signing up.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"
       }
-            </div>
+          </div>
 
-            <p><span class="status-code status-404">404 Not Found</span> - Message doesn't exist</p>
-            <div class="code-block" data-lang="text">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>
-              msgid doesn't exist
-            </div>
+          <p><span class="status-code status-404">404 Not Found</span> – Message doesn't exist</p>
+          <div class="code-block" data-lang="text">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            msgid doesn't exist
           </div>
         </div>
       </div>
