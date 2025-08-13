@@ -1,15 +1,19 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import logging
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
 app.debug = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///emptyinbox.db'
+
+db_path = os.path.join(app.instance_path, 'emptyinbox.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 # --- Logging Configuration ---
 if not app.debug:
-    # Only configure logging if not in debug mode (Flask sets up its own in debug)
     handler = logging.StreamHandler()
     handler.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
