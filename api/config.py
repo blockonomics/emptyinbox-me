@@ -6,8 +6,15 @@ import os
 app = Flask(__name__, instance_relative_config=True)
 app.debug = True
 
-db_path = os.path.join(app.instance_path, 'emptyinbox.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+basedir = os.path.abspath(os.path.dirname(__file__))
+instance_dir = os.path.join(basedir, 'instance')
+db_path = os.path.join(instance_dir, 'emptyinbox.db')
+
+# Ensure instance directory exists with proper permissions
+os.makedirs(instance_dir, mode=0o755, exist_ok=True)
+
+SQLALCHEMY_DATABASE_URI = f'sqlite:///{db_path}'
+app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
