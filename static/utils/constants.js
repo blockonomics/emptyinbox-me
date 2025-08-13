@@ -4,7 +4,7 @@ export const ROUTES = {
   ABOUT: '/about.html',
   LOGIN: '/login.html',
   DASHBOARD: '/dashboard.html',
-  API_DOCS: '/api-docs.html',
+  API_DOCS: '/docs.html',
 };
 
 export const TEXT = {
