@@ -51,7 +51,7 @@ def error_response(message: str, code: int = 400):
 # --- Routes ---
 @auth_bp.route('/challenge', methods=['POST'])
 def auth_challenge():
-    current_app.current_app.logger.error("Received challenge request")
+    current_app.logger.error("Received challenge request")
     try:
         db_manager.cleanup_expired_records()
         address = request.json.get('address')
