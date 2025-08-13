@@ -107,31 +107,41 @@ export function renderApiDocsPage() {
           <span class="endpoint-path">/messages</span>
         </div>
         <div class="endpoint-body">
-          <p class="endpoint-description">Retrieves a list of all messages across all your inboxes, including message IDs, inbox addresses, and subjects.</p>
-          
+          <p class="endpoint-description">
+            Retrieves a list of all messages across your inboxes. Each message includes its unique ID, inbox address, subject line, and—if available—the plain text and HTML body content.
+          </p>
+
           <div class="response-example">
             <h4>Example Request</h4>
             <div class="code-block" data-lang="curl">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>curl -X GET "https://emptyinbox.me/api/messages" \\
-  -H "Authorization: Bearer YOUR_API_KEY"</div>
+              <button class="copy-button" onclick="copyCode(this)">Copy</button>
+              curl -X GET "https://emptyinbox.me/api/messages" \
+        -H "Authorization: Bearer YOUR_API_KEY"
+            </div>
           </div>
 
           <div class="response-example">
             <h4>Response</h4>
             <p><span class="status-code status-200">200 OK</span></p>
             <div class="code-block" data-lang="json">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>[
-  {
-    "id": "a1b2c3d4",
-    "inbox": "clever.sunny.butterfly@emptyinbox.me",
-    "subject": "Welcome to our service"
-  },
-  {
-    "id": "e5f6g7h8",
-    "inbox": "quick.blue.elephant@emptyinbox.me", 
-    "subject": "Password Reset Request"
-  }
-]</div>
+              <button class="copy-button" onclick="copyCode(this)">Copy</button>
+              [
+        {
+          "id": "a1b2c3d4",
+          "inbox": "clever.sunny.butterfly@emptyinbox.me",
+          "subject": "Welcome to our service",
+          "text_body": "Welcome to our service! We're glad you're here.",
+          "html_body": "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Welcome!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;"
+        },
+        {
+          "id": "e5f6g7h8",
+          "inbox": "quick.blue.elephant@emptyinbox.me",
+          "subject": "Password Reset Request",
+          "text_body": "Click the link below to reset your password.",
+          "html_body": "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Welcome!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;"
+        }
+      ]
+            </div>
           </div>
         </div>
       </div>
@@ -143,8 +153,10 @@ export function renderApiDocsPage() {
           <span class="endpoint-path">/message/{msgid}</span>
         </div>
         <div class="endpoint-body">
-          <p class="endpoint-description">Retrieves the full content of a specific message by its ID.</p>
-          
+          <p class="endpoint-description">
+            Retrieves the full content of a specific message by its ID. The response includes metadata, headers, recipients, and—if available—the plain text and HTML body of the email.
+          </p>
+
           <table class="parameter-table">
             <thead>
               <tr>
@@ -167,32 +179,37 @@ export function renderApiDocsPage() {
           <div class="response-example">
             <h4>Example Request</h4>
             <div class="code-block" data-lang="curl">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>curl -X GET "https://emptyinbox.me/api/message/a1b2c3d4" \\
-  -H "Authorization: Bearer YOUR_API_KEY"</div>
+              <button class="copy-button" onclick="copyCode(this)">Copy</button>
+              curl -X GET "https://emptyinbox.me/api/message/a1b2c3d4" \
+        -H "Authorization: Bearer YOUR_API_KEY"
+            </div>
           </div>
 
           <div class="response-example">
             <h4>Response</h4>
             <p><span class="status-code status-200">200 OK</span> - Returns the complete email data as JSON</p>
             <div class="code-block" data-lang="json">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>{
-  "recipients": ["clever.sunny.butterfly@emptyinbox.me"],
-  "headers": {
-    "Subject": "Welcome to our service",
-    "From": "noreply@example.com",
-    "Date": "Mon, 1 Jan 2024 10:00:00 +0000"
-  },
-  "content": "Welcome! Thank you for signing up..."
-}</div>
-            
+              <button class="copy-button" onclick="copyCode(this)">Copy</button>
+              {
+        "recipients": ["clever.sunny.butterfly@emptyinbox.me"],
+        "headers": {
+          "Subject": "Welcome to our service",
+          "From": "noreply@example.com",
+          "Date": "Mon, 1 Jan 2024 10:00:00 +0000"
+        },
+        "text_body": "Welcome! Thank you for signing up. We're excited to have you.",
+        "html_body": "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Welcome!&lt;/h1&gt;&lt;p&gt;Thank you for signing up.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"
+      }
+            </div>
+
             <p><span class="status-code status-404">404 Not Found</span> - Message doesn't exist</p>
             <div class="code-block" data-lang="text">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>msgid doesn't exist</div>
+              <button class="copy-button" onclick="copyCode(this)">Copy</button>
+              msgid doesn't exist
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
     <!-- Error Codes Section -->
     <div class="docs-section">
       <h2>
