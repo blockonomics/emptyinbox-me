@@ -14,15 +14,6 @@ import logging
 from words import adjectives, nouns
 from auth_utils import extract_apikey
 
-if __name__ != '__main__':
-    gunicorn_logger = logging.getLogger('gunicorn.error')
-    app.logger.handlers = gunicorn_logger.handlers
-    app.logger.setLevel(gunicorn_logger.level)
-
-# Import blueprints
-from auth import auth_bp
-from payments import payments_bp
-
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
 IS_DEV = FLASK_ENV == 'development'
 url_prefix = '/api' if IS_DEV else ''
@@ -31,6 +22,15 @@ url_prefix = '/api' if IS_DEV else ''
 if IS_DEV:
     from flask_cors import CORS
     CORS(app)
+
+if __name__ != '__main__':
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
+
+# Import blueprints
+from auth import auth_bp
+from payments import payments_bp
 
 DOMAIN = os.getenv('DOMAIN')
 
