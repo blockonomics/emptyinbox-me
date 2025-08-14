@@ -45,7 +45,7 @@ postconf -e myhostname=$POSTFIX_HOSTNAME
 # Do not relay mail from untrusted networks
 postconf -e "relay_domains="
 
-postconf -e "export_environment= SECRET=$SECRET"
+postconf -e "export_environment= SECRET=$SECRET,DOMAIN=$DOMAIN"
 
 
 # Relay configuration

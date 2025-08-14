@@ -12,6 +12,7 @@ email = Parser(policy=policy.SMTP).parse(sys.stdin)
 
 
 secret = os.getenv('SECRET')
+domain = os.getenv('DOMAIN')
 headers = {
     'User-Agent': 'tempmail/service',
     'Authorization': f'Bearer {secret}'
@@ -29,4 +30,4 @@ if email.get_body(('plain',)):
 if email.get_body(('html',)):
     data['html_body'] = email.get_body(('html',)).get_content()
 
-requests.post(f'http://localhost/api/email', json=data, headers=headers)
+requests.post(f'https://{domain}/api/email', json=data, headers=headers)
