@@ -99,12 +99,12 @@ def create_mailbox(token):
 @app.route('/inboxes', methods=['GET'])
 @auth_required
 def get_mailboxes(token):
-    '''Get all inboxes'''
-    inboxes = db.session.execute(db.select(Inbox.inbox)).all()
-    if not inboxes:
-        inboxes = []
-    else:
-        inboxes = [row.inbox for row in inboxes]
+    '''Get inboxes belonging to the authenticated user'''
+    inboxes = db.session.execute(
+        db.select(Inbox.inbox).filter(Inbox.api_key == token)
+    ).all()
+
+    inboxes = [row.inbox for row in inboxes] if inboxes else []
     return inboxes
 
 def query_inbox(inbox):
