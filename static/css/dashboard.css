@@ -236,7 +236,7 @@
 /* Dashboard Stats Grid */
 .dashboard-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   gap: 2rem;
   margin-bottom: 4rem;
   max-width: 1400px;
@@ -1235,4 +1235,43 @@
 
 .btn-icon {
   font-size: 18px;
+}
+
+/* Create Inbox Button */
+.create-inbox-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  font-family: inherit;
+}
+
+.create-inbox-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.create-inbox-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Spinner animation for loading state */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
