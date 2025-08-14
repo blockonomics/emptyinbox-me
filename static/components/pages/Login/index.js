@@ -39,7 +39,7 @@ export function renderLoginPage() {
       </div>
 
       <p class="login-footer">
-        New to crypto wallets? <a href="/wallet-guide">Learn how to get started</a>
+        New to crypto wallets? <a href="https://support.metamask.io/start/creating-a-new-wallet/" target="_blank">Learn how to get started</a>
       </p>
     </section>
   `;
