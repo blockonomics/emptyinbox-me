@@ -299,9 +299,6 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     .then(data => {
       console.log('Monitoring started:', data);
-      if (quotaAmount) {
-        showToast(`Payment submitted! You will receive ${quotaAmount} quota once the transaction is confirmed.`, TOAST_TYPES.SUCCESS);
-      }
     })
     .catch(err => {
       console.error('Error starting monitoring:', err);
