@@ -225,7 +225,7 @@ function setupCreateInboxButton() {
     try {
       const apiKey = getApiKey();
       
-      const response = await fetch(`${API_BASE_URL}/inbox`, {
+      const response = await fetch(`${API_BASE_URL}/api/inbox`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
