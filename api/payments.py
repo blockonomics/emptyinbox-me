@@ -109,11 +109,6 @@ def blockonomics_callback():
     user = db.session.query(User).filter_by(eth_account=intent.eth_account).first()
     if not user:
         return error_response("User not found", 404)
-
-    # Calculate expected payment value based on intended quota amount
-    expected_value = (intent.amount * USDT_DECIMALS) // QUOTA_PER_USDT  # Reverse the calculation
-    if int(value) != expected_value:
-        return error_response("Payment value mismatch", 400)
     
     user.inbox_quota += intent.amount
 
