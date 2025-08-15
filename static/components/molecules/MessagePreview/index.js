@@ -1,6 +1,3 @@
-import { createElement } from "../../../utils/domHelpers.js";
-import { extractActivationCode } from "../../../utils/domHelpers.js";
-
 export function createMessagePreview(message) {
   const container = createElement('div');
 
@@ -16,12 +13,16 @@ export function createMessagePreview(message) {
   const code = extractActivationCode(message.text_body);
 
   container.innerHTML = `
-    <div style="margin-bottom: 0.5rem;">
-      <div style="font-size: 0.85rem; color: #6b7280;">From: ${sender}</div>
-      <div style="font-size: 0.85rem; color: #6b7280;">Received: ${timestamp}</div>
+    <div style="font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">
+      ${code
+        ? `Activation Code: <span style="background-color:#fef3c7; padding:2px 6px; border-radius:4px;">${code}</span>`
+        : 'No activation code found'}
     </div>
-    <div style="font-size: 1rem; color: #1f2937; font-weight: 600;">
-      ${code ? `Activation Code: <span style="background-color:#fef3c7; padding:2px 6px; border-radius:4px;">${code}</span>` : 'No activation code found'}
+    <div style="font-size: 0.85rem; color: #6b7280;">
+      From: ${sender}
+    </div>
+    <div style="font-size: 0.85rem; color: #6b7280;">
+      Received: ${timestamp}
     </div>
   `;
 
