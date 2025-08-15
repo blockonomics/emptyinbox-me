@@ -12,6 +12,10 @@ export function renderLoginPage() {
       <p>Connect your wallet to continue your journey with EmptyInbox.me</p>
       
       <div class="wallet-connect-section">
+        <button id="connect-wallet-btn" type="button" class="wallet-connect-btn">
+          <span class="wallet-icon">🔗</span>
+          <span class="button-text">Connect Wallet</span>
+        </button>
         
         <div id="wallet-status" class="wallet-status hidden">
           <p>Connected: <span id="wallet-address"></span></p>
@@ -57,6 +61,7 @@ const requestAccountsWithTimeout = async (timeout = 10000) => {
 };
 
 async function initializeWalletAuth() {
+  const connectBtn = document.getElementById("connect-wallet-btn");
   const signInBtn = document.getElementById("sign-in-btn");
   const walletStatus = document.getElementById("wallet-status");
   const walletAddress = document.getElementById("wallet-address");
@@ -70,6 +75,7 @@ async function initializeWalletAuth() {
   // Helper function to update connect button state
   function updateConnectButtonState(state) {
     const buttonText = connectBtn.querySelector(".button-text");
+    const walletIcon = connectBtn.querySelector(".wallet-icon");
 
     switch (state) {
       case "connecting":
