@@ -1,0 +1,25 @@
+/* ===== Scrollbar Utilities ===== */
+
+/* ===== Custom Scrollbar Styling ===== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Keeps it clean */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1; /* Soft gray */
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8; /* Darker on hover */
+}
+
+/* ===== Firefox Scrollbar ===== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}

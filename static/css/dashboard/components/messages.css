@@ -1,0 +1,259 @@
+/* ===== Message Components ===== */
+
+/* ===== Latest Message Card ===== */
+.latest-message-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(248, 250, 252, 0.8) 100%
+  );
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  min-height: 280px;
+  overflow: hidden;
+  position: relative;
+}
+
+.latest-message-card::before {
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--primary-dark),
+    var(--primary-darker)
+  );
+  background-size: 200% 100%;
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* ===== Card Header ===== */
+.card-header-enhanced {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-left h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ===== Live Indicator ===== */
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.live-indicator span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+/* ===== Message Preview ===== */
+.message-preview {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all var(--transition-normal);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.message-preview:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.message-content {
+  padding: 0;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 250, 252, 0.8) 0%,
+    rgba(241, 245, 249, 0.6) 100%
+  );
+}
+
+.service-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--service-color, #e5e7eb);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.service-icon {
+  font-size: 1.1rem;
+}
+
+.service-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--service-color, var(--text-secondary));
+}
+
+.message-time {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  background: rgba(156, 163, 175, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.message-body {
+  padding: 0.75rem 1.25rem 1.25rem;
+}
+
+.message-to {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.to-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.to-address {
+  font-family: "Monaco", "Consolas", monospace;
+  color: var(--text-primary);
+  background: rgba(107, 114, 128, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.message-subject {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+/* ===== Message Content Wrapper ===== */
+.message-content-wrapper {
+  padding: 1rem;
+  transition: opacity 0.15s ease-in-out;
+}
+
+/* ===== Message Counter ===== */
+.message-counter {
+  display: flex !important;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  background: #f3f4f6;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+}
+
+.message-counter #current-index {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* ===== Navigation Controls ===== */
+.navigation-controls {
+  display: flex !important;
+  gap: 0.25rem;
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 768px) {
+  .card-header-enhanced {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .header-left,
+  .header-right {
+    justify-content: space-between;
+  }
+
+  .message-counter {
+    order: -1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .service-badge {
+    padding: 0.4rem 0.6rem;
+  }
+
+  .service-name {
+    display: none;
+  }
+}
