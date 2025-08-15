@@ -4,7 +4,7 @@ export function createInboxList(inboxes) {
   const container = createElement('div');
 
   // Apply scrollable styles
-  container.style.maxHeight = '300px'; // Adjust height as needed
+  container.style.maxHeight = '120px'; // Adjust height as needed
   container.style.overflowY = 'auto';
   container.style.paddingRight = '8px'; // Optional: avoids scrollbar overlap
 
