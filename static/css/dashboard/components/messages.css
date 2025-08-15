@@ -329,8 +329,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   background: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 0.375rem;
@@ -338,6 +338,12 @@
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+}
+
+.code-copy svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.5;
 }
 
 .code-copy:hover {
