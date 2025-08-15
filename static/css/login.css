@@ -9,15 +9,22 @@
 }
 
 .login-page::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+  background-image: radial-gradient(
+      circle at 25% 25%,
+      rgba(16, 185, 129, 0.05) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 75% 75%,
+      rgba(16, 185, 129, 0.03) 0%,
+      transparent 50%
+    );
   pointer-events: none;
 }
 
@@ -33,9 +40,7 @@
   text-align: center;
   position: relative;
   z-index: 2;
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 8px 16px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.05);
   animation: fadeInUp 0.8s ease-out;
 }
 
@@ -63,54 +68,6 @@
   margin-bottom: 2.5rem;
 }
 
-.wallet-connect-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  border: none;
-  border-radius: 16px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 
-    0 4px 15px rgba(16, 185, 129, 0.3),
-    0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.wallet-connect-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.wallet-connect-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 25px rgba(16, 185, 129, 0.4),
-    0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.wallet-connect-btn:hover::before {
-  left: 100%;
-}
-
-.wallet-connect-btn:active {
-  transform: translateY(0);
-}
-
 .wallet-icon {
   font-size: 1.25rem;
 }
@@ -133,7 +90,7 @@
 }
 
 .wallet-status #wallet-address {
-  font-family: 'Monaco', 'Consolas', monospace;
+  font-family: "Monaco", "Consolas", monospace;
   color: #10b981;
   font-weight: 600;
   background: rgba(16, 185, 129, 0.1);
@@ -179,7 +136,7 @@
 }
 
 .loading::before {
-  content: '';
+  content: "";
   width: 20px;
   height: 20px;
   border: 2px solid rgba(59, 130, 246, 0.3);
@@ -291,7 +248,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -300,7 +258,8 @@
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
   25% {
@@ -317,30 +276,30 @@
     padding: 1rem;
     min-height: calc(100vh - 120px);
   }
-  
+
   .login {
     padding: 2rem;
     border-radius: 20px;
   }
-  
+
   .login h1 {
     font-size: 2rem;
   }
-  
+
   .login > p {
     font-size: 1rem;
     margin-bottom: 2rem;
   }
-  
+
   .wallet-connect-btn {
     padding: 0.875rem 1.25rem;
     font-size: 1rem;
   }
-  
+
   .wallet-icons {
     gap: 0.5rem;
   }
-  
+
   .wallet-icons span {
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
@@ -352,11 +311,11 @@
     padding: 1.5rem;
     margin: 0.5rem;
   }
-  
+
   .login h1 {
     font-size: 1.75rem;
   }
-  
+
   .supported-wallets {
     padding: 1.25rem;
   }
@@ -366,9 +325,7 @@
 .wallet-connect-btn:focus,
 .sign-in-btn:focus {
   outline: none;
-  box-shadow: 
-    0 4px 15px rgba(16, 185, 129, 0.3),
-    0 2px 4px rgba(0, 0, 0, 0.1),
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1),
     0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
