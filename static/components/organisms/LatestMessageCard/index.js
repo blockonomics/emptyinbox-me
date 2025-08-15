@@ -1,4 +1,3 @@
-// components/organisms/LatestMessageCard/index.js
 import { createElement } from "../../../utils/domHelpers.js";
 import { createMessagePreview } from "../../molecules/MessagePreview/index.js";
 import { fetchMessages } from "../../../services/apiService.js";
