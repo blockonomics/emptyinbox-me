@@ -55,19 +55,26 @@
   color: var(--text-primary);
 }
 
-/* ===== Responsive Design for Quota Info ===== */
-@media (max-width: 768px) {
+/* ===== Responsive Design for Quota Info (mobile-first) ===== */
+.quota-info {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+}
+
+@media (min-width: 481px) {
   .quota-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
+    margin: 0;
   }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 769px) {
   .quota-info {
-    margin: 0 1rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    padding: var(--spacing-md) var(--spacing-xl);
   }
 }
 
@@ -102,15 +109,25 @@
   white-space: nowrap;
 }
 
-/* ===== Responsive Design for Quota Display ===== */
-@media (max-width: 768px) {
+/* ===== Responsive Design for Quota Display (mobile-first) ===== */
+.quota-display {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.quota-text {
+  text-align: center;
+}
+
+@media (min-width: 769px) {
   .quota-display {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
   }
 
   .quota-text {
-    text-align: center;
+    text-align: right;
   }
 }

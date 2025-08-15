@@ -6,22 +6,29 @@
 
 /* About Hero Section */
 .about-hero {
-  padding: 6rem 2rem 4rem;
+  padding: 3rem 1rem 2.5rem;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   position: relative;
   overflow: hidden;
 }
 
 .about-hero::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+  background-image: radial-gradient(
+      circle at 25% 25%,
+      rgba(16, 185, 129, 0.05) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 75% 75%,
+      rgba(16, 185, 129, 0.03) 0%,
+      transparent 50%
+    );
   pointer-events: none;
 }
 
@@ -57,15 +64,15 @@
 
 /* Story Section */
 .about-story {
-  padding: 6rem 2rem;
+  padding: 3rem 1rem;
   background: #ffffff;
   position: relative;
 }
 
 .about-story-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2.5rem;
+  grid-template-columns: 1fr;
+  gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -76,18 +83,16 @@
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 24px;
-  padding: 2.5rem;
+  padding: 1.5rem;
   position: relative;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.05),
-    0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   animation: fadeInUp 0.8s ease-out both;
 }
 
 .about-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -102,9 +107,7 @@
 
 .about-card:hover {
   transform: translateY(-8px);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 8px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.08);
   border-color: rgba(16, 185, 129, 0.2);
 }
 
@@ -126,14 +129,14 @@
 }
 
 .about-card-icon {
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
   background: linear-gradient(135deg, #10b981, #059669);
   border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   color: white;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
@@ -145,7 +148,7 @@
 }
 
 .about-card-title {
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 1rem;
@@ -168,15 +171,22 @@
 }
 
 .about-cta::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    radial-gradient(circle at 30% 70%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 70% 30%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
+  background-image: radial-gradient(
+      circle at 30% 70%,
+      rgba(16, 185, 129, 0.04) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 70% 30%,
+      rgba(16, 185, 129, 0.04) 0%,
+      transparent 50%
+    );
   pointer-events: none;
 }
 
@@ -220,65 +230,60 @@
   }
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* Mobile-first responsive enhancements */
+@media (min-width: 481px) {
   .about-hero {
     padding: 4rem 1.5rem 3rem;
   }
-  
+
   .about-story {
     padding: 4rem 1.5rem;
   }
-  
-  .about-story-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-  
+
   .about-card {
     padding: 2rem;
+    border-radius: 24px;
   }
-  
+
   .about-card-icon {
     width: 56px;
     height: 56px;
     margin-bottom: 1.25rem;
   }
-  
-  .about-card-title {
-    font-size: 1.375rem;
-  }
-  
-  .about-cta {
-    padding: 4rem 1.5rem;
-  }
-  
-  .about-cta-description {
-    margin-bottom: 2rem;
-  }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 769px) {
   .about-hero {
-    padding: 3rem 1rem 2.5rem;
+    padding: 6rem 2rem 4rem;
   }
-  
+
   .about-story {
-    padding: 3rem 1rem;
+    padding: 6rem 2rem;
   }
-  
+
+  .about-story-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2.5rem;
+  }
+
   .about-card {
-    padding: 1.5rem;
-    border-radius: 20px;
+    padding: 2.5rem;
   }
-  
+
   .about-card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
+    width: 64px;
+    height: 64px;
   }
-  
+
+  .about-card-title {
+    font-size: 1.5rem;
+  }
+
   .about-cta {
-    padding: 3rem 1rem;
+    padding: 5rem 2rem;
+  }
+
+  .about-cta-description {
+    margin-bottom: 2.5rem;
   }
 }

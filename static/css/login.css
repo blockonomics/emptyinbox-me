@@ -1,9 +1,9 @@
 .login-page {
-  min-height: calc(100vh - 140px); /* Account for header/footer */
+  min-height: calc(100vh - 120px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 0;
+  padding: 1rem;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   position: relative;
 }
@@ -33,8 +33,8 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 24px;
-  padding: 3rem;
+  border-radius: 20px;
+  padding: 1.5rem;
   max-width: 480px;
   width: 100%;
   text-align: center;
@@ -45,7 +45,7 @@
 }
 
 .login h1 {
-  font-size: 2.25rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 0.75rem;
@@ -57,9 +57,9 @@
 }
 
 .login > p {
-  font-size: 1.125rem;
+  font-size: 1rem;
   color: #6b7280;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
   line-height: 1.6;
 }
 
@@ -319,54 +319,48 @@
   }
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .login-page {
-    padding: 1rem;
-    min-height: calc(100vh - 120px);
-  }
-
+/* Responsive Enhancements */
+@media (min-width: 481px) {
   .login {
     padding: 2rem;
-    border-radius: 20px;
   }
-
   .login h1 {
     font-size: 2rem;
   }
-
-  .login > p {
-    font-size: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .wallet-connect-btn {
-    padding: 0.875rem 1.25rem;
-    font-size: 1rem;
-  }
-
-  .wallet-icons {
-    gap: 0.5rem;
-  }
-
-  .wallet-icons span {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-  }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 769px) {
+  .login-page {
+    padding: 2rem 0;
+    min-height: calc(100vh - 140px);
+  }
+
   .login {
-    padding: 1.5rem;
-    margin: 0.5rem;
+    padding: 3rem;
+    border-radius: 24px;
   }
 
   .login h1 {
-    font-size: 1.75rem;
+    font-size: 2.25rem;
   }
 
-  .supported-wallets {
-    padding: 1.25rem;
+  .login > p {
+    font-size: 1.125rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .wallet-connect-btn {
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  .wallet-icons {
+    gap: 1rem;
+  }
+
+  .wallet-icons span {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
   }
 }
 

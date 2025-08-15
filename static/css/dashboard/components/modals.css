@@ -24,7 +24,7 @@
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-2xl);
-  padding: var(--spacing-4xl);
+  padding: var(--spacing-2xl);
   width: 100%;
   max-width: 500px;
   margin: auto;
@@ -213,23 +213,15 @@
   padding: 0 24px 24px;
 }
 
-/* ===== Responsive Design for Modals ===== */
-@media (max-width: 768px) {
-  .modal-content {
-    margin: 1rem;
-    padding: var(--spacing-3xl);
-    border-radius: var(--radius-xl);
-  }
-
-  .close-modal {
-    right: 1rem;
-    top: 1rem;
-  }
+/* ===== Mobile-first enhancements ===== */
+.modal-content {
+  margin: 0.5rem;
 }
 
-@media (max-width: 480px) {
+@media (min-width: 481px) {
   .modal-content {
-    padding: var(--spacing-2xl);
-    margin: 0.5rem;
+    padding: var(--spacing-3xl);
+    margin: 1rem;
+    border-radius: var(--radius-xl);
   }
 }
