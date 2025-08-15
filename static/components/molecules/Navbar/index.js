@@ -1,6 +1,8 @@
-import { NAV_LINKS, LOGO, ROUTES } from '../../../utils/constants.js';
+import { fetchUserData } from '../../../services/apiService.js';
+import { NAV_LINKS, LOGO, ROUTES, API_BASE_URL } from '../../../utils/constants.js';
 
-export function createNavbar() {
+// In your navbar creation function, after NAV_LINKS is looped through:
+export async function createNavbar() {
   const navbar = document.createElement('navbar');
   navbar.className = 'site-navbar';
 
@@ -33,14 +35,22 @@ export function createNavbar() {
   nav.className = 'site-nav';
   nav.setAttribute('aria-label', 'Main navigation');
 
-  // Enhanced toggle functionality with outside click
   navToggle.onclick = () => {
     nav.classList.toggle('nav-open');
     navToggle.classList.toggle('nav-toggle-active');
     document.body.classList.toggle('nav-open-body'); // Prevent scrolling
   };
 
-  NAV_LINKS.forEach(({ label, href, external, className, icon }) => {
+  // Check auth before rendering nav links
+  const authStatus = await checkAuthStatus();
+  const linksToRender = NAV_LINKS.map(link => {
+    if (link.label === 'Login' && authStatus.isAuthenticated) {
+      return { ...link, label: 'Dashboard', href: ROUTES.DASHBOARD };
+    }
+    return link;
+  });
+
+  linksToRender.forEach(({ label, href, external, className, icon }) => {
     const link = document.createElement('a');
     link.href = href;
     link.className = `${className || 'nav-link'}`;
@@ -49,7 +59,7 @@ export function createNavbar() {
       const iconImg = document.createElement('img');
       iconImg.src = icon;
       iconImg.alt = `${label} icon`;
-      iconImg.className = 'nav-icon'; // Style this in CSS
+      iconImg.className = 'nav-icon';
       link.appendChild(iconImg);
     }
 
@@ -97,3 +107,34 @@ window.addEventListener('scroll', () => {
     navbar.classList.remove('scrolled');
   }
 });
+
+
+async function checkAuthStatus() {
+  const token = localStorage.getItem('authToken');
+  
+  if (!token) {
+    return { isAuthenticated: false };
+  }
+
+  try {
+    // Verify token with backend
+    const response = await fetchUserData(token);
+
+    if (response.ok) {
+      const userData = await response.json();
+      return { 
+        isAuthenticated: true, 
+        address: userData.address,
+        userData 
+      };
+    } else {
+      // Token is invalid, clear it
+      clearAllAuthData();
+      return { isAuthenticated: false };
+    }
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    clearAllAuthData();
+    return { isAuthenticated: false };
+  }
+}

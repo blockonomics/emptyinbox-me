@@ -7,8 +7,21 @@ import { renderDashboardPage } from '../components/pages/Dashboard/index.js';
 import { renderApiDocsPage } from './components/pages/ApiDocs/index.js';
 import { ROUTES } from './utils/constants.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.body.prepend(createNavbar());
+document.addEventListener('DOMContentLoaded', async () => {
+  (async () => {
+    const navbar = await createNavbar(); // Wait for it to finish
+    document.body.prepend(navbar);
+
+    // Add scroll listener after navbar is in the DOM
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+  })();
+
   
   const path = location.pathname;
   
