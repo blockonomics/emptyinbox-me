@@ -61,11 +61,12 @@ export function createMessagePreview(message) {
                   <path d="m9 18 6-6-6-6"/>
                 </svg>
               </a>
-              <button class="code-copy" onclick="copyActivationCode('${extractedContent}', this)" title="Copy link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              <button class="code-copy" onclick="copyActivationCode('${extractedContent.replace(/'/g, "\\'")}', this)" title="Copy link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
                 </svg>
+                <span class="copy-text">Copy Link</span>
               </button>
             </div>
           </div>
@@ -81,11 +82,12 @@ export function createMessagePreview(message) {
             </div>
             <div class="code-display">
               <span class="code-value">${extractedContent}</span>
-              <button class="code-copy" onclick="copyActivationCode('${extractedContent}', this)" title="Copy code">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              <button class="code-copy" onclick="copyActivationCode('${extractedContent.replace(/'/g, "\\'")}', this)" title="Copy code">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                  <path d="M4 16c-1.1 0-2-.9-2 2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
                 </svg>
+                <span class="copy-text">Copy Code</span>
               </button>
             </div>
           </div>
@@ -133,17 +135,21 @@ export function createMessagePreview(message) {
   return container;
 }
 
-// Global copy function
+// Global copy function with improved feedback
 window.copyActivationCode = async function(code, button) {
   try {
     await navigator.clipboard.writeText(code);
     
     // Success feedback
     const originalContent = button.innerHTML;
+    const copyText = button.querySelector('.copy-text');
+    const originalText = copyText ? copyText.textContent : '';
+    
     button.innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <polyline points="20,6 9,17 4,12"></polyline>
       </svg>
+      <span class="copy-text">Copied!</span>
     `;
     button.classList.add('copied');
     
@@ -156,12 +162,47 @@ window.copyActivationCode = async function(code, button) {
     // Fallback for older browsers
     const textArea = document.createElement('textarea');
     textArea.value = code;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
     document.body.appendChild(textArea);
+    textArea.focus();
     textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
     
-    button.classList.add('copied');
-    setTimeout(() => button.classList.remove('copied'), 1500);
+    try {
+      document.execCommand('copy');
+      
+      // Success feedback for fallback
+      const originalContent = button.innerHTML;
+      const copyText = button.querySelector('.copy-text');
+      
+      button.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20,6 9,17 4,12"></polyline>
+        </svg>
+        <span class="copy-text">Copied!</span>
+      `;
+      button.classList.add('copied');
+      
+      setTimeout(() => {
+        button.innerHTML = originalContent;
+        button.classList.remove('copied');
+      }, 1500);
+      
+    } catch (fallbackErr) {
+      console.error('Failed to copy:', fallbackErr);
+      
+      // Error feedback
+      const copyText = button.querySelector('.copy-text');
+      if (copyText) {
+        const originalText = copyText.textContent;
+        copyText.textContent = 'Copy Failed';
+        setTimeout(() => {
+          copyText.textContent = originalText;
+        }, 1500);
+      }
+    }
+    
+    document.body.removeChild(textArea);
   }
 };
