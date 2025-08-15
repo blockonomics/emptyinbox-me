@@ -41,28 +41,33 @@ export function createMessagePreview(message) {
   let contentSection = '';
   
   if (extractedContent) {
-    const isLongToken = extractedContent.length > 20;
+    const isLongUrl = extractedContent.length > 50;
+    const isUrl = extractedContent.startsWith('http') || extractedContent.startsWith('/');
     
-    if (contentType === 'password_reset') {
+    if (contentType === 'password_reset' && isUrl) {
       contentSection = `
-        <div class="activation-code-section reset-token-section">
+        <div class="activation-code-section reset-url-section">
           <div class="code-container">
             <div class="code-header">
-              <span class="code-icon">🔐</span>
-              <span class="code-label">Reset Token</span>
+              <span class="code-icon">🔗</span>
+              <span class="code-label">Reset Password Link</span>
             </div>
-            <div class="code-display ${isLongToken ? 'long-token' : ''}">
-              <span class="code-value" title="${extractedContent}">
-                ${isLongToken ? extractedContent.substring(0, 20) + '...' : extractedContent}
-              </span>
-              <button class="code-copy" onclick="copyActivationCode('${extractedContent}', this)" title="Copy token">
+            <div class="url-display">
+              <a href="${extractedContent}" class="reset-link" target="_blank" rel="noopener noreferrer">
+                <span class="link-text">
+                  ${isLongUrl ? extractedContent.substring(0, 40) + '...' : extractedContent}
+                </span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2 2v1"></path>
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </a>
+              <button class="code-copy" onclick="copyActivationCode('${extractedContent}', this)" title="Copy link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                 </svg>
               </button>
             </div>
-            ${isLongToken ? `<div class="token-info">Full token copied when clicked</div>` : ''}
           </div>
         </div>
       `;
@@ -78,8 +83,8 @@ export function createMessagePreview(message) {
               <span class="code-value">${extractedContent}</span>
               <button class="code-copy" onclick="copyActivationCode('${extractedContent}', this)" title="Copy code">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2 2v1"></path>
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                 </svg>
               </button>
             </div>
@@ -92,7 +97,7 @@ export function createMessagePreview(message) {
       <div class="no-code-section">
         <div class="no-code-content">
           <span class="no-code-icon">🔍</span>
-          <span class="no-code-text">No ${contentType === 'password_reset' ? 'reset token' : 'activation code'} found</span>
+          <span class="no-code-text">No ${contentType === 'password_reset' ? 'reset link' : 'activation code'} found</span>
         </div>
       </div>
     `;
