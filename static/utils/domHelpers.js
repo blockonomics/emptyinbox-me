@@ -16,6 +16,7 @@ export function extractActivationCode(htmlBody, textBody, subject) {
 
   if (!allText.trim()) return null;
 
+  // Clean HTML and decode entities
   let cleanText = allText;
   if (allText.includes('<')) {
     cleanText = allText
@@ -30,16 +31,30 @@ export function extractActivationCode(htmlBody, textBody, subject) {
       .trim();
   }
 
+  // First, try to extract password reset tokens from URLs
+  const resetToken = extractResetToken(allText);
+  if (resetToken) {
+    return resetToken;
+  }
+
+  // Then try activation codes
   const patterns = [
+    // Most specific patterns first
     /activation\s+code[:\s]+([A-Z0-9]{4,12})/gi,
     /verification\s+code[:\s]+([A-Z0-9]{4,12})/gi,
     /confirm\s+code[:\s]+([A-Z0-9]{4,12})/gi,
     /your\s+code[:\s]+([A-Z0-9]{4,12})/gi,
     /code[:\s]+([A-Z0-9]{6,12})/gi,
+    
+    // Mixed alphanumeric patterns
     /\b[A-Z0-9]*[A-Z][A-Z0-9]*[0-9][A-Z0-9]*\b/g,
     /\b[A-Z0-9]*[0-9][A-Z0-9]*[A-Z][A-Z0-9]*\b/g,
+    
+    // Hyphenated codes
     /\b[A-Z0-9]{3,6}-[A-Z0-9]{3,6}\b/g,
     /\b[A-Z0-9]{2,4}-[A-Z0-9]{2,4}-[A-Z0-9]{2,4}\b/g,
+    
+    // General alphanumeric codes
     /\b[A-Z0-9]{6,12}\b/g,
   ];
 
@@ -47,22 +62,84 @@ export function extractActivationCode(htmlBody, textBody, subject) {
     const matches = cleanText.matchAll(pattern);
     for (const match of matches) {
       let code = match[1] || match[0]; // Use captured group if available
+      code = code.replace(/^(activation|verification|confirm|your|code)[:\s]+/gi, '').trim();
 
-      if (
-        code.length >= 4 &&
-        code.length <= 12 &&
-        !code.match(/^(HTTP|WWW|GMAIL|YAHOO|OUTLOOK|EMAIL|MAIL|NULL|TRUE|FALSE)/i) &&
-        !code.includes('@') &&
-        !code.includes('.') &&
-        !code.match(/^[0-9]+$/) &&
-        !code.match(/^[A-Z]+$/)
-      ) {
-        return code.trim();
+      if (isValidCode(code)) {
+        return code;
       }
     }
   }
 
   return null;
+}
+
+function extractResetToken(htmlText) {
+  // Look for password reset URLs with tokens
+  const resetPatterns = [
+    // Standard reset URLs
+    /reset[^"'\s]*token=([A-Za-z0-9]{32,128})/gi,
+    /password[^"'\s]*token=([A-Za-z0-9]{32,128})/gi,
+    /token=([A-Za-z0-9]{32,128})/gi,
+    
+    // URLs in href attributes
+    /href="[^"]*reset[^"]*token=([A-Za-z0-9]{32,128})[^"]*"/gi,
+    /href="[^"]*password[^"]*token=([A-Za-z0-9]{32,128})[^"]*"/gi,
+    
+    // More general patterns for long tokens
+    /\b([A-Za-z0-9]{40,128})\b/g,
+  ];
+
+  for (const pattern of resetPatterns) {
+    const matches = htmlText.matchAll(pattern);
+    for (const match of matches) {
+      const token = match[1];
+      if (token && isValidToken(token)) {
+        return token;
+      }
+    }
+  }
+
+  return null;
+}
+
+function isValidCode(code) {
+  return (
+    code &&
+    code.length >= 4 &&
+    code.length <= 12 &&
+    !code.match(/^(HTTP|WWW|GMAIL|YAHOO|OUTLOOK|EMAIL|MAIL|NULL|TRUE|FALSE)/i) &&
+    !code.includes('@') &&
+    !code.includes('.') &&
+    !code.match(/^[0-9]+$/) && // Not just numbers
+    !code.match(/^[A-Z]+$/)    // Not just letters
+  );
+}
+
+function isValidToken(token) {
+  return (
+    token &&
+    token.length >= 32 &&
+    token.length <= 128 &&
+    /^[A-Za-z0-9]+$/.test(token) && // Only alphanumeric
+    /[A-Za-z]/.test(token) &&       // Has at least one letter
+    /[0-9]/.test(token)             // Has at least one number
+  );
+}
+
+export function getContentType(htmlBody, textBody, subject) {
+  const allText = [subject || '', htmlBody || '', textBody || ''].join(' ');
+  
+  // Check for password reset
+  if (/reset.*password|password.*reset|forgot.*password/gi.test(allText)) {
+    return 'password_reset';
+  }
+  
+  // Check for activation/verification
+  if (/activation|activate|verification|verify|confirm/gi.test(allText)) {
+    return 'activation';
+  }
+  
+  return 'general';
 }
 
 export function formatTimeAgo(timestamp) {
