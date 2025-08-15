@@ -1,5 +1,6 @@
 import { fetchUserData } from '../../../services/apiService.js';
-import { NAV_LINKS, LOGO, ROUTES, API_BASE_URL } from '../../../utils/constants.js';
+import { NAV_LINKS, LOGO, ROUTES } from '../../../utils/constants.js';
+import { clearAllAuthData } from '../../../utils/storage.js';
 
 // In your navbar creation function, after NAV_LINKS is looped through:
 export async function createNavbar() {

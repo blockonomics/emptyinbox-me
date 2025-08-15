@@ -1,4 +1,5 @@
 import { API_BASE_URL, LOCAL_STORAGE_KEYS, ROUTES, TOAST_TYPES } from '../../../utils/constants.js';
+import { clearAllAuthData } from '../../../utils/storage.js';
 import { showToast } from '../Toast/index.js';
 
 export function renderHeader() {
@@ -249,13 +250,6 @@ async function disconnectWallet() {
   } catch (error) {
     console.error('Wallet disconnect error:', error);
   }
-}
-
-// Function to clear all authentication data
-function clearAllAuthData() {
-  Object.values(LOCAL_STORAGE_KEYS).forEach(item => {
-    localStorage.removeItem(item);
-  });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
