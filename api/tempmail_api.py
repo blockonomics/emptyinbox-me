@@ -53,14 +53,33 @@ def auth_required(f):
 @app.route('/messages', methods=['GET'])
 @auth_required
 def get_messages(token):
-    '''Returns message list(id, inbox)'''
-    inboxes = db.session.query(Message.id, Message.inbox, Message.subject).join(Inbox, Message.inbox == Inbox.inbox).filter(Inbox.api_key==token).order_by(Message.timestamp.desc()).all()
-    if not inboxes:
-        inboxes = []
+    '''Returns message list(id, inbox, subject, content, timestamp)'''
+    messages = db.session.query(
+        Message.id, 
+        Message.inbox, 
+        Message.subject, 
+        Message.content,
+        Message.timestamp
+    ).join(
+        Inbox, Message.inbox == Inbox.inbox
+    ).filter(
+        Inbox.api_key==token
+    ).order_by(
+        Message.timestamp.desc()
+    ).all()
+    
+    if not messages:
+        messages = []
     else:
-        inboxes = [dict(id=row.id,inbox=row.inbox, subject=row.subject) for row in inboxes]
+        messages = [dict(
+            id=row.id,
+            inbox=row.inbox, 
+            subject=row.subject,
+            content=row.content.decode('utf-8') if row.content else '',
+            timestamp=row.timestamp
+        ) for row in messages]
         
-    return inboxes
+    return messages
 
 @app.route('/message/<msgid>', methods=['GET'])
 @auth_required

@@ -18,7 +18,11 @@ export function createMessagePreview(message) {
   }
 
   const serviceInfo = getServiceInfo(message.inbox);
-  const code = extractActivationCode(message.subject + ' ' + (message.text_body || ''));
+  
+  // Search for activation codes in both subject and content
+  const searchText = (message.subject || '') + ' ' + (message.content || '');
+  const code = extractActivationCode(searchText);
+  
   const timeAgo = formatTimeAgo(message.timestamp || Date.now() / 1000);
   const subject = message.subject || 'No subject';
 

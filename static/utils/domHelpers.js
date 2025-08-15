@@ -14,22 +14,55 @@ export function truncateText(text, maxLength) {
 export function extractActivationCode(text) {
   if (!text) return null;
 
+  // Clean up HTML content if present
+  let cleanText = text;
+  if (text.includes('<')) {
+    // Simple HTML tag removal
+    cleanText = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
   // Enhanced regex patterns for various activation codes
   const patterns = [
+    // Common patterns for activation codes
+    /(?:activation|verification|confirm|code|token)(?:\s+code)?[:\s]+([A-Z0-9]{4,12})/gi,
+    /(?:your|the)?\s*(?:activation|verification|confirm)?\s*code[:\s]+([A-Z0-9]{4,12})/gi,
     /\b[A-Z0-9]{6,12}\b/g,                    // Standard codes like ABC123DEF
     /\b\d{4,8}\b/g,                           // Numeric codes 123456
-    /(?:verification|code|token)[:\s]+([A-Z0-9]{4,12})/gi,  // "Code: ABC123"
-    /(?:activate|confirm)[:\s]+([A-Z0-9]{4,12})/gi,         // "Activate: DEF456"
     /[A-Z0-9]{4}-[A-Z0-9]{4}/g,              // Hyphenated codes ABC1-DEF2
+    /[A-Z0-9]{3}-[A-Z0-9]{3}-[A-Z0-9]{3}/g,  // Triple hyphenated ABC-DEF-123
   ];
 
+  // Look for codes in common contexts
+  const contextPatterns = [
+    /activate your account.*?([A-Z0-9]{4,12})/gi,
+    /verification code.*?([A-Z0-9]{4,12})/gi,
+    /confirm.*?([A-Z0-9]{4,12})/gi,
+    /enter.*?code.*?([A-Z0-9]{4,12})/gi,
+  ];
+
+  // Try context patterns first (more accurate)
+  for (const pattern of contextPatterns) {
+    const match = cleanText.match(pattern);
+    if (match && match[1] && match[1].length >= 4) {
+      return match[1];
+    }
+  }
+
+  // Then try general patterns
   for (const pattern of patterns) {
-    const matches = text.match(pattern);
+    const matches = cleanText.match(pattern);
     if (matches && matches.length > 0) {
       let code = matches[0];
+      
       // Clean up if it includes the label
-      code = code.replace(/^(verification|code|token|activate|confirm)[:\s]+/gi, '').trim();
-      if (code.length >= 4) return code;
+      code = code.replace(/^(activation|verification|code|token|confirm|your|the)[:\s]+/gi, '').trim();
+      
+      // Filter out common false positives
+      if (code.length >= 4 && 
+          !code.match(/^(http|www|gmail|yahoo|outlook|email|mail|[0-9]{13,})/i) &&
+          !code.includes('@')) {
+        return code;
+      }
     }
   }
 
