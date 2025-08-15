@@ -1792,7 +1792,8 @@
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  width: 100%;
 }
 
 .header-left {
@@ -1809,14 +1810,15 @@
 
 /* Message counter */
 .message-counter {
-  display: flex;
+  display: flex !important;
   align-items: center;
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.1);
+  color: #6b7280;
+  background: #f3f4f6;
   padding: 0.25rem 0.75rem;
   border-radius: 1rem;
   font-weight: 500;
+  border: 1px solid #e5e7eb;
 }
 
 .message-counter #current-index {
@@ -1826,7 +1828,7 @@
 
 /* Navigation controls */
 .navigation-controls {
-  display: flex;
+  display: flex !important;
   gap: 0.25rem;
 }
 
@@ -1836,17 +1838,17 @@
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
   border-radius: 0.5rem;
-  color: white;
+  color: #374151;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .nav-button:hover:not(.disabled) {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: #e5e7eb;
+  border-color: #9ca3af;
   transform: translateY(-1px);
 }
 
@@ -1871,8 +1873,8 @@
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  background: rgba(16, 185, 129, 0.2);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 0.5rem;
   color: #10b981;
   cursor: pointer;
@@ -1880,8 +1882,8 @@
 }
 
 .refresh-button:hover {
-  background: rgba(16, 185, 129, 0.3);
-  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.3);
   transform: translateY(-1px);
 }
 
