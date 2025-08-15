@@ -19,9 +19,20 @@ export function createMessagePreview(message) {
 
   const serviceInfo = getServiceInfo(message.inbox);
   
-  // Search for activation codes in both subject and content
-  const searchText = (message.subject || '') + ' ' + (message.content || '');
-  const code = extractActivationCode(searchText);
+  // Extract sender info for display
+  let senderName = 'Unknown';
+  if (message.sender) {
+    // Extract name from "Name <email>" format or just use email
+    const senderMatch = message.sender.match(/^(.+?)\s*<(.+?)>$/);
+    if (senderMatch) {
+      senderName = senderMatch[1].trim();
+    } else {
+      senderName = message.sender;
+    }
+  }
+  
+  // Search for activation codes in subject and message content
+  const code = extractActivationCode(message.html_body, message.text_body, message.subject);
   
   const timeAgo = formatTimeAgo(message.timestamp || Date.now() / 1000);
   const subject = message.subject || 'No subject';
@@ -40,8 +51,8 @@ export function createMessagePreview(message) {
       
       <div class="message-body">
         <div class="message-to">
-          <span class="to-label">To:</span>
-          <span class="to-address">${message.inbox}</span>
+          <span class="to-label">From:</span>
+          <span class="to-address" title="${message.sender || 'Unknown'}">${senderName}</span>
         </div>
         
         <div class="message-subject" title="${subject}">

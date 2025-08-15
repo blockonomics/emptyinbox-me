@@ -11,57 +11,67 @@ export function truncateText(text, maxLength) {
   return text.substring(0, maxLength) + '...';
 }
 
-export function extractActivationCode(text) {
-  if (!text) return null;
+export function extractActivationCode(htmlBody, textBody, subject) {
+  // Combine all text sources
+  const allText = [subject || '', htmlBody || '', textBody || ''].join(' ');
+  
+  if (!allText.trim()) return null;
 
-  // Clean up HTML content if present
-  let cleanText = text;
-  if (text.includes('<')) {
-    // Simple HTML tag removal
-    cleanText = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  // Clean up HTML content
+  let cleanText = allText;
+  if (allText.includes('<')) {
+    // Remove HTML tags and decode common entities
+    cleanText = allText
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
-  // Enhanced regex patterns for various activation codes
+  // Enhanced regex patterns for activation codes
   const patterns = [
-    // Common patterns for activation codes
-    /(?:activation|verification|confirm|code|token)(?:\s+code)?[:\s]+([A-Z0-9]{4,12})/gi,
-    /(?:your|the)?\s*(?:activation|verification|confirm)?\s*code[:\s]+([A-Z0-9]{4,12})/gi,
-    /\b[A-Z0-9]{6,12}\b/g,                    // Standard codes like ABC123DEF
-    /\b\d{4,8}\b/g,                           // Numeric codes 123456
-    /[A-Z0-9]{4}-[A-Z0-9]{4}/g,              // Hyphenated codes ABC1-DEF2
-    /[A-Z0-9]{3}-[A-Z0-9]{3}-[A-Z0-9]{3}/g,  // Triple hyphenated ABC-DEF-123
+    // Most specific patterns first - these are most likely to be correct
+    /activation\s+code[:\s]+([A-Z0-9]{4,12})/gi,
+    /verification\s+code[:\s]+([A-Z0-9]{4,12})/gi,
+    /confirm\s+code[:\s]+([A-Z0-9]{4,12})/gi,
+    /your\s+code[:\s]+([A-Z0-9]{4,12})/gi,
+    /code[:\s]+([A-Z0-9]{6,12})/gi,
+    
+    // Standalone alphanumeric codes (6+ chars, mixed letters and numbers)
+    /\b[A-Z0-9]*[A-Z][A-Z0-9]*[0-9][A-Z0-9]*\b/g,
+    /\b[A-Z0-9]*[0-9][A-Z0-9]*[A-Z][A-Z0-9]*\b/g,
+    
+    // Hyphenated codes
+    /\b[A-Z0-9]{3,6}-[A-Z0-9]{3,6}\b/g,
+    /\b[A-Z0-9]{2,4}-[A-Z0-9]{2,4}-[A-Z0-9]{2,4}\b/g,
+    
+    // Pure uppercase alphanumeric (6-12 chars)
+    /\b[A-Z0-9]{6,12}\b/g,
   ];
 
-  // Look for codes in common contexts
-  const contextPatterns = [
-    /activate your account.*?([A-Z0-9]{4,12})/gi,
-    /verification code.*?([A-Z0-9]{4,12})/gi,
-    /confirm.*?([A-Z0-9]{4,12})/gi,
-    /enter.*?code.*?([A-Z0-9]{4,12})/gi,
-  ];
-
-  // Try context patterns first (more accurate)
-  for (const pattern of contextPatterns) {
-    const match = cleanText.match(pattern);
-    if (match && match[1] && match[1].length >= 4) {
-      return match[1];
-    }
-  }
-
-  // Then try general patterns
   for (const pattern of patterns) {
     const matches = cleanText.match(pattern);
-    if (matches && matches.length > 0) {
-      let code = matches[0];
-      
-      // Clean up if it includes the label
-      code = code.replace(/^(activation|verification|code|token|confirm|your|the)[:\s]+/gi, '').trim();
-      
-      // Filter out common false positives
-      if (code.length >= 4 && 
-          !code.match(/^(http|www|gmail|yahoo|outlook|email|mail|[0-9]{13,})/i) &&
-          !code.includes('@')) {
-        return code;
+    if (matches) {
+      for (let match of matches) {
+        // Clean up match
+        let code = match.replace(/^(activation|verification|confirm|your|code)[:\s]+/gi, '').trim();
+        
+        // Filter out false positives
+        if (code.length >= 4 && 
+            code.length <= 12 &&
+            !code.match(/^(HTTP|WWW|GMAIL|YAHOO|OUTLOOK|EMAIL|MAIL|NULL|TRUE|FALSE)/i) &&
+            !code.includes('@') &&
+            !code.includes('.') &&
+            !code.match(/^[0-9]+$/) && // Not just numbers
+            !code.match(/^[A-Z]+$/)) { // Not just letters
+          
+          return code;
+        }
       }
     }
   }

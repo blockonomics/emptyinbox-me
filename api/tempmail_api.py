@@ -50,10 +50,12 @@ def auth_required(f):
         return f(token, *args, **kwargs)
     return decorator
 
+import json
+
 @app.route('/messages', methods=['GET'])
 @auth_required
 def get_messages(token):
-    '''Returns message list(id, inbox, subject, content, timestamp)'''
+    '''Returns message list(id, inbox, subject, content, timestamp, sender)'''
     messages = db.session.query(
         Message.id, 
         Message.inbox, 
@@ -71,13 +73,43 @@ def get_messages(token):
     if not messages:
         messages = []
     else:
-        messages = [dict(
-            id=row.id,
-            inbox=row.inbox, 
-            subject=row.subject,
-            content=row.content.decode('utf-8') if row.content else '',
-            timestamp=row.timestamp
-        ) for row in messages]
+        result_messages = []
+        for row in messages:
+            try:
+                # Parse the JSON content blob
+                content_json = json.loads(row.content.decode('utf-8')) if row.content else {}
+                
+                # Extract relevant fields
+                html_body = content_json.get('html_body', '')
+                text_body = content_json.get('text_body', '')
+                sender = content_json.get('sender', 'Unknown')
+                
+                # Get sender from headers if available
+                headers = content_json.get('headers', {})
+                from_header = headers.get('From', sender)
+                
+                result_messages.append(dict(
+                    id=row.id,
+                    inbox=row.inbox, 
+                    subject=row.subject,
+                    html_body=html_body,
+                    text_body=text_body,
+                    sender=from_header,
+                    timestamp=row.timestamp
+                ))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                # Fallback for malformed content
+                result_messages.append(dict(
+                    id=row.id,
+                    inbox=row.inbox, 
+                    subject=row.subject,
+                    html_body='',
+                    text_body='',
+                    sender='Unknown',
+                    timestamp=row.timestamp
+                ))
+        
+        messages = result_messages
         
     return messages
 
