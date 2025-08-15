@@ -1,6 +1,6 @@
 import { renderHeader } from '../../atoms/DashBoardHeader/index.js';
 import { renderStats } from '../../molecules/DashboardStats/index.js';
-import { fetchUserData } from '../../../services/index.js';
+import { fetchUserData } from '../../../services/apiService.js';
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
 import { setupDashboardEventListeners } from '../../../events/index.js';
 import { updateUserDisplay } from './helper.js';
