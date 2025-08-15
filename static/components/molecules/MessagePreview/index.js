@@ -1,3 +1,6 @@
+import { createElement } from "../../../utils/domHelpers.js";
+import { extractActivationCode } from "../../../utils/domHelpers.js";
+
 export function createMessagePreview(message) {
   const container = createElement('div');
 
