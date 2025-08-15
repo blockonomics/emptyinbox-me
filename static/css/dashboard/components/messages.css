@@ -204,7 +204,6 @@
 
 /* ===== Message Content Wrapper ===== */
 .message-content-wrapper {
-  padding: 1rem;
   transition: opacity 0.15s ease-in-out;
 }
 

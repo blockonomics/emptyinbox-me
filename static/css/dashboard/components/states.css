@@ -211,23 +211,6 @@
   overflow: hidden;
 }
 
-.activation-code-section::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--primary-color),
-    var(--primary-dark),
-    var(--primary-darker)
-  );
-  background-size: 200% 100%;
-  animation: gradientShift 2s ease-in-out infinite;
-}
-
 .code-container {
   position: relative;
   z-index: 1;
