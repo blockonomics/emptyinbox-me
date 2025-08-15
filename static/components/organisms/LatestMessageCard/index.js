@@ -18,7 +18,7 @@ export function createLatestMessageCard() {
       </div>
     </div>
     <div class="header-right">
-      <div class="message-counter" id="message-counter" style="display: none;">
+      <div class="message-counter" id="message-counter">
         <span id="current-index">0</span> of <span id="total-messages">0</span>
       </div>
       <div class="navigation-controls" id="nav-controls" style="display: none;">

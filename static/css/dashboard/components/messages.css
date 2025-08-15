@@ -207,7 +207,7 @@
 
 /* ===== Message Counter ===== */
 .message-counter {
-  display: flex !important;
+  display: none; /* Hidden by default */
   align-items: center;
   font-size: 0.875rem;
   color: var(--text-secondary);
@@ -218,11 +218,14 @@
   border: 1px solid #e5e7eb;
 }
 
+.message-counter.visible {
+  display: flex !important; /* Show when .visible class is added */
+}
+
 .message-counter #current-index {
   color: var(--primary-color);
   font-weight: 600;
 }
-
 /* ===== Navigation Controls ===== */
 .navigation-controls {
   display: flex !important;
