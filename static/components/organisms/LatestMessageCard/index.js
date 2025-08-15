@@ -19,7 +19,9 @@ export function createLatestMessageCard() {
     </div>
     <div class="header-right">
       <div class="message-counter" id="message-counter">
-        <span id="current-index">0</span> of <span id="total-messages">0</span>
+        <span id="current-index">1</span>
+        <span class="counter-separator"> of </span>
+        <span id="total-messages">2</span>
       </div>
       <div class="navigation-controls" id="nav-controls" style="display: none;">
         <button class="nav-button" id="prev-btn" onclick="navigateMessage(-1)" title="Previous message">

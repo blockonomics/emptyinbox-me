@@ -226,6 +226,10 @@
   color: var(--primary-color);
   font-weight: 600;
 }
+
+.counter-separator {
+  margin: 0 4px;
+}
 /* ===== Navigation Controls ===== */
 .navigation-controls {
   display: flex !important;
