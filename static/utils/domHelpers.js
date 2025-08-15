@@ -12,15 +12,12 @@ export function truncateText(text, maxLength) {
 }
 
 export function extractActivationCode(htmlBody, textBody, subject) {
-  // Combine all text sources
   const allText = [subject || '', htmlBody || '', textBody || ''].join(' ');
-  
+
   if (!allText.trim()) return null;
 
-  // Clean up HTML content
   let cleanText = allText;
   if (allText.includes('<')) {
-    // Remove HTML tags and decode common entities
     cleanText = allText
       .replace(/<[^>]*>/g, ' ')
       .replace(/&nbsp;/g, ' ')
@@ -33,45 +30,34 @@ export function extractActivationCode(htmlBody, textBody, subject) {
       .trim();
   }
 
-  // Enhanced regex patterns for activation codes
   const patterns = [
-    // Most specific patterns first - these are most likely to be correct
     /activation\s+code[:\s]+([A-Z0-9]{4,12})/gi,
     /verification\s+code[:\s]+([A-Z0-9]{4,12})/gi,
     /confirm\s+code[:\s]+([A-Z0-9]{4,12})/gi,
     /your\s+code[:\s]+([A-Z0-9]{4,12})/gi,
     /code[:\s]+([A-Z0-9]{6,12})/gi,
-    
-    // Standalone alphanumeric codes (6+ chars, mixed letters and numbers)
     /\b[A-Z0-9]*[A-Z][A-Z0-9]*[0-9][A-Z0-9]*\b/g,
     /\b[A-Z0-9]*[0-9][A-Z0-9]*[A-Z][A-Z0-9]*\b/g,
-    
-    // Hyphenated codes
     /\b[A-Z0-9]{3,6}-[A-Z0-9]{3,6}\b/g,
     /\b[A-Z0-9]{2,4}-[A-Z0-9]{2,4}-[A-Z0-9]{2,4}\b/g,
-    
-    // Pure uppercase alphanumeric (6-12 chars)
     /\b[A-Z0-9]{6,12}\b/g,
   ];
 
   for (const pattern of patterns) {
-    const matches = cleanText.match(pattern);
-    if (matches) {
-      for (let match of matches) {
-        // Clean up match
-        let code = match.replace(/^(activation|verification|confirm|your|code)[:\s]+/gi, '').trim();
-        
-        // Filter out false positives
-        if (code.length >= 4 && 
-            code.length <= 12 &&
-            !code.match(/^(HTTP|WWW|GMAIL|YAHOO|OUTLOOK|EMAIL|MAIL|NULL|TRUE|FALSE)/i) &&
-            !code.includes('@') &&
-            !code.includes('.') &&
-            !code.match(/^[0-9]+$/) && // Not just numbers
-            !code.match(/^[A-Z]+$/)) { // Not just letters
-          
-          return code;
-        }
+    const matches = cleanText.matchAll(pattern);
+    for (const match of matches) {
+      let code = match[1] || match[0]; // Use captured group if available
+
+      if (
+        code.length >= 4 &&
+        code.length <= 12 &&
+        !code.match(/^(HTTP|WWW|GMAIL|YAHOO|OUTLOOK|EMAIL|MAIL|NULL|TRUE|FALSE)/i) &&
+        !code.includes('@') &&
+        !code.includes('.') &&
+        !code.match(/^[0-9]+$/) &&
+        !code.match(/^[A-Z]+$/)
+      ) {
+        return code.trim();
       }
     }
   }
