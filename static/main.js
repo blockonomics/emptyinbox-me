@@ -3,6 +3,8 @@ import { createFooter } from '../components/molecules/Footer/index.js';
 import { renderHomePage } from '../components/pages/HomePage/index.js';
 import { renderAboutPage } from '../components/pages/About/index.js';
 import { renderLoginPage } from '../components/pages/Login/index.js';
+import { renderInboxesPage } from '../components/pages/Inboxes/index.js';
+import { renderSettingsPage } from '../components/pages/Settings/index.js';
 import { renderMessagesPage } from '../components/pages/Messages/index.js';
 import { renderApiDocsPage } from './components/pages/ApiDocs/index.js';
 import { ROUTES } from './utils/constants.js';
@@ -40,6 +42,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       break;
     case ROUTES.API_DOCS:
       renderApiDocsPage();
+    case ROUTES.INBOXES:
+      renderInboxesPage();
+    case ROUTES.SETTINGS:
+      renderSettingsPage();
       break;
     default:
       console.error('Page not found:', path);

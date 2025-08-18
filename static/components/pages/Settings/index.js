@@ -1,4 +1,5 @@
 import { renderHeader } from '../../atoms/MessagesHeader/index.js';
+import { renderStats } from '../../molecules/MessagesStats/index.js';
 import { fetchUserData } from '../../../services/apiService.js';
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
 import { setupMessagesEventListeners } from '../../../events/index.js';
@@ -13,6 +14,7 @@ export async function renderMessagesPage() {
   section.classList.add('messages');
 
   section.appendChild(renderHeader());
+  section.appendChild(renderStats());
 
   container.appendChild(section);
   main.appendChild(container);
