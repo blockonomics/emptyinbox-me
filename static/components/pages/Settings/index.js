@@ -1,4 +1,4 @@
-import { renderHeader } from '../../atoms/MessagesHeader/index.js';
+import { renderConnectedWalletCard } from '../../atoms/ConnectedWalletCard/index.js';
 import { renderSettingsCards } from '../../molecules/SettingsCards/index.js';
 import { fetchUserData } from '../../../services/apiService.js';
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
@@ -18,7 +18,7 @@ export async function renderSettingsPage() {
   const section = document.createElement('section');
   section.classList.add('messages');
 
-  section.appendChild(renderHeader());
+  section.appendChild(renderConnectedWalletCard());
   section.appendChild(renderSettingsCards());
 
   container.appendChild(section);

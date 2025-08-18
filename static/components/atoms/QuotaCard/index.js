@@ -4,7 +4,7 @@ import { showToast } from '../Toast/index.js';
 
 export function renderHeader() {
   const header = document.createElement('div');
-  header.classList.add('messages-header');
+  header.classList.add('connected-wallet-card');
   header.innerHTML = `
     <div class="user-info">
       <div class="wallet-info">

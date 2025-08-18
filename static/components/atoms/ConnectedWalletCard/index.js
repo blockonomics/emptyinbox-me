@@ -2,9 +2,9 @@ import { API_BASE_URL, LOCAL_STORAGE_KEYS, ROUTES, TOAST_TYPES } from '../../../
 import { clearAllAuthData } from '../../../utils/storage.js';
 import { showToast } from '../Toast/index.js';
 
-export function renderHeader() {
+export function renderConnectedWalletCard() {
   const header = document.createElement('div');
-  header.classList.add('messages-header');
+  header.classList.add('connected-wallet-card');
   header.innerHTML = `
     <div class="user-info">
       <div class="wallet-info">

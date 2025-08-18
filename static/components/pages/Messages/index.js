@@ -1,4 +1,3 @@
-import { renderHeader } from '../../atoms/MessagesHeader/index.js';
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
 import { setupMessagesEventListeners } from '../../../events/index.js';
 
@@ -14,8 +13,6 @@ export async function renderMessagesPage() {
 
   const section = document.createElement('section');
   section.classList.add('messages');
-
-  section.appendChild(renderHeader());
 
   container.appendChild(section);
   main.appendChild(container);
