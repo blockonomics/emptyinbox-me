@@ -1,5 +1,6 @@
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
 import { setupMessagesEventListeners } from '../../../events/index.js';
+import { createMessageCards } from '../../organisms/MessageCards/index.js';
 
 export async function renderMessagesPage() {
   const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
@@ -13,6 +14,8 @@ export async function renderMessagesPage() {
 
   const section = document.createElement('section');
   section.classList.add('messages');
+  section.appendChild(createMessageCards());
+
 
   container.appendChild(section);
   main.appendChild(container);

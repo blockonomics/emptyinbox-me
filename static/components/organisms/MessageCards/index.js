@@ -5,7 +5,7 @@ import { fetchMessages } from "../../../services/apiService.js";
 let currentMessages = [];
 let currentMessageIndex = 0;
 
-export function createLatestMessageCard() {
+export function createMessageCards() {
   const card = createElement('div', 'stat-card latest-message-card');
   
   const cardHeader = createElement('div', 'card-header-enhanced');
