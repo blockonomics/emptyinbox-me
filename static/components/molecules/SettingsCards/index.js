@@ -7,7 +7,7 @@ export function renderSettingsCards() {
   
   // Add all stat cards
   statsContainer.appendChild(createApiKeyCard());
-  statsContainer.appendChild(createStatCard('Inbox Quota', '0 remaining', 'quota-text'));
+  statsContainer.appendChild(createStatCard('Billing Transactions', 'Still need to be implemented', 'quota-text'));
   
   return statsContainer;
 }
