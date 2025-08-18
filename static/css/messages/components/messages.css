@@ -130,13 +130,13 @@
 
 .message-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.75rem;
   padding: 1rem;
   background: linear-gradient(
     135deg,
-    rgba(248, 250, 252, 0.8) 0%,
-    rgba(241, 245, 249, 0.6) 100%
+    rgba(248, 250, 252, 1) 0%,
+    rgba(241, 245, 249, 0.9) 100%
   );
 }
 
