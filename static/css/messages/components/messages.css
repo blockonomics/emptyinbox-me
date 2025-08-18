@@ -116,7 +116,6 @@
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all var(--transition-normal);
-  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .message-preview:hover {
