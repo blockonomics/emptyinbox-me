@@ -3,20 +3,6 @@ import { createElement, extractActivationCode, getContentType, formatTimeAgo, ge
 export function createMessagePreview(message) {
   const container = createElement('div', 'message-preview');
 
-  if (!message) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-animation">
-          <div class="empty-icon">📬</div>
-          <div class="pulse-ring"></div>
-        </div>
-        <div class="empty-text">No messages yet</div>
-        <div class="empty-subtext">Your latest messages will appear here</div>
-      </div>
-    `;
-    return container;
-  }
-
   const serviceInfo = getServiceInfo(message.inbox);
   
   // Extract sender info for display

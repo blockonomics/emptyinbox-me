@@ -1,38 +1,23 @@
 import { createElement } from "../../../utils/domHelpers.js";
 import { createMessagePreview } from "../../molecules/MessagePreview/index.js";
 import { fetchMessages } from "../../../services/apiService.js";
+import { ROUTES } from "../../../utils/constants.js";
 
 export function createMessageCards() {
-  const card = createElement('div', 'stat-card latest-message-card');
-  
-  const cardHeader = createElement('div', 'card-header-enhanced');
-  cardHeader.innerHTML = `
-    <div class="header-left">
-      <h3>Latest Messages</h3>
-      <div class="live-indicator">
-        <div class="live-dot"></div>
-        <span>Live</span>
-      </div>
-    </div>
-  `;
-  
-  const contentDiv = createElement('div', 'message-content-wrapper');
-  contentDiv.id = 'latest-message-content';
-  
-  card.appendChild(cardHeader);
-  card.appendChild(contentDiv);
+  const container = createElement('div', 'messages-container');
+  container.id = 'messages-container';
   
   // Load all messages
   setTimeout(async () => {
-    await loadAllMessages(contentDiv);
+    await loadAllMessages(container);
   }, 100);
   
-  return card;
+  return container;
 }
 
-async function loadAllMessages(contentDiv) {
+async function loadAllMessages(container) {
   try {
-    contentDiv.innerHTML = `
+    container.innerHTML = `
       <div class="loading-state">
         <div class="loading-animation">
           <div class="loading-spinner"></div>
@@ -40,16 +25,16 @@ async function loadAllMessages(contentDiv) {
             <span></span><span></span><span></span>
           </div>
         </div>
-        <div class="loading-text">Fetching all messages...</div>
+        <div class="loading-text">Fetching messages...</div>
       </div>
     `;
     
     const messages = await fetchMessages();
     
-    displayAllMessages(contentDiv, messages || []);
+    displayAllMessages(container, messages || []);
     
   } catch (error) {
-    contentDiv.innerHTML = `
+    container.innerHTML = `
       <div class="error-state">
         <div class="error-animation">
           <span class="error-icon">⚠️</span>
@@ -61,37 +46,32 @@ async function loadAllMessages(contentDiv) {
   }
 }
 
-function displayAllMessages(contentDiv, messages) {
+function displayAllMessages(container, messages) {
   // Clear content with smooth transition
-  contentDiv.style.opacity = '0';
+  container.style.opacity = '0';
   
   setTimeout(() => {
-    contentDiv.innerHTML = '';
+    container.innerHTML = '';
     
     if (messages.length === 0) {
-      const noMessagesDiv = createElement('div', 'no-messages-state');
+      const noMessagesDiv = createElement('div', 'stat-card message-card');
       noMessagesDiv.innerHTML = `
         <div class="empty-state">
           <span class="empty-icon">📭</span>
-          <div class="empty-text">No messages available</div>
+          <div class="empty-text">No messages yet. Head over to your <a href="${ROUTES.INBOXES}">inboxes</a> to copy your email address and start receiving messages here.</div>
         </div>
       `;
-      contentDiv.appendChild(noMessagesDiv);
+      container.appendChild(noMessagesDiv);
     } else {
-      // Create container for all messages
-      const messagesContainer = createElement('div', 'all-messages-container');
-      
-      // Loop through all messages and create previews
+      // Create a separate card for each message
       messages.forEach((message, index) => {
-        const messageWrapper = createElement('div', 'message-item-wrapper');
+        const messageCard = createElement('div', 'stat-card message-card');
         const preview = createMessagePreview(message);
-        messageWrapper.appendChild(preview);
-        messagesContainer.appendChild(messageWrapper);
+        messageCard.appendChild(preview);
+        container.appendChild(messageCard);
       });
-      
-      contentDiv.appendChild(messagesContainer);
     }
     
-    contentDiv.style.opacity = '1';
+    container.style.opacity = '1';
   }, 150);
 }
