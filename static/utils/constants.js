@@ -3,7 +3,7 @@ export const ROUTES = {
   HOME: '/',
   ABOUT: '/about.html',
   LOGIN: '/login.html',
-  DASHBOARD: '/dashboard.html',
+  MESSAGES: '/messages.html',
   API_DOCS: '/docs.html',
 };
 
