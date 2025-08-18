@@ -1,6 +1,6 @@
 import { API_BASE_URL, LOCAL_STORAGE_KEYS, ROUTES } from '../utils/constants.js';
 
-export function setupDashboardEventListeners() {
+export function setupMessagesEventListeners() {
   const logoutBtn = document.getElementById('logout-btn');
   const toggleApiKeyBtn = document.getElementById('toggle-api-key');
   const apiKeyDisplay = document.getElementById('api-key-display');

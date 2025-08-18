@@ -200,7 +200,7 @@ async function initializeWalletAuth() {
         // Store auth token and redirect
         localStorage.setItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN, authResult.token);
         localStorage.setItem(LOCAL_STORAGE_KEYS.API_KEY, apiKey);
-        window.location.href = "/dashboard.html";
+        window.location.href = "/messages.html";
       } else {
         showError("Authentication failed. Please try again.");
       }

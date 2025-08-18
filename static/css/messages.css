@@ -1,0 +1,13 @@
+/* === Messages Styles === */
+
+/* 
+  This file has been modularized for better maintainability.
+  The new structure is available in static/css/messages/
+  
+  To use the new modular CSS:
+  1. Replace this file with: <link rel="stylesheet" href="static/css/messages/main.css">
+  2. Or continue using this file for backward compatibility
+*/
+
+/* Import the modular CSS structure */
+@import url("./messages/main.css");

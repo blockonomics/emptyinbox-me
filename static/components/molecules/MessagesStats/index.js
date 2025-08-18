@@ -5,7 +5,7 @@ import { createLatestMessageCard } from "../../organisms/LatestMessageCard/index
 import { createInboxManagementCard } from "../../organisms/InboxManagementCard/index.js";
 
 export function renderStats() {
-  const statsContainer = createElement('div', 'dashboard-stats');
+  const statsContainer = createElement('div', 'messages-stats');
   
   // Add all stat cards
   statsContainer.appendChild(createApiKeyCard());

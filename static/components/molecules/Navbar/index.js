@@ -46,7 +46,7 @@ export async function createNavbar() {
   const authStatus = await checkAuthStatus();
   const linksToRender = NAV_LINKS.map(link => {
     if (link.label === 'Login' && authStatus.isAuthenticated) {
-      return { ...link, label: 'Dashboard', href: ROUTES.DASHBOARD };
+      return { ...link, label: 'Messages', href: ROUTES.MESSAGES };
     }
     return link;
   });

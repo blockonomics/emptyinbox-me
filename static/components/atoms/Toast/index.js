@@ -4,7 +4,7 @@ import { TOAST_TYPES } from '../../../utils/constants.js'
 export function createToast() {
   const toast = document.createElement('div');
   toast.id = 'toast';
-  toast.className = 'dashboard-toast';
+  toast.className = 'messages-toast';
 
   // Base styles
   toast.style.position = 'fixed';

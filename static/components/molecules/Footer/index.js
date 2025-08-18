@@ -19,7 +19,7 @@ export function createFooter() {
   brandSection.className = "footer-brand";
 
   const logoLink = document.createElement("a");
-  logoLink.href = isLoggedIn ? ROUTES.DASHBOARD : "/";
+  logoLink.href = isLoggedIn ? ROUTES.MESSAGES : "/";
   logoLink.className = "footer-logo-link";
 
   const logo = document.createElement("img");
@@ -51,8 +51,8 @@ export function createFooter() {
     ({ label, href, external, icon, className }) => {
       if (isLoggedIn && href === ROUTES.LOGIN) {
         return {
-          label: "Dashboard",
-          href: ROUTES.DASHBOARD,
+          label: "Messages",
+          href: ROUTES.MESSAGES,
           external,
           icon,
           className,

@@ -4,16 +4,15 @@ import { showToast } from '../Toast/index.js';
 
 export function renderHeader() {
   const header = document.createElement('div');
-  header.classList.add('dashboard-header');
+  header.classList.add('messages-header');
   header.innerHTML = `
-    <h1>Welcome to your Dashboard</h1>
     <div class="user-info">
       <div class="wallet-info">
         <span class="wallet-label">Connected Wallet:</span>
         <span id="user-address" class="wallet-address">Loading...</span>
       </div>
       <button id="buy-quota-btn" class="buy-quota-btn">Buy More Quota</button>
-      <button id="logout-btn" class="logout-btn">Disconnect</button>
+      <button id="logout-btn" class="logout-btn">Log Out</button>
     </div>
   `;
 
@@ -89,7 +88,7 @@ function setupPaymentModal() {
               id="web3-payment-widget"
               order_amount="10"
               receive_address="0x5C0ed91604E92D7f488d62058293ce603BCC68eF"
-              redirect_url="/dashboard.html?payment=success"
+              redirect_url="/inboxes.html?payment=success"
               testnet="1">
             </web3-payment>
           </div>

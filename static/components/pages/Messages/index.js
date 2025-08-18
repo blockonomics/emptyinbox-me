@@ -1,17 +1,17 @@
-import { renderHeader } from '../../atoms/DashBoardHeader/index.js';
-import { renderStats } from '../../molecules/DashboardStats/index.js';
+import { renderHeader } from '../../atoms/MessagesHeader/index.js';
+import { renderStats } from '../../molecules/MessagesStats/index.js';
 import { fetchUserData } from '../../../services/apiService.js';
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
-import { setupDashboardEventListeners } from '../../../events/index.js';
+import { setupMessagesEventListeners } from '../../../events/index.js';
 import { updateUserDisplay } from './helper.js';
 
-export async function renderDashboardPage() {
+export async function renderMessagesPage() {
   const main = document.createElement('main');
   const container = document.createElement('div');
-  container.classList.add('dashboard-page');
+  container.classList.add('messages-page');
 
   const section = document.createElement('section');
-  section.classList.add('dashboard');
+  section.classList.add('messages');
 
   section.appendChild(renderHeader());
   section.appendChild(renderStats());
@@ -29,7 +29,7 @@ export async function renderDashboardPage() {
   try {
     const userData = await fetchUserData(authToken);
     updateUserDisplay(userData);
-    setupDashboardEventListeners();
+    setupMessagesEventListeners();
   } catch (error) {
     console.error('User fetch failed:', error);
     localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
