@@ -93,20 +93,20 @@ export function createMessagePreview(message) {
 
   container.innerHTML = `
     <div class="message-content">
-      <div class="message-header">
+      <-- <div class="message-header">
         <div class="service-badge" style="--service-color: ${serviceInfo.color}">
           <span class="service-icon">${serviceInfo.icon}</span>
           <span class="service-name">${serviceInfo.name}</span>
         </div>
-        <div class="message-time" title="${new Date((message.timestamp || 0) * 1000).toLocaleString()}">
-          ${timeAgo}
-        </div>
-      </div>
+      </div> -->
       
       <div class="message-body">
         <div class="message-to">
           <span class="to-label">From:</span>
           <span class="to-address" title="${message.sender || 'Unknown'}">${senderName}</span>
+        </div>
+        <div class="message-time" title="${new Date((message.timestamp || 0) * 1000).toLocaleString()}">
+          ${timeAgo}
         </div>
         
         <div class="message-subject" title="${subject}">
