@@ -17,7 +17,7 @@ export const TEXT = {
 export const NAV_LINKS = [
   { label: 'Login', href: ROUTES.LOGIN },
   { label: 'Inboxes', href: ROUTES.INBOXES },
-  { label: "Settings", href: routes.SETTINGS },
+  { label: "Settings", href: ROUTES.SETTINGS },
   { label: 'About', href: ROUTES.ABOUT },
   { label: 'API Docs', href: ROUTES.API_DOCS },
   {
