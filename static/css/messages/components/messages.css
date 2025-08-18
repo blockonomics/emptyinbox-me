@@ -138,6 +138,7 @@
     rgba(248, 250, 252, 1) 0%,
     rgba(241, 245, 249, 0.9) 100%
   );
+  justify-content: space-between;
 }
 
 .service-badge {
@@ -165,7 +166,7 @@
 
 .message-time {
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--text-primary);
   font-weight: 500;
   background: rgba(156, 163, 175, 0.1);
   padding: 0.25rem 0.5rem;
