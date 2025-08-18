@@ -99,7 +99,8 @@ export function createMessagePreview(message) {
 
   container.innerHTML = `
     <div class="message-content">
-      <div class="message-header">
+    <div class="message-body">
+      <div class="row">
         <div class="message-to">
           <span class="to-label">From:</span>
           <span class="to-address" title="${message.sender || 'Unknown'}">${senderName}</span>
@@ -108,9 +109,7 @@ export function createMessagePreview(message) {
           ${timeAgo}
         </div>
       </div> 
-      
-      <div class="message-body">
-        
+    
         <div class="message-subject" title="${subject}">
           ${truncateText(subject, 60)}
         </div>
