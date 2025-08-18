@@ -1,8 +1,6 @@
 import { renderHeader } from '../../atoms/MessagesHeader/index.js';
-import { fetchUserData } from '../../../services/apiService.js';
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
 import { setupMessagesEventListeners } from '../../../events/index.js';
-import { updateUserDisplay } from './helper.js';
 
 export async function renderMessagesPage() {
   const main = document.createElement('main');
@@ -25,8 +23,6 @@ export async function renderMessagesPage() {
   }
 
   try {
-    const userData = await fetchUserData(authToken);
-    updateUserDisplay(userData);
     setupMessagesEventListeners();
   } catch (error) {
     console.error('User fetch failed:', error);

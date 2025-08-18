@@ -1,11 +1,8 @@
 import { renderHeader } from '../../atoms/MessagesHeader/index.js';
-import { renderStats } from '../../molecules/MessagesStats/index.js';
-import { fetchUserData } from '../../../services/apiService.js';
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
 import { setupMessagesEventListeners } from '../../../events/index.js';
-import { updateUserDisplay } from './helper.js';
 
-export async function renderMessagesPage() {
+export async function renderInboxesPage() {
   const main = document.createElement('main');
   const container = document.createElement('div');
   container.classList.add('messages-page');
@@ -14,7 +11,6 @@ export async function renderMessagesPage() {
   section.classList.add('messages');
 
   section.appendChild(renderHeader());
-  section.appendChild(renderStats());
 
   container.appendChild(section);
   main.appendChild(container);
@@ -27,8 +23,6 @@ export async function renderMessagesPage() {
   }
 
   try {
-    const userData = await fetchUserData(authToken);
-    updateUserDisplay(userData);
     setupMessagesEventListeners();
   } catch (error) {
     console.error('User fetch failed:', error);

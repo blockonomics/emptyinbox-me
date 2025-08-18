@@ -5,7 +5,7 @@ import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
 import { setupMessagesEventListeners } from '../../../events/index.js';
 import { updateUserDisplay } from './helper.js';
 
-export async function renderMessagesPage() {
+export async function renderSettingsPage() {
   const main = document.createElement('main');
   const container = document.createElement('div');
   container.classList.add('messages-page');
