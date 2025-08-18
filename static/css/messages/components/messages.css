@@ -49,11 +49,11 @@
   transition: all var(--transition-normal);
 }
 
-.message-preview:hover {
+/* .message-preview:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
   border-color: rgba(16, 185, 129, 0.3);
-}
+} */
 
 .message-content {
   padding: 0;
