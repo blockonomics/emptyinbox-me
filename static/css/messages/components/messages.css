@@ -1,7 +1,7 @@
 /* ===== Message Components ===== */
 
 /* ===== Latest Message Card ===== */
-.latest-message-card {
+.message-card {
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.9) 0%,
@@ -11,9 +11,13 @@
   min-height: 280px;
   overflow: hidden;
   position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 0.8s ease-out both;
+  margin-bottom: 1.5rem;
 }
 
-.latest-message-card::before {
+.message-card::before {
   background: linear-gradient(
     90deg,
     var(--primary-color),
