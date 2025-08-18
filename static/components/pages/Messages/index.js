@@ -3,6 +3,11 @@ import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
 import { setupMessagesEventListeners } from '../../../events/index.js';
 
 export async function renderMessagesPage() {
+  const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+  if (!authToken) {
+    window.location.href = ROUTES.LOGIN;
+    return;
+  }
   const main = document.createElement('main');
   const container = document.createElement('div');
   container.classList.add('messages-page');
@@ -16,11 +21,6 @@ export async function renderMessagesPage() {
   main.appendChild(container);
   document.body.appendChild(main);
 
-  const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
-  if (!authToken) {
-    window.location.href = ROUTES.LOGIN;
-    return;
-  }
 
   try {
     setupMessagesEventListeners();
