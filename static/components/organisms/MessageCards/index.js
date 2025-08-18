@@ -64,7 +64,7 @@ function displayAllMessages(container, messages) {
     } else {
       // Create a separate card for each message
       messages.forEach((message, index) => {
-        const messageCard = createElement('div', 'stat-card message-card');
+        const messageCard = createElement('div', 'message-card');
         const preview = createMessagePreview(message);
         messageCard.appendChild(preview);
         container.appendChild(messageCard);
