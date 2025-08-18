@@ -2,6 +2,7 @@ import { createElement, extractActivationCode, getContentType, formatTimeAgo, ge
 
 export function createMessagePreview(message) {
   const container = createElement('div', 'message-preview');
+  const messageId = `message-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   const serviceInfo = getServiceInfo(message.inbox);
   
@@ -22,6 +23,22 @@ export function createMessagePreview(message) {
   
   const timeAgo = formatTimeAgo(message.timestamp || Date.now() / 1000);
   const subject = message.subject || 'No subject';
+
+  // Get content preview for when no activation code is found
+  const getContentPreview = (htmlBody, textBody) => {
+    let content = '';
+    if (textBody) {
+      content = textBody.trim();
+    } else if (htmlBody) {
+      // Strip HTML tags for preview
+      content = htmlBody.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+    
+    if (content.length > 120) {
+      return content.substring(0, 120) + '...';
+    }
+    return content || 'No content available';
+  };
 
   // Determine content display based on type and extracted content
   let contentSection = '';
@@ -50,7 +67,7 @@ export function createMessagePreview(message) {
               <button class="code-copy" onclick="copyActivationCode('${extractedContent.replace(/'/g, "\\'")}', this)" title="Copy link">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                  <path d="M4 16c-1.1 0-2-.9-2 2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
                 </svg>
                 <span class="copy-text">Copy Link</span>
               </button>
@@ -81,11 +98,11 @@ export function createMessagePreview(message) {
       `;
     }
   } else {
+    const contentPreview = getContentPreview(message.html_body, message.text_body);
     contentSection = `
-      <div class="no-code-section">
-        <div class="no-code-content">
-          <span class="no-code-icon">🔍</span>
-          <span class="no-code-text">No ${contentType === 'password_reset' ? 'reset link' : 'activation code'} found</span>
+      <div class="content-preview-section">
+        <div class="content-preview">
+          ${contentPreview}
         </div>
       </div>
     `;
@@ -99,28 +116,64 @@ export function createMessagePreview(message) {
 
   container.innerHTML = `
     <div class="message-content">
-    <div class="message-body">
-      <div class="row">
-        <div class="message-to">
-          <span class="to-label">From:</span>
-          <span class="to-address" title="${message.sender || 'Unknown'}">${senderName}</span>
-        </div>
-        <div class="message-time" title="${new Date((message.timestamp || 0) * 1000).toLocaleString()}">
-          ${timeAgo}
-        </div>
-      </div> 
+      <div class="message-body">
+        <div class="row">
+          <div class="message-to">
+            <span class="to-label">From:</span>
+            <span class="to-address" title="${message.sender || 'Unknown'}">${senderName}</span>
+          </div>
+          <div class="message-actions">
+            <div class="message-time" title="${new Date((message.timestamp || 0) * 1000).toLocaleString()}">
+              ${timeAgo}
+            </div>
+            <button class="dropdown-arrow" onclick="toggleMessageContent('${messageId}')" title="Show full message">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div> 
     
         <div class="message-subject" title="${subject}">
           ${truncateText(subject, 60)}
         </div>
         
         ${contentSection}
+        
+        <div class="full-message-content" id="${messageId}" style="display: none;">
+          <div class="full-message-section">
+            <h4>Full Message Content:</h4>
+            <div class="full-message-body">
+              ${message.html_body || message.text_body || 'No content available'}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   `;
 
   return container;
 }
+
+// Global toggle function for message content
+window.toggleMessageContent = function(messageId) {
+  const fullContent = document.getElementById(messageId);
+  const arrow = document.querySelector(`button[onclick="toggleMessageContent('${messageId}')"] svg`);
+  
+  if (fullContent && arrow) {
+    const isHidden = fullContent.style.display === 'none';
+    
+    if (isHidden) {
+      fullContent.style.display = 'block';
+      arrow.style.transform = 'rotate(180deg)';
+      arrow.parentElement.setAttribute('title', 'Hide full message');
+    } else {
+      fullContent.style.display = 'none';
+      arrow.style.transform = 'rotate(0deg)';
+      arrow.parentElement.setAttribute('title', 'Show full message');
+    }
+  }
+};
 
 // Global copy function with improved feedback
 window.copyActivationCode = async function(code, button) {

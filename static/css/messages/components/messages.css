@@ -40,75 +40,6 @@
   }
 }
 
-/* ===== Card Header ===== */
-.card-header-enhanced {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  align-items: stretch;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  width: 100%;
-}
-
-.header-left,
-.header-right {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-left h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.header-right {
-  gap: 0.75rem;
-}
-
-/* ===== Live Indicator ===== */
-.live-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(16, 185, 129, 0.1);
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.live-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--primary-color);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-.live-indicator span {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--primary-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.8;
-  }
-}
-
 /* ===== Message Preview ===== */
 .message-preview {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -132,6 +63,36 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: flex-start;
+}
+
+.message-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdown-arrow {
+  background: rgba(156, 163, 175, 0.1);
+  border: 1px solid rgba(156, 163, 175, 0.2);
+  border-radius: 6px;
+  padding: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown-arrow:hover {
+  background: rgba(156, 163, 175, 0.2);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.dropdown-arrow svg {
+  transition: transform 0.3s ease;
 }
 
 .message-header {
@@ -212,6 +173,53 @@
   color: var(--text-primary);
   margin-bottom: 1rem;
   line-height: 1.4;
+}
+
+/* ===== Content Preview Section ===== */
+.content-preview-section {
+  background: rgba(156, 163, 175, 0.05);
+  border: 1px solid rgba(156, 163, 175, 0.15);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.content-preview {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ===== Full Message Content ===== */
+.full-message-content {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(156, 163, 175, 0.2);
+  padding-top: 1rem;
+}
+
+.full-message-section h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.full-message-body {
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid rgba(156, 163, 175, 0.15);
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-height: 300px;
+  overflow-y: auto;
+  font-family: inherit;
+}
+
+.full-message-body * {
+  max-width: 100%;
 }
 
 /* ===== Message Content Wrapper ===== */
@@ -400,50 +408,8 @@
   color: #059669;
 }
 
-/* ===== No Code Section ===== */
-.no-code-section {
-  background: rgba(156, 163, 175, 0.05);
-  border: 1px solid rgba(156, 163, 175, 0.2);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
-}
-
-.no-code-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  color: var(--text-muted);
-  font-size: 0.875rem;
-}
-
-.no-code-icon {
-  font-size: 1rem;
-}
-
 /* ===== Tablet Breakpoint (768px+) ===== */
 @media (min-width: 768px) {
-  .card-header-enhanced {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .header-left,
-  .header-right {
-    flex: none;
-  }
-
-  .header-left {
-    gap: 1rem;
-  }
-
-  .message-counter {
-    order: 0;
-    justify-content: flex-start;
-  }
-
   .message-header {
     flex-direction: row;
     justify-content: space-between;
