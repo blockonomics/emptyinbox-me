@@ -3,6 +3,8 @@ export const ROUTES = {
   HOME: '/',
   ABOUT: '/about.html',
   LOGIN: '/login.html',
+  INBOXES: '/inboxes.html',
+  SETTINGS: '/settings.html',
   MESSAGES: '/messages.html',
   API_DOCS: '/docs.html',
 };
@@ -13,10 +15,11 @@ export const TEXT = {
 };
 
 export const NAV_LINKS = [
-  { label: 'Home', href: ROUTES.HOME },
+  { label: 'Login', href: ROUTES.LOGIN },
+  { label: 'Inboxes', href: ROUTES.INBOXES },
+  { label: "Settings", href: routes.SETTINGS },
   { label: 'About', href: ROUTES.ABOUT },
   { label: 'API Docs', href: ROUTES.API_DOCS },
-  { label: 'Login', href: ROUTES.LOGIN },
   {
     label: 'Fork on GitHub',
     href: 'https://github.com/blockonomics/emptyinbox-me',
