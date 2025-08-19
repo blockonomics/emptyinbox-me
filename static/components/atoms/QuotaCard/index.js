@@ -1,4 +1,4 @@
-import { API_BASE_URL, LOCAL_STORAGE_KEYS, ROUTES, TOAST_TYPES } from '../../../utils/constants.js';
+import { API_BASE_URL, LOCAL_STORAGE_KEYS, QUOTA_PER_USDT, ROUTES, TOAST_TYPES } from '../../../utils/constants.js';
 import { clearAllAuthData } from '../../../utils/storage.js';
 import { showToast } from '../Toast/index.js';
 
@@ -132,7 +132,7 @@ function setupPaymentModal() {
     // Calculate cost function
     function updateCost() {
       const quotaAmount = parseInt(quotaInput.value) || 0;
-      const cost = quotaAmount / 10; // 10 quota = 1 USDT
+      const cost = quotaAmount / QUOTA_PER_USDT;
       usdtCost.textContent = cost.toFixed(2);
       
       // Update the web3-payment widget amount

@@ -1,3 +1,5 @@
+import { QUOTA_PER_USDT } from "../../../utils/constants";
+
 export function updateUserDisplay(userData) {
   // 🔗 Header elements
   const userAddress = document.getElementById('user-address');
@@ -19,7 +21,7 @@ export function updateUserDisplay(userData) {
       const date = new Date(payment.created_at);
       const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
       const quota = payment.amount;
-      const usdt = quota / 10; // Adjust if needed
+      const usdt = quota / QUOTA_PER_USDT;
       const txhash = payment.txhash;
       const txLink = `https://etherscan.io/tx/${txhash}`;
 

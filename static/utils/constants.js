@@ -48,3 +48,5 @@ export const API_BASE_URL = window.location.hostname === 'localhost'
     AUTH_TOKEN: 'authToken',
     API_KEY: 'apiKey'
   }
+
+  export const QUOTA_PER_USDT = 10;
