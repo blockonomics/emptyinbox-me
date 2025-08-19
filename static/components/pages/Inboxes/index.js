@@ -11,7 +11,7 @@ export async function renderInboxesPage() {
 
   const main = document.createElement('main');
   const container = document.createElement('div');
-  container.classList.add('inboxes-page');
+  container.classList.add('inboxes-page', 'container');
 
   // Create and style the heading
   const heading = document.createElement('h1');
