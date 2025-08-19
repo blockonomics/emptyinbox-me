@@ -1,19 +1,31 @@
-.inbox-preview {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
+.inbox-card {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+}
+
+.inbox-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .inbox-header {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-bottom: 12px;
 }
 
 .inbox-email {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
 }
 
 .copy-email {
@@ -21,9 +33,38 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  display: flex;
+  align-items: center;
+  color: #0077cc;
+}
+
+.copy-email:hover {
+  color: #005fa3;
 }
 
 .inbox-created {
-  font-size: 0.9em;
+  font-size: 0.85rem;
   color: #666;
+}
+
+.inbox-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.service-tag {
+  background-color: #f0f4f8;
+  color: #0077cc;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid #d0e3f0;
+}
+
+.service-tag.empty {
+  background-color: #f9f9f9;
+  color: #aaa;
+  border: 1px dashed #ccc;
 }

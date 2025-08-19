@@ -1,7 +1,7 @@
 import { createElement } from "../../../utils/domHelpers.js";
 
 export function createInboxPreview(inbox) {
-  const container = createElement('div', 'inbox-preview');
+  const container = createElement('div', 'inbox-card');
 
   const createdDate = new Date(inbox.created_at).toLocaleString('en-US', {
     day: '2-digit',
@@ -10,6 +10,10 @@ export function createInboxPreview(inbox) {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  const servicesHTML = inbox.connected_services?.length
+    ? inbox.connected_services.map(service => `<span class="service-tag">${service}</span>`).join('')
+    : '<span class="service-tag empty">No services</span>';
 
   container.innerHTML = `
     <div class="inbox-header">
@@ -24,6 +28,7 @@ export function createInboxPreview(inbox) {
       </div>
       <div class="inbox-created">Created: ${createdDate}</div>
     </div>
+    <div class="inbox-services">${servicesHTML}</div>
   `;
 
   return container;
