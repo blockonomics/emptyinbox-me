@@ -150,9 +150,11 @@ def create_mailbox(token):
 @app.route('/inboxes', methods=['GET'])
 @auth_required
 def get_mailboxes(token):
-    '''Get inboxes belonging to the authenticated user'''
+    '''Get inboxes belonging to the authenticated user, ordered by newest first'''
     inboxes = db.session.execute(
-        db.select(Inbox).filter(Inbox.api_key == token)
+        db.select(Inbox)
+          .filter(Inbox.api_key == token)
+          .order_by(Inbox.created_at.desc())
     ).scalars().all()
 
     result = [{
