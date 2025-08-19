@@ -19,13 +19,13 @@ export function updateUserDisplay(userData) {
       const date = new Date(payment.created_at);
       const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
       const quota = payment.amount;
-      const usdt = quota; // Adjust if needed
+      const usdt = quota / 10; // Adjust if needed
       const txhash = payment.txhash;
       const txLink = `https://etherscan.io/tx/${txhash}`;
 
       const entry = document.createElement('div');
       entry.className = 'billing-text';
-      entry.innerHTML = `${formattedDate} ${quota} quota for ${usdt} USDT via <a href="${txLink}" target="_blank" rel="noopener noreferrer">${txhash.slice(0, 24)}...</a>`;
+      entry.innerHTML = `${formattedDate}   ${quota} quota for ${usdt} USDT via <a href="${txLink}" target="_blank" rel="noopener noreferrer">${txhash.slice(0, 24)}...</a>`;
       billingContainer.appendChild(entry);
     });
   } else {
