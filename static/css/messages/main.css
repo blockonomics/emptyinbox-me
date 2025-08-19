@@ -98,12 +98,7 @@
   min-width: 80px;
   white-space: normal;   
   word-break: break-word;
-}
-
-@media (min-width: 769px) {
-  .billing-text {
-    text-align: right;
-  }
+  margin-bottom: 8px;
 }
 
 .billing-section {
