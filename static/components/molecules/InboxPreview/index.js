@@ -3,13 +3,13 @@ import { createElement } from "../../../utils/domHelpers.js";
 export function createInboxPreview(inbox) {
   const container = createElement('div', 'inbox-preview');
 
-  // const createdDate = new Date(inbox.created_at * 1000).toLocaleString('en-US', {
-  //   day: '2-digit',
-  //   month: 'short',
-  //   year: 'numeric',
-  //   hour: '2-digit',
-  //   minute: '2-digit',
-  // });
+  const createdDate = new Date(inbox.created_at * 1000).toLocaleString('en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   container.innerHTML = `
     <div class="inbox-header">
@@ -22,7 +22,7 @@ export function createInboxPreview(inbox) {
           </svg>
         </button>
       </div>
-      <div class="inbox-created">Created: ${'N/A'}</div>
+      <div class="inbox-created">Created: ${createdDate}</div>
     </div>
   `;
 
