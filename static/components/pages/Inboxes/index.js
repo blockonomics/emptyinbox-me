@@ -1,5 +1,6 @@
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
 import { createInboxCards } from '../../organisms/InboxCards/index.js';
+import { createInboxManagementCard } from '../../organisms/InboxManagementCard/index.js';
 
 export async function renderInboxesPage() {
   const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
@@ -12,8 +13,16 @@ export async function renderInboxesPage() {
   const container = document.createElement('div');
   container.classList.add('inboxes-page');
 
+  // Create and style the heading
+  const heading = document.createElement('h1');
+  heading.classList.add('inboxes-title');
+  heading.textContent = 'All inboxes';
+
   const section = document.createElement('section');
   section.classList.add('inboxes');
+
+  section.appendChild(heading); // Add heading before inbox cards
+  section.appendChild(createInboxManagementCard());
   section.appendChild(createInboxCards());
 
   container.appendChild(section);
