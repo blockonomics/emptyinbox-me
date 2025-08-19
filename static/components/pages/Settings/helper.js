@@ -25,7 +25,7 @@ export function updateUserDisplay(userData) {
 
       const entry = document.createElement('div');
       entry.className = 'billing-text';
-      entry.innerHTML = `${formattedDate} ${quota} quota for ${usdt} USDT via <a href="${txLink}" target="_blank" rel="noopener noreferrer">${txhash.slice(0, 10)}...</a>`;
+      entry.innerHTML = `${formattedDate} ${quota} quota for ${usdt} USDT via <a href="${txLink}" target="_blank" rel="noopener noreferrer">${txhash.slice(0, 24)}...</a>`;
       billingContainer.appendChild(entry);
     });
   } else {
