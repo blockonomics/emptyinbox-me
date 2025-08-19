@@ -16,12 +16,16 @@ class Message(db.Model):
     timestamp = db.Column(db.BigInteger)
     content = db.Column(db.BLOB(8 << 20))
 
+from sqlalchemy.types import JSON
+
 class Inbox(db.Model):
     __tablename__ = 'inboxes'
 
     api_key = db.Column(db.String(250), primary_key=True)
     inbox = db.Column(db.String(250), primary_key=True)
-
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    connected_services = db.Column(JSON, default=list)
+    
 class User(db.Model):
     __tablename__ = 'users'
 

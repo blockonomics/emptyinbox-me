@@ -152,11 +152,16 @@ def create_mailbox(token):
 def get_mailboxes(token):
     '''Get inboxes belonging to the authenticated user'''
     inboxes = db.session.execute(
-        db.select(Inbox.inbox).filter(Inbox.api_key == token)
-    ).all()
+        db.select(Inbox).filter(Inbox.api_key == token)
+    ).scalars().all()
 
-    inboxes = [row.inbox for row in inboxes] if inboxes else []
-    return inboxes
+    result = [{
+        'inbox': inbox.inbox,
+        'created_at': inbox.created_at.isoformat(),
+        'connected_services': inbox.connected_services or []
+    } for inbox in inboxes]
+
+    return result
 
 def query_inbox(inbox):
     inbox = db.session.execute(db.select(Inbox).filter(Inbox.inbox==inbox)).first()
