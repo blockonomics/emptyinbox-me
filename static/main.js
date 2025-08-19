@@ -42,8 +42,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       break;
     case ROUTES.API_DOCS:
       renderApiDocsPage();
+      break;
     case ROUTES.INBOXES:
       renderInboxesPage();
+      break;
     case ROUTES.SETTINGS:
       renderSettingsPage();
       break;
