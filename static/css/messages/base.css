@@ -232,13 +232,6 @@
   color: var(--text-primary);
 }
 
-/* ===== Quota Display ===== */
-.quota-display {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-lg);
-}
-
 .quota-bar {
   flex: 1;
   height: 8px;
