@@ -60,8 +60,10 @@ function displayAllInboxes(container, inboxes) {
       container.appendChild(noInboxesDiv);
     } else {
       inboxes.forEach((inbox, index) => {
+        const inboxCard = createElement('div');
         const preview = createInboxPreview(inbox);
         inboxCard.appendChild(preview);
+        container.appendChild(inboxCard);
       });
     }
 
