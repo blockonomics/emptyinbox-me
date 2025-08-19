@@ -3,7 +3,7 @@ import { createInboxPreview } from "../../molecules/InboxPreview/index.js";
 import { fetchInboxes } from "../../../services/apiService.js";
 
 export function createInboxCards() {
-  const container = createElement('div', 'inboxes-container');
+  const container = createElement('div', 'container');
   container.id = 'inboxes-container';
 
   setTimeout(async () => {
