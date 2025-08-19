@@ -1,6 +1,6 @@
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
+import { createInboxButtonWithLogic } from '../../molecules/InboxButtonWithLogic/index.js';
 import { createInboxCards } from '../../organisms/InboxCards/index.js';
-import { createInboxManagementCard } from '../../organisms/InboxManagementCard/index.js';
 
 export async function renderInboxesPage() {
   const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
@@ -22,7 +22,7 @@ export async function renderInboxesPage() {
   section.classList.add('inboxes');
 
   section.appendChild(heading); // Add heading before inbox cards
-  section.appendChild(createInboxManagementCard());
+  section.appendChild(createInboxButtonWithLogic());
   section.appendChild(createInboxCards());
 
   container.appendChild(section);
