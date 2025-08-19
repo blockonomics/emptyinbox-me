@@ -1,4 +1,6 @@
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
+import { setupInboxesEventListeners } from '../../../events/index.js';
+import { createInboxCards } from '../../organisms/InboxCards/index.js';
 
 export async function renderInboxesPage() {
   const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
@@ -7,5 +9,23 @@ export async function renderInboxesPage() {
     return;
   }
 
+  const main = document.createElement('main');
+  const container = document.createElement('div');
+  container.classList.add('inboxes-page');
 
+  const section = document.createElement('section');
+  section.classList.add('inboxes');
+  section.appendChild(createInboxCards());
+
+  container.appendChild(section);
+  main.appendChild(container);
+  document.body.appendChild(main);
+
+  try {
+    setupInboxesEventListeners();
+  } catch (error) {
+    console.error('Inbox fetch failed:', error);
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+    window.location.href = ROUTES.LOGIN;
+  }
 }
