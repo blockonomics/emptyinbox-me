@@ -2,7 +2,6 @@ import { API_BASE_URL, LOCAL_STORAGE_KEYS, ROUTES } from '../utils/constants.js'
 
 export function setupMessagesEventListeners() {
   const logoutBtn = document.getElementById('logout-btn');
-  const toggleApiKeyBtn = document.getElementById('toggle-api-key');
   const apiKeyDisplay = document.getElementById('api-key-display');
 
   // 🔓 Logout functionality
@@ -21,15 +20,5 @@ export function setupMessagesEventListeners() {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
       window.location.href = ROUTES.LOGIN;
     }
-  });
-
-  // 👁️ Toggle API key visibility
-  let apiKeyVisible = false;
-  toggleApiKeyBtn?.addEventListener('click', () => {
-    apiKeyVisible = !apiKeyVisible;
-
-    apiKeyDisplay?.classList.toggle('api-key-hidden', !apiKeyVisible);
-    toggleApiKeyBtn.textContent = apiKeyVisible ? '🙈' : '👁️';
-    toggleApiKeyBtn.title = apiKeyVisible ? 'Hide API key' : 'Show API key';
   });
 }
