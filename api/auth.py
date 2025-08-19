@@ -5,7 +5,7 @@ from eth_account.messages import encode_defunct
 from eth_account import Account
 from config import db, app
 
-from db_models import AuthChallenge, UserSession, User
+from db_models import AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus
 from constants import USER_STARTING_QUOTA
 
 auth_bp = Blueprint('auth', __name__)
@@ -187,12 +187,26 @@ def auth_me():
             if not user:
                 return error_response('User not found', 404)
 
+            # Fetch confirmed payments for the user
+            payments = db.session.query(PaymentIntent).filter_by(
+                eth_account=user.eth_account,
+                status=PaymentStatus.CONFIRMED.value
+            ).all()
+
+            # Format payment data
+            payment_data = [{
+                'txhash': p.txhash,
+                'amount': p.amount,
+                'timestamp': p.timestamp.isoformat() if hasattr(p, 'timestamp') else None
+            } for p in payments]
+
             return jsonify({
                 'address': user.eth_account,
                 'api_key': user.api_key,
                 'inbox_quota': user.inbox_quota,
                 'login_time': session.login_time,
-                'session_expires_at': session.expires_at.isoformat() if hasattr(session, 'expires_at') else None
+                'session_expires_at': session.expires_at.isoformat() if hasattr(session, 'expires_at') else None,
+                'payments': payment_data
             }), 200
     except Exception as e:
         app.logger.error(f"User info retrieval failed: {e}")
