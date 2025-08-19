@@ -8,7 +8,7 @@ export function renderSettingsCards() {
 
   // 🔹 Create Billing Section (your custom markup)
   const billingSection = document.createElement('section');
-  billingSection.classList.add('billing-section');
+  billingSection.classList.add('messages-stats');
 
   const billingHeader = document.createElement('h3');
   billingHeader.textContent = 'Billing Transactions';
