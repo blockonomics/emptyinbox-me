@@ -1,5 +1,4 @@
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
-import { setupMessagesEventListeners } from '../../../events/index.js';
 import { createMessageCards } from '../../organisms/MessageCards/index.js';
 
 export async function renderMessagesPage() {
@@ -21,12 +20,4 @@ export async function renderMessagesPage() {
   main.appendChild(container);
   document.body.appendChild(main);
 
-
-  try {
-    setupMessagesEventListeners();
-  } catch (error) {
-    console.error('User fetch failed:', error);
-    localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
-    window.location.href = ROUTES.LOGIN;
-  }
 }

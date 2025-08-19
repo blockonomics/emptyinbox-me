@@ -1,5 +1,4 @@
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
-import { setupInboxesEventListeners } from '../../../events/index.js';
 import { createInboxCards } from '../../organisms/InboxCards/index.js';
 
 export async function renderInboxesPage() {
@@ -20,12 +19,4 @@ export async function renderInboxesPage() {
   container.appendChild(section);
   main.appendChild(container);
   document.body.appendChild(main);
-
-  try {
-    setupInboxesEventListeners();
-  } catch (error) {
-    console.error('Inbox fetch failed:', error);
-    localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
-    window.location.href = ROUTES.LOGIN;
-  }
 }

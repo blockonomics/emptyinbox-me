@@ -1,6 +1,6 @@
 import { API_BASE_URL, LOCAL_STORAGE_KEYS, ROUTES } from '../utils/constants.js';
 
-export function setupMessagesEventListeners() {
+export function setupSettingsEventListeners() {
   const logoutBtn = document.getElementById('logout-btn');
   const apiKeyDisplay = document.getElementById('api-key-display');
 

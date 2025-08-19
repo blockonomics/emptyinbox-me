@@ -2,7 +2,7 @@ import { renderConnectedWalletCard } from '../../atoms/ConnectedWalletCard/index
 import { renderSettingsCards } from '../../molecules/SettingsCards/index.js';
 import { fetchUserData } from '../../../services/apiService.js';
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
-import { setupMessagesEventListeners } from '../../../events/index.js';
+import { setupSettingsEventListeners } from '../../../events/index.js';
 import { updateUserDisplay } from './helper.js';
 
 export async function renderSettingsPage() {
@@ -29,7 +29,7 @@ export async function renderSettingsPage() {
   try {
     const userData = await fetchUserData(authToken);
     updateUserDisplay(userData);
-    setupMessagesEventListeners();
+    setupSettingsEventListeners();
   } catch (error) {
     console.error('User fetch failed:', error);
     localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
