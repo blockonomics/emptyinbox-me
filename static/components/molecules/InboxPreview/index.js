@@ -3,7 +3,7 @@ import { createElement } from "../../../utils/domHelpers.js";
 export function createInboxPreview(inbox) {
   const container = createElement('div', 'inbox-preview');
 
-  const createdDate = new Date(inbox.created_at * 1000).toLocaleString('en-US', {
+  const createdDate = new Date(inbox.created_at).toLocaleString('en-US', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
