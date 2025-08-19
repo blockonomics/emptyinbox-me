@@ -1,4 +1,4 @@
-import { QUOTA_PER_USDT } from "../../../utils/constants";
+import { QUOTA_PER_USDT } from "../../../utils/constants.js";
 
 export function updateUserDisplay(userData) {
   // 🔗 Header elements
