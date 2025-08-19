@@ -1,0 +1,29 @@
+.inbox-preview {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.inbox-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inbox-email {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+}
+
+.copy-email {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.inbox-created {
+  font-size: 0.9em;
+  color: #666;
+}
