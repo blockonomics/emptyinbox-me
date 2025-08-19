@@ -129,3 +129,22 @@
     text-align: right;
   }
 }
+
+.billing-section {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.billing-header {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.billing-text a {
+  color: #2563eb;
+  text-decoration: underline;
+  font-weight: 500;
+}
