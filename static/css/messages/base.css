@@ -254,15 +254,6 @@
   transition: width var(--transition-normal);
 }
 
-.billing-text {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  min-width: 80px;
-  text-align: right;
-  white-space: nowrap;
-}
-
 /* ===== Mobile-first enhancements ===== */
 @media (min-width: 481px) {
   .connected-wallet-card {
