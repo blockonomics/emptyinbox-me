@@ -22,7 +22,7 @@ export function createInboxPreview(inbox) {
           </svg>
         </button>
       </div>
-      <div class="inbox-created">Created: ${createdDate || 'N/A'}</div>
+      <div class="inbox-created">Created: ${'N/A'}</div>
     </div>
   `;
 
