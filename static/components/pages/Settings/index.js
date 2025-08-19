@@ -20,20 +20,6 @@ export async function renderSettingsPage() {
 
   section.appendChild(renderConnectedWalletCard());
   section.appendChild(renderSettingsCards());
-  const billingSection = document.createElement('section');
-  billingSection.classList.add('billing-section');
-
-  const billingHeader = document.createElement('h3');
-  billingHeader.textContent = 'Billing Transactions';
-  billingHeader.classList.add('billing-header');
-
-  const billingContainer = document.createElement('div');
-  billingContainer.id = 'billing-transactions';
-  billingContainer.classList.add('quota-display');
-
-  billingSection.appendChild(billingHeader);
-  billingSection.appendChild(billingContainer);
-  section.appendChild(billingSection);
 
   container.appendChild(section);
   main.appendChild(container);

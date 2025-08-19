@@ -3,16 +3,27 @@ import { createStatCard } from "../../atoms/StatCard/index.js";
 import { createApiKeyCard } from "../../organisms/ApiKeyCard/index.js";
 
 export function renderSettingsCards() {
-  const statsContainer = createElement('div', 'messages-stats');
+  const section = document.createElement('section');
+  section.classList.add('messages-stats');
 
-  // Create billing content container
-  const billingContent = createElement('div', 'billing-text');
-  billingContent.id = 'billing-transactions';
-  billingContent.textContent = 'Still need to be implemented'; // Optional placeholder
+  // 🔹 Create Billing Section (your custom markup)
+  const billingSection = document.createElement('section');
+  billingSection.classList.add('billing-section');
 
-  // Add all stat cards
-  statsContainer.appendChild(createApiKeyCard());
-  statsContainer.appendChild(createStatCard('Billing Transactions', billingContent));
+  const billingHeader = document.createElement('h3');
+  billingHeader.textContent = 'Billing Transactions';
+  billingHeader.classList.add('billing-header');
 
-  return statsContainer;
+  const billingContainer = document.createElement('div');
+  billingContainer.id = 'billing-transactions';
+  billingContainer.classList.add('quota-display');
+
+  billingSection.appendChild(billingHeader);
+  billingSection.appendChild(billingContainer);
+
+  // 🔹 Append other cards if needed
+  section.appendChild(createApiKeyCard());
+  section.appendChild(billingSection); // 👈 Your billing section goes here
+
+  return section;
 }
