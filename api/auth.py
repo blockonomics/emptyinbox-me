@@ -190,14 +190,14 @@ def auth_me():
             # Fetch confirmed payments for the user
             payments = db.session.query(PaymentIntent).filter_by(
                 eth_account=user.eth_account,
-                status=PaymentStatus.CONFIRMED.value
-            ).all()
+                status=PaymentStatus.CONFIRMED.value  # Assuming CONFIRMED = "1"
+            ).order_by(PaymentIntent.created_at.desc()).all()
 
             # Format payment data
             payment_data = [{
                 'txhash': p.txhash,
                 'amount': p.amount,
-                'timestamp': p.timestamp.isoformat() if hasattr(p, 'timestamp') else None
+                'created_at': p.created_at.isoformat()
             } for p in payments]
 
             return jsonify({
