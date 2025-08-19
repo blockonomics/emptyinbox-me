@@ -254,7 +254,7 @@
   transition: width var(--transition-normal);
 }
 
-.quota-text {
+.billing-text {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-secondary);
