@@ -134,11 +134,13 @@ export function createMessagePreview(message) {
           </div>
         </div> 
     
-        <div class="message-subject" title="${subject}">
-          ${truncateText(subject, 60)}
+        <div class="message-preview-content" id="preview-${messageId}">
+          <div class="message-subject" title="${subject}">
+            ${truncateText(subject, 60)}
+          </div>
+          
+          ${contentSection}
         </div>
-        
-        ${contentSection}
         
         <div class="full-message-content" id="${messageId}" style="display: none;">
           <div class="full-message-section">
@@ -158,17 +160,22 @@ export function createMessagePreview(message) {
 // Global toggle function for message content
 window.toggleMessageContent = function(messageId) {
   const fullContent = document.getElementById(messageId);
+  const previewContent = document.getElementById(`preview-${messageId}`);
   const arrow = document.querySelector(`button[onclick="toggleMessageContent('${messageId}')"] svg`);
   
-  if (fullContent && arrow) {
+  if (fullContent && previewContent && arrow) {
     const isHidden = fullContent.style.display === 'none';
     
     if (isHidden) {
+      // Show full message, hide preview content
       fullContent.style.display = 'block';
+      previewContent.style.display = 'none';
       arrow.style.transform = 'rotate(180deg)';
       arrow.parentElement.setAttribute('title', 'Hide full message');
     } else {
+      // Show preview content, hide full message
       fullContent.style.display = 'none';
+      previewContent.style.display = 'block';
       arrow.style.transform = 'rotate(0deg)';
       arrow.parentElement.setAttribute('title', 'Show full message');
     }
