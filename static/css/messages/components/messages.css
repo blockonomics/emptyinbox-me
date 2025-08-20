@@ -180,13 +180,16 @@
   background: rgba(156, 163, 175, 0.05);
   border: 1px solid rgba(156, 163, 175, 0.15);
   border-radius: 8px;
-  padding: 1rem;
+  padding: 0.5rem;
   margin-top: 1rem;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .content-preview {
   font-size: 0.875rem;
   color: var(--text-secondary);
+
   line-height: 1.5;
   font-style: italic;
 }
@@ -209,7 +212,6 @@
   background: rgba(248, 250, 252, 0.8);
   border: 1px solid rgba(156, 163, 175, 0.15);
   border-radius: 8px;
-  padding: 1rem;
   font-size: 0.875rem;
   line-height: 1.6;
   color: var(--text-secondary);
