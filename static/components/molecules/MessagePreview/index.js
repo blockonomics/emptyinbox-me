@@ -133,7 +133,7 @@ export function createMessagePreview(message) {
             </button>
           </div>
         </div> 
-        <div class="message-to-section">
+        <div class="message-to-section" style="display: none;" id="to-${messageId}">
           <span class="to-label">To:</span>
           <span class="to-address" title="${message.to || message.inbox || 'Unknown'}">${message.to || message.inbox || 'Unknown'}</span>
         </div>
@@ -164,6 +164,7 @@ export function createMessagePreview(message) {
 // Global toggle function for message content
 window.toggleMessageContent = function(messageId) {
   const fullContent = document.getElementById(messageId);
+  const toElement = document.getElementById("to-" + messageId)
   const previewContent = document.getElementById(`preview-${messageId}`);
   const arrow = document.querySelector(`button[onclick="toggleMessageContent('${messageId}')"] svg`);
   
@@ -173,12 +174,14 @@ window.toggleMessageContent = function(messageId) {
     if (isHidden) {
       // Show full message, hide preview content
       fullContent.style.display = 'block';
+      toElement.style.display = 'block';
       previewContent.style.display = 'none';
       arrow.style.transform = 'rotate(180deg)';
       arrow.parentElement.setAttribute('title', 'Hide full message');
     } else {
       // Show preview content, hide full message
       fullContent.style.display = 'none';
+      toElement.style.display = 'none';
       previewContent.style.display = 'block';
       arrow.style.transform = 'rotate(0deg)';
       arrow.parentElement.setAttribute('title', 'Show full message');

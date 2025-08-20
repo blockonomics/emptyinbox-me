@@ -410,6 +410,10 @@
   color: #059669;
 }
 
+.message-to-section {
+  margin-bottom: 0.75rem;
+}
+
 /* ===== Tablet Breakpoint (768px+) ===== */
 @media (min-width: 768px) {
   .message-header {
