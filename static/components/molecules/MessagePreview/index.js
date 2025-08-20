@@ -133,6 +133,10 @@ export function createMessagePreview(message) {
             </button>
           </div>
         </div> 
+        <div class="message-to-section">
+          <span class="to-label">To:</span>
+          <span class="to-address" title="${message.to || message.inbox || 'Unknown'}">${message.to || message.inbox || 'Unknown'}</span>
+        </div>
     
         <div class="message-subject" title="${subject}">
           ${truncateText(subject, 60)}
@@ -143,10 +147,6 @@ export function createMessagePreview(message) {
         </div>
         
         <div class="full-message-content" id="${messageId}" style="display: none;">
-          <div class="message-to-section">
-            <span class="to-label">To:</span>
-            <span class="to-address" title="${message.to || message.inbox || 'Unknown'}">${message.to || message.inbox || 'Unknown'}</span>
-          </div>
           <div class="full-message-section">
             <h4>Full Message Content:</h4>
             <div class="full-message-body">
