@@ -1,25 +1,14 @@
-import { API_BASE_URL, LOCAL_STORAGE_KEYS, QUOTA_PER_USDT, ROUTES, TOAST_TYPES } from '../../../utils/constants.js';
-import { clearAllAuthData } from '../../../utils/storage.js';
-import { showToast } from '../Toast/index.js';
+import { QUOTA_PER_USDT } from '../../../utils/constants.js';
 
-export function renderHeader() {
+export function renderBuyQuotaButton() {
   const header = document.createElement('div');
-  header.classList.add('connected-wallet-card');
   header.innerHTML = `
-    <div class="user-info">
-      <div class="wallet-info">
-        <span class="wallet-label">Connected Wallet:</span>
-        <span id="user-address" class="wallet-address">Loading...</span>
-      </div>
-      <button id="buy-quota-btn" class="buy-quota-btn">Buy More Quota</button>
-      <button id="logout-btn" class="logout-btn">Log Out</button>
-    </div>
+    <button id="buy-quota-btn" class="buy-quota-btn">Buy More Quota</button>
   `;
 
   // Add event listeners
   setTimeout(() => {
     setupPaymentModal();
-    setupDisconnect();
   }, 0);
 
   return header;
@@ -198,103 +187,3 @@ function setupPaymentModal() {
   }
 }
 
-function setupDisconnect() {
-  const logoutBtn = document.getElementById('logout-btn');
-  
-  logoutBtn?.addEventListener('click', async () => {
-    try {
-      // Disable button during logout
-      logoutBtn.disabled = true;
-      logoutBtn.textContent = 'Disconnecting...';
-
-      // 1. Call backend logout
-      const token = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
-      if (token) {
-        await fetch(`${API_BASE_URL}/api/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-      }
-
-      // 2. Disconnect wallet properly
-      await disconnectWallet();
-
-      // 3. Clear all local storage
-      clearAllAuthData();
-
-      // 4. Redirect to login/home page
-      window.location.href = ROUTES.HOME;
-
-    } catch (error) {
-      console.error('Disconnect error:', error);
-      
-      // Even if backend call fails, still clear local data and redirect
-      await disconnectWallet();
-      clearAllAuthData();
-      window.location.href = ROUTES.HOME;
-    }
-  });
-}
-
-async function disconnectWallet() {
-  try {
-    // Clear any wallet connection indicators in your app
-    if (window.ethereum) {
-      window.ethereum.selectedAddress = null;
-    }
-
-  } catch (error) {
-    console.error('Wallet disconnect error:', error);
-  }
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const paymentSuccess = params.get('payment');
-  const txhash = params.get('txhash');
-  const crypto = params.get('crypto');
-  const quotaAmount = params.get('quota');
-
-  if (paymentSuccess === 'success' && txhash && crypto === 'usdt') {
-    const apiKey = localStorage.getItem(LOCAL_STORAGE_KEYS.API_KEY);
-
-    if (!apiKey) {
-      console.error('No API key found in localStorage');
-      return;
-    }
-
-    console.log('Starting payment monitoring for txhash:', txhash);
-    console.log('Quota amount:', quotaAmount);
-
-    fetch(`${API_BASE_URL}/api/payments/monitor`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': apiKey
-      },
-      body: JSON.stringify({ 
-        txhash,
-        quotaAmount: quotaAmount ? parseInt(quotaAmount) : null
-      })
-    })
-    .then(res => {
-      console.log('Response status:', res.status);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      // Remove query parameters from URL on success
-      console.log('Removing query parameters from URL');
-      window.history.replaceState({}, document.title, window.location.pathname);
-      return res.json();
-    })
-    .then(data => {
-      console.log('Monitoring started:', data);
-    })
-    .catch(err => {
-      console.error('Error starting monitoring:', err);
-    });
-  }
-});
