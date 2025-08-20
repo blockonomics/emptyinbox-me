@@ -16,11 +16,18 @@ export function extractActivationCode(htmlBody, textBody, subject) {
 
   if (!allText.trim()) return null;
 
+  // Extract title content first (often contains the code clearly)
+  const titleMatch = htmlBody.match(/<title>(.*?)<\/title>/i);
+  if (titleMatch && titleMatch[1]) {
+    const titleCodeMatch = titleMatch[1].match(/\b\d{6}\b/);
+    if (titleCodeMatch) return titleCodeMatch[0];
+  }
+
   // Clean HTML and decode entities
   let cleanText = allText;
   if (allText.includes('<')) {
     cleanText = allText
-      .replace(/<[^>]*>/g, ' ')
+      .replace(/<[^>]*>/g, ' ') // Remove HTML tags
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
@@ -31,37 +38,25 @@ export function extractActivationCode(htmlBody, textBody, subject) {
       .trim();
   }
 
-  // First, try to extract password reset URLs
+  // Try to extract password reset URLs first
   const resetUrl = extractResetUrl(allText);
-  if (resetUrl) {
-    return resetUrl;
-  }
+  if (resetUrl) return resetUrl;
 
-  // Then try activation codes
+  // Regex patterns for activation/verification codes
   const patterns = [
-    // Most specific patterns first
-    /activation\s+code[:\s]+([A-Z0-9]{4,12})/gi,
-    /verification\s+code[:\s]+([A-Z0-9]{4,12})/gi,
-    /confirm\s+code[:\s]+([A-Z0-9]{4,12})/gi,
-    /your\s+code[:\s]+([A-Z0-9]{4,12})/gi,
-    /code[:\s]+([A-Z0-9]{6,12})/gi,
-    
-    // Mixed alphanumeric patterns
-    /\b[A-Z0-9]*[A-Z][A-Z0-9]*[0-9][A-Z0-9]*\b/g,
-    /\b[A-Z0-9]*[0-9][A-Z0-9]*[A-Z][A-Z0-9]*\b/g,
-    
-    // Hyphenated codes
-    /\b[A-Z0-9]{3,6}-[A-Z0-9]{3,6}\b/g,
-    /\b[A-Z0-9]{2,4}-[A-Z0-9]{2,4}-[A-Z0-9]{2,4}\b/g,
-    
-    // General alphanumeric codes
-    /\b[A-Z0-9]{6,12}\b/g,
+    /activation\s+code[^A-Z0-9]*([A-Z0-9]{4,12})/gi,
+    /verification\s+code[^A-Z0-9]*([A-Z0-9]{4,12})/gi,
+    /confirm\s+code[^A-Z0-9]*([A-Z0-9]{4,12})/gi,
+    /your\s+code[^A-Z0-9]*([A-Z0-9]{4,12})/gi,
+    /code[^A-Z0-9]*([A-Z0-9]{6,12})/gi,
+    /\b\d{6}\b/g, // fallback for numeric codes
+    /\b[A-Z0-9]{6,12}\b/g // general fallback
   ];
 
   for (const pattern of patterns) {
     const matches = cleanText.matchAll(pattern);
     for (const match of matches) {
-      let code = match[1] || match[0]; // Use captured group if available
+      let code = match[1] || match[0];
       code = code.replace(/^(activation|verification|confirm|your|code)[:\s]+/gi, '').trim();
 
       if (isValidCode(code)) {
