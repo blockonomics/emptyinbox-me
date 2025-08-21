@@ -54,7 +54,7 @@ export function cleanHtmlContent(htmlContent) {
 export function sanitizeHtmlContent(htmlContent) {
   if (!htmlContent) return '';
   
-  return htmlContent
+  let content = htmlContent
     // Remove dangerous elements
     .replace(/<script[^>]*>.*?<\/script>/gis, '')
     .replace(/<iframe[^>]*>.*?<\/iframe>/gis, '')
@@ -62,33 +62,34 @@ export function sanitizeHtmlContent(htmlContent) {
     .replace(/<embed[^>]*>.*?<\/embed>/gis, '')
     .replace(/<form[^>]*>.*?<\/form>/gis, '')
     
-    // Remove or neutralize style elements
+    // Remove styling
     .replace(/<style[^>]*>.*?<\/style>/gis, '')
-    .replace(/style\s*=\s*["']([^"']*)["']/gi, (match, styleContent) => {
-      // Keep safe styles, remove potentially conflicting ones
-      const safeStyles = styleContent
-        .split(';')
-        .filter(style => {
-          const property = style.split(':')[0]?.trim().toLowerCase();
-          // Allow safe styling properties, block layout-affecting ones
-          return property && ![
-            'position', 'top', 'left', 'right', 'bottom', 'z-index',
-            'display', 'float', 'clear', 'overflow', 'width', 'height',
-            'margin', 'padding', 'border', 'background', 'font-family'
-          ].includes(property);
-        })
-        .join(';');
-      
-      return safeStyles ? `style="${safeStyles}"` : '';
-    })
-    
-    // Remove link tags that could affect styling
+    .replace(/style\s*=\s*["']([^"']*)["']/gi, '')
     .replace(/<link[^>]*>/gi, '')
-    
-    // Remove head and meta content
     .replace(/<head[^>]*>.*?<\/head>/gis, '')
     .replace(/<meta[^>]*>/gi, '')
     .replace(/<title[^>]*>.*?<\/title>/gis, '');
+
+  // If it's plain text or heavily stripped, format it naturally
+  if (!content.includes('<') || content.replace(/<[^>]*>/g, '').length > content.length * 0.8) {
+    return formatPlainTextMessage(content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim());
+  }
+  
+  return content;
+}
+
+function formatPlainTextMessage(text) {
+  if (!text) return '';
+  
+  return text
+    // Just wrap URLs in a simple container for better display
+    .replace(/(https?:\/\/[^\s]+)/g, '<div class="url-wrap">$1</div>')
+    
+    // Format codes that appear after colons (like reset codes)
+    .replace(/:\s*([a-f0-9]{20,})/g, ':</p><div class="code-wrap">$1</div><p>')
+    
+    // Wrap in paragraphs
+    .replace(/^/, '<p>').replace(/$/, '</p>');
 }
 
 
