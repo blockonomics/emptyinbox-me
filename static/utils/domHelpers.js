@@ -51,7 +51,7 @@ export function cleanHtmlContent(htmlContent) {
     .trim();
 }
 
-function sanitizeHtmlContent(htmlContent) {
+export function sanitizeHtmlContent(htmlContent) {
   if (!htmlContent) return '';
   
   let content = htmlContent
