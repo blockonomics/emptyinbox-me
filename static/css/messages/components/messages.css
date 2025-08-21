@@ -527,9 +527,12 @@
   position: static !important;
 }
 
-/* Verification section with purple/violet theme */
-.verification-section .code-icon {
-  color: #7c3aed; /* Purple */
+/* Verification button styles */
+.verification-section .verification-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .verify-button {
@@ -538,13 +541,13 @@
   justify-content: center;
   gap: 0.5rem;
   
-  /* Purple gradient button */
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  /* Button appearance */
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white !important;
   text-decoration: none !important;
   
-  /* Reduced height */
-  padding: 0.75rem 1.5rem;
+  /* Sizing */
+  padding: 0.875rem 1.5rem;
   border-radius: 8px;
   
   /* Typography */
@@ -552,46 +555,41 @@
   font-size: 0.95rem;
   
   /* Effects */
-  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
   transition: all 0.2s ease;
   
   /* Mobile */
-  min-height: 40px; /* Reduced from 44px */
+  min-height: 44px;
   touch-action: manipulation;
 }
 
 .verify-button:hover {
-  background: linear-gradient(135deg, #6d28d9, #5b21b6);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   transform: translateY(-1px);
 }
 
 .verify-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
-/* Orange copy button to match the existing theme */
+.verify-button .button-text {
+  font-weight: inherit;
+}
+
+/* Secondary copy button for verification */
 .code-copy.secondary {
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  color: white;
-  border: none;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
   font-size: 0.875rem;
   padding: 0.5rem 1rem;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(249, 115, 22, 0.2);
-  transition: all 0.2s ease;
 }
 
 .code-copy.secondary:hover {
-  background: linear-gradient(135deg, #ea580c, #dc2626);
-  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.3);
-  transform: translateY(-1px);
-}
-
-.code-copy.secondary:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(249, 115, 22, 0.2);
+  background: #e5e7eb;
+  border-color: #9ca3af;
 }
 
 /* Responsive adjustments */
@@ -601,8 +599,7 @@
   }
   
   .verify-button {
-    padding: 0.65rem 1.25rem; /* Slightly reduced */
+    padding: 0.75rem 1.25rem;
     font-size: 0.9rem;
-    min-height: 38px; /* Reduced for mobile */
   }
 }
