@@ -483,64 +483,46 @@
 }
 
 .isolated-content {
-  /* Existing rules... */
+  /* Basic containment without breaking functionality */
   position: relative;
   background: #fff;
+  
+  /* Allow scrolling and proper sizing */
   overflow: auto;
   max-height: 400px;
   max-width: 100%;
+  
+  /* Typography */
   font-family: inherit;
   font-size: 14px;
   line-height: 1.5;
   color: inherit;
+  
+  /* Mobile-friendly */
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
-  
-  /* Force mobile adaptation */
-  width: 100% !important;
-  min-width: 0 !important;
 }
 
+/* Only block the most dangerous properties */
 .isolated-content * {
-  /* Existing rules... */
+  /* Prevent layout-breaking positioning */
   position: static !important;
   z-index: auto !important;
+  
+  /* Allow normal sizing but prevent overflow */
   max-width: 100% !important;
   box-sizing: border-box !important;
   word-wrap: break-word !important;
-  
-  /* Force mobile width adaptation */
-  width: auto !important;
-  min-width: 0 !important;
 }
 
-/* Force tables to be mobile-friendly */
-.isolated-content table {
-  width: 100% !important;
+/* Keep images responsive */
+.isolated-content img {
   max-width: 100% !important;
-  table-layout: fixed !important;
-  border-collapse: collapse !important;
+  height: auto !important;
 }
 
-.isolated-content td,
-.isolated-content th {
-  word-wrap: break-word !important;
-  overflow-wrap: break-word !important;
-  hyphens: auto !important;
-  max-width: 0 !important; /* Forces equal column widths */
-}
-
-/* Handle wide content like long URLs */
-.isolated-content pre,
-.isolated-content code {
-  white-space: pre-wrap !important;
-  word-break: break-all !important;
-  overflow-wrap: break-word !important;
-}
-
-/* Force any fixed-width elements to be responsive */
-.isolated-content [width],
-.isolated-content [style*="width"] {
-  width: auto !important;
-  max-width: 100% !important;
+/* Block only specific dangerous inline styles */
+.isolated-content [style*="position: fixed"],
+.isolated-content [style*="position: absolute"] {
+  position: static !important;
 }
