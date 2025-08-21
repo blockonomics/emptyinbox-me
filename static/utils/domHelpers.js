@@ -11,6 +11,47 @@ export function truncateText(text, maxLength) {
   return text.substring(0, maxLength) + '...';
 }
 
+export function cleanHtmlContent(htmlContent) {
+  if (!htmlContent) return '';
+  
+  return htmlContent
+    // Remove CSS styles (between <style> tags and inline styles)
+    .replace(/<style[^>]*>.*?<\/style>/gis, '')
+    .replace(/style\s*=\s*["'][^"']*["']/gi, '')
+    
+    // Remove script tags
+    .replace(/<script[^>]*>.*?<\/script>/gis, '')
+    
+    // Remove common metadata tags
+    .replace(/<(head|meta|title|link)[^>]*>.*?<\/\1>/gis, '')
+    .replace(/<(meta|link|br|hr|img)[^>]*\/?>/gi, '')
+    
+    // Convert common HTML entities
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&hellip;/g, '...')
+    
+    // Remove all remaining HTML tags
+    .replace(/<[^>]*>/g, ' ')
+    
+    // Clean up CSS properties that leaked through
+    .replace(/\b(background|margin|padding|color|font|width|height|border|display|position|top|left|right|bottom)[\s]*[:=][^;}\s]*[;}]?/gi, '')
+    
+    // Remove common CSS values and units
+    .replace(/\b\d+px\b/g, '')
+    .replace(/\b(#[0-9a-f]{3,6}|rgb\([^)]+\)|rgba\([^)]+\))\b/gi, '')
+    
+    // Clean up whitespace and formatting
+    .replace(/\s+/g, ' ')
+    .replace(/[{};]/g, ' ')
+    .trim();
+}
+
+
 export function extractActivationCode(htmlBody, textBody, subject) {
   const allText = [subject || '', htmlBody || '', textBody || ''].join(' ');
 

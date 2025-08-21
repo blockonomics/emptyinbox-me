@@ -1,4 +1,4 @@
-import { createElement, extractActivationCode, getContentType, formatTimeAgo, getServiceInfo, truncateText } from "../../../utils/domHelpers.js";
+import { createElement, extractActivationCode, getContentType, formatTimeAgo, getServiceInfo, truncateText, cleanHtmlContent } from "../../../utils/domHelpers.js";
 
 export function createMessagePreview(message) {
   const container = createElement('div', 'message-preview');
@@ -110,7 +110,7 @@ function createActivationSection(content, contentType) {
 }
 
 function createContentPreview(htmlBody, textBody) {
-  let content = textBody?.trim() || htmlBody?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || 'No content available';
+  let content = textBody?.trim() || cleanHtmlContent(htmlBody) || 'No content available';
   
   if (content.length > 120) {
     content = content.substring(0, 120) + '...';
