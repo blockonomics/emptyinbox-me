@@ -38,16 +38,17 @@ export const API_BASE_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:5000'
   : 'https://emptyinbox.me';
 
-  export const TOAST_TYPES = {
-    SUCCESS: 'success',
-    ERROR: 'error',
-    INFO: 'info'
-  }
+export const TOAST_TYPES = {
+  SUCCESS: 'success',
+  ERROR: 'error',
+  INFO: 'info'
+}
 
-  export const LOCAL_STORAGE_KEYS = {
-    AUTH_TOKEN: 'authToken',
-    API_KEY: 'apiKey'
-  }
+export const LOCAL_STORAGE_KEYS = {
+  AUTH_TOKEN: 'authToken',
+  API_KEY: 'apiKey'
+}
 
-  export const QUOTA_PER_USDT = 10;
+export const QUOTA_PER_USDT = 10;
   
+export const USER_STARTING_QUOTA = 5
