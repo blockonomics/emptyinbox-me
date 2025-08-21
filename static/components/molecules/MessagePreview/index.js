@@ -44,7 +44,7 @@ export function createMessagePreview(message) {
           <span class="to-address" title="${message.to || message.inbox || 'Unknown'}">${message.to || message.inbox || 'Unknown'}</span>
         </div>
     
-        <div class="message-subject" title="${subject}">
+        <div class="message-subject" title="${subject}" id="subject-${messageId}">
           ${truncateText(subject, 60)}
         </div>
 
@@ -142,6 +142,7 @@ function createContentPreview(htmlBody, textBody) {
 window.toggleMessageContent = function(messageId) {
   const elements = {
     full: document.getElementById(messageId),
+    subject: document.getElementById(`subject-${messageId}`),
     to: document.getElementById(`to-${messageId}`),
     preview: document.getElementById(`preview-${messageId}`),
     arrow: document.querySelector(`button[onclick="toggleMessageContent('${messageId}')"] svg`)
@@ -156,7 +157,8 @@ window.toggleMessageContent = function(messageId) {
   const title = isHidden ? 'Hide full message' : 'Show full message';
   
   elements.full.style.display = display;
-  elements.to.style.display = display;
+  elements.to.style.display = display; 
+  elements.subject.style.display = display;
   elements.preview.style.display = previewDisplay;
   elements.arrow.style.transform = `rotate(${rotation})`;
   elements.arrow.parentElement.setAttribute('title', title);
