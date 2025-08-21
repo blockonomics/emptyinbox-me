@@ -483,75 +483,46 @@
 }
 
 .isolated-content {
-  /* Mobile-friendly isolation */
+  /* Basic containment without breaking functionality */
   position: relative;
-  z-index: 1;
+  background: #fff;
   
-  /* Create a new formatting context */
-  overflow: hidden;
-  display: flow-root;
+  /* Allow scrolling and proper sizing */
+  overflow: auto;
+  max-height: 400px;
+  max-width: 100%;
   
-  /* Reset and constrain */
+  /* Typography */
   font-family: inherit;
   font-size: 14px;
   line-height: 1.5;
   color: inherit;
-  background: #fff;
-  
-  /* Prevent layout breaks */
-  max-width: 100%;
-  box-sizing: border-box;
-  word-wrap: break-word;
-  
-  /* Mobile-specific */
-  -webkit-overflow-scrolling: touch;
-}
-
-.isolated-content * {
-  /* Force safe positioning */
-  position: static !important;
-  z-index: auto !important;
-  float: none !important;
-  
-  /* Constrain dimensions */
-  max-width: 100% !important;
-  width: auto !important;
-  height: auto !important;
-  
-  /* Safe spacing */
-  margin: 0.25em 0 !important;
-  padding: 0.25em !important;
-  
-  /* Typography reset */
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
   
   /* Mobile-friendly */
-  box-sizing: border-box !important;
-  word-wrap: break-word !important;
-  -webkit-text-size-adjust: none !important;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
-/* Block dangerous CSS properties */
-.isolated-content [style*="position:"],
-.isolated-content [style*="z-index:"],
-.isolated-content [style*="display:"],
-.isolated-content [style*="overflow:"],
-.isolated-content [style*="width:"],
-.isolated-content [style*="height:"] {
+/* Only block the most dangerous properties */
+.isolated-content * {
+  /* Prevent layout-breaking positioning */
   position: static !important;
   z-index: auto !important;
-  display: block !important;
-  overflow: visible !important;
-  width: auto !important;
-  height: auto !important;
+  
+  /* Allow normal sizing but prevent overflow */
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  word-wrap: break-word !important;
 }
 
-/* Mobile responsive images */
+/* Keep images responsive */
 .isolated-content img {
   max-width: 100% !important;
   height: auto !important;
-  display: block !important;
-  margin: 0.5em 0 !important;
+}
+
+/* Block only specific dangerous inline styles */
+.isolated-content [style*="position: fixed"],
+.isolated-content [style*="position: absolute"] {
+  position: static !important;
 }
