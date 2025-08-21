@@ -85,8 +85,16 @@ export function createFooter() {
   connectText.className = "footer-connect-text";
   connectText.textContent = "Stay focused, stay productive.";
 
+  const contactPara = document.createElement("p");
+  contactPara.className = "footer-connect-text";
+  contactPara.innerHTML = `<strong>Contact</strong><br>
+  You can log an issue / contribute to 
+  <a href="https://github.com/blockonomics/emptyinbox-me/" 
+    target="_blank" rel="noopener noreferrer" 
+    class="footer-link">https://github.com/blockonomics/emptyinbox-me/</a>`;
+
   connectSection.appendChild(connectTitle);
-  connectSection.appendChild(connectText);
+  connectSection.appendChild(contactPara, connectText);
 
   // Assemble footer content
   footerContent.appendChild(brandSection);

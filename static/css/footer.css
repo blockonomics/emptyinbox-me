@@ -123,11 +123,29 @@
 
 /* Connect Section */
 .footer-connect-text {
+  margin-top: 0.25rem;
   color: #6b7280;
   font-size: 0.9rem;
   line-height: 1.5;
   margin: 0;
-  font-style: italic;
+  text-align: left;
+}
+
+.footer-connect-text strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+@media (min-width: 769px) {
+  .footer-connect-text {
+    font-size: 1rem;
+  }
+}
+
+.footer-connect-text.contact-block .footer-link {
+  word-break: break-all; /* keeps long URLs tidy */
 }
 
 /* Footer Bottom */
