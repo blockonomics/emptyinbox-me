@@ -34,8 +34,6 @@ export async function renderInboxesPage() {
     container.appendChild(section);
     main.appendChild(container);
     document.body.appendChild(main);
-
-    updateUserDisplay(userData);
   } catch (error) {
     console.error('User fetch failed:', error);
     localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
