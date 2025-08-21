@@ -144,3 +144,31 @@
     margin-bottom: 0.5rem;
   }
 }
+
+/* Loading Message */
+.loading-message {
+  font-size: 1rem;
+  color: #666;
+  text-align: center;
+  margin-top: 2rem;
+  animation: pulse 1.5s infinite;
+}
+
+/* Error Message */
+.error-message {
+  font-size: 1rem;
+  color: #c0392b;
+  text-align: center;
+  margin-top: 2rem;
+  background-color: #fdecea;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e0b4b4;
+}
+
+/* Pulse animation for loading */
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
