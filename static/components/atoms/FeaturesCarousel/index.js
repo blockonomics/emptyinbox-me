@@ -97,8 +97,8 @@ function getFeatureIcon(index) {
 
 export const FEATURES = [
   { 
-    title: 'Multiple Aliases', 
-    description: 'Use up to 100 email aliases to sign up on websites. Get started with simple pricing: 10 USDT.' 
+    title: 'Multiple Inboxes', 
+    description: 'Create new inbox to sign up to each new website. Inboxes are permanent and never deleted.' 
   },
   { 
     title: 'Auto-Delete in 7 Days', 
@@ -110,6 +110,6 @@ export const FEATURES = [
   },
   {
     title: 'Simple Integrations',
-    description: 'Browser extension and command-line tools help streamline activation flows.' 
+    description: 'Browser extension and command-line tools help automation and productivity' 
   }
 ];
