@@ -577,20 +577,6 @@
   font-weight: inherit;
 }
 
-/* Secondary copy button for verification */
-.code-copy.secondary {
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  font-size: 0.875rem;
-  padding: 0.5rem 1rem;
-}
-
-.code-copy.secondary:hover {
-  background: #e5e7eb;
-  border-color: #9ca3af;
-}
-
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .verification-actions {

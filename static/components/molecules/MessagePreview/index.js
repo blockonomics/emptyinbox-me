@@ -86,7 +86,7 @@ function createActivationSection(content, contentType) {
                 <path d="m9 18 6-6-6-6"/>
               </svg>
             </a>
-            <button class="code-copy secondary" onclick="copyActivationCode('${content.replace(/'/g, "\\'")}', this)" title="Copy verification link">
+            <button class="code-copy" onclick="copyActivationCode('${content.replace(/'/g, "\\'")}', this)" title="Copy verification link">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
                 <path d="M4 16c-1.1 0-2-.9-2 2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
