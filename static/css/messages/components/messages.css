@@ -481,3 +481,25 @@
     font-size: 1.1rem;
   }
 }
+
+.isolated-content {
+  position: relative;
+  contain: layout style paint;
+  all: initial;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: inherit;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.isolated-content * {
+  position: static !important;
+  z-index: auto !important;
+  max-width: 100% !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+}
