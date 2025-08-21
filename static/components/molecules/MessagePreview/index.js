@@ -1,4 +1,4 @@
-import { createElement, extractActivationCode, getContentType, formatTimeAgo, getServiceInfo, truncateText, cleanHtmlContent } from "../../../utils/domHelpers.js";
+import { createElement, extractActivationCode, getContentType, formatTimeAgo, getServiceInfo, truncateText, cleanHtmlContent, sanitizeHtmlContent } from "../../../utils/domHelpers.js";
 
 export function createMessagePreview(message) {
   const container = createElement('div', 'message-preview');
@@ -55,8 +55,8 @@ export function createMessagePreview(message) {
         <div class="full-message-content" id="${messageId}" style="display: none;">
           <div class="full-message-section">
             <h4>Full Message Content:</h4>
-            <div class="full-message-body">
-              ${message.html_body || message.text_body || 'No content available'}
+            <div class="full-message-body isolated-content">
+              ${sanitizeHtmlContent(message.html_body) || message.text_body || 'No content available'}
             </div>
           </div>
         </div>
@@ -84,9 +84,17 @@ function createActivationSection(content, contentType) {
           <div class="url-display">
             <a href="${content}" class="reset-link" target="_blank" rel="noopener noreferrer">
               <span class="link-text">${displayText}</span>
-              ${createArrowIcon()}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
             </a>
-            ${createCopyButton(content, 'Copy Link')}
+            <button class="code-copy" onclick="copyActivationCode('${content.replace(/'/g, "\\'")}', this)" title="Copy link">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                <path d="M4 16c-1.1 0-2-.9-2 2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+              </svg>
+              <span class="copy-text">Copy Link</span>
+            </button>
           </div>
         </div>
       </div>
@@ -102,7 +110,13 @@ function createActivationSection(content, contentType) {
         </div>
         <div class="code-display">
           <span class="code-value">${content}</span>
-          ${createCopyButton(content, 'Copy Code')}
+          <button class="code-copy" onclick="copyActivationCode('${content.replace(/'/g, "\\'")}', this)" title="Copy code">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+              <path d="M4 16c-1.1 0-2-.9-2 2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+            <span class="copy-text">Copy Code</span>
+          </button>
         </div>
       </div>
     </div>
@@ -123,31 +137,6 @@ function createContentPreview(htmlBody, textBody) {
   `;
 }
 
-function createCopyButton(content, text) {
-  return `
-    <button class="code-copy" onclick="copyActivationCode('${content.replace(/'/g, "\\'")}', this)" title="${text}">
-      ${createCopyIcon()}
-      <span class="copy-text">${text}</span>
-    </button>
-  `;
-}
-
-function createCopyIcon() {
-  return `
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-      <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-      <path d="M4 16c-1.1 0-2-.9-2 2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-    </svg>
-  `;
-}
-
-function createArrowIcon() {
-  return `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="m9 18 6-6-6-6"/>
-    </svg>
-  `;
-}
 
 // Global functions
 window.toggleMessageContent = function(messageId) {
@@ -208,11 +197,10 @@ function fallbackCopy(text) {
 
 function updateButtonFeedback(button, success) {
   const originalContent = button.innerHTML;
-  const copyText = button.querySelector('.copy-text');
   const message = success ? 'Copied!' : 'Copy Failed';
   const icon = success ? 
     '<polyline points="20,6 9,17 4,12"></polyline>' : 
-    createCopyIcon();
+    '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2 2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>';
   
   button.innerHTML = `
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">

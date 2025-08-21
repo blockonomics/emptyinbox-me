@@ -51,6 +51,46 @@ export function cleanHtmlContent(htmlContent) {
     .trim();
 }
 
+export function sanitizeHtmlContent(htmlContent) {
+  if (!htmlContent) return '';
+  
+  return htmlContent
+    // Remove dangerous elements
+    .replace(/<script[^>]*>.*?<\/script>/gis, '')
+    .replace(/<iframe[^>]*>.*?<\/iframe>/gis, '')
+    .replace(/<object[^>]*>.*?<\/object>/gis, '')
+    .replace(/<embed[^>]*>.*?<\/embed>/gis, '')
+    .replace(/<form[^>]*>.*?<\/form>/gis, '')
+    
+    // Remove or neutralize style elements
+    .replace(/<style[^>]*>.*?<\/style>/gis, '')
+    .replace(/style\s*=\s*["']([^"']*)["']/gi, (match, styleContent) => {
+      // Keep safe styles, remove potentially conflicting ones
+      const safeStyles = styleContent
+        .split(';')
+        .filter(style => {
+          const property = style.split(':')[0]?.trim().toLowerCase();
+          // Allow safe styling properties, block layout-affecting ones
+          return property && ![
+            'position', 'top', 'left', 'right', 'bottom', 'z-index',
+            'display', 'float', 'clear', 'overflow', 'width', 'height',
+            'margin', 'padding', 'border', 'background', 'font-family'
+          ].includes(property);
+        })
+        .join(';');
+      
+      return safeStyles ? `style="${safeStyles}"` : '';
+    })
+    
+    // Remove link tags that could affect styling
+    .replace(/<link[^>]*>/gi, '')
+    
+    // Remove head and meta content
+    .replace(/<head[^>]*>.*?<\/head>/gis, '')
+    .replace(/<meta[^>]*>/gi, '')
+    .replace(/<title[^>]*>.*?<\/title>/gis, '');
+}
+
 
 export function extractActivationCode(htmlBody, textBody, subject) {
   const allText = [subject || '', htmlBody || '', textBody || ''].join(' ');
