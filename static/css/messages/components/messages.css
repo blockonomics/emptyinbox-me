@@ -559,7 +559,6 @@
   transition: all 0.2s ease;
   
   /* Mobile */
-  min-height: 44px;
   touch-action: manipulation;
 }
 
