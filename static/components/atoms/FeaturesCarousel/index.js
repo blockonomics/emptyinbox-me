@@ -38,7 +38,6 @@ export function renderFeaturesCarousel() {
   });
 
   container.appendChild(carousel);
-  section.appendChild(header);
   section.appendChild(container);
 
   return section;
