@@ -70,13 +70,18 @@ export function sanitizeHtmlContent(htmlContent) {
     .replace(/<meta[^>]*>/gi, '')
     .replace(/<title[^>]*>.*?<\/title>/gis, '');
 
-  // If it's plain text or heavily stripped, format it naturally
-  if (!content.includes('<') || content.replace(/<[^>]*>/g, '').length > content.length * 0.8) {
+  // Check if this is actually HTML content with structure
+  const hasHtmlStructure = content.includes('<p>') || content.includes('<div>') || 
+                          content.includes('<table>') || content.includes('<br>');
+  
+  // Only format as plain text if it's actually plain text
+  if (!hasHtmlStructure && (!content.includes('<') || content.replace(/<[^>]*>/g, '').length > content.length * 0.9)) {
     return formatPlainTextMessage(content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim());
   }
   
   return content;
 }
+
 
 function formatPlainTextMessage(text) {
   if (!text) return '';
