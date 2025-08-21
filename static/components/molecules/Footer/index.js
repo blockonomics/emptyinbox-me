@@ -73,33 +73,9 @@ export function createFooter() {
   linksSection.appendChild(linksTitle);
   linksSection.appendChild(linksNav);
 
-  // Connect section (you can add social links here later)
-  const connectSection = document.createElement("div");
-  connectSection.className = "footer-connect";
-
-  const connectTitle = document.createElement("h3");
-  connectTitle.className = "footer-section-title";
-  connectTitle.textContent = "Connect";
-
-  const connectText = document.createElement("p");
-  connectText.className = "footer-connect-text";
-  connectText.textContent = "Stay focused, stay productive.";
-
-  const contactPara = document.createElement("p");
-  contactPara.className = "footer-connect-text";
-  contactPara.innerHTML = `<strong>Contact</strong><br>
-  You can log an issue / contribute to 
-  <a href="https://github.com/blockonomics/emptyinbox-me/" 
-    target="_blank" rel="noopener noreferrer" 
-    class="footer-link">https://github.com/blockonomics/emptyinbox-me/</a>`;
-
-  connectSection.appendChild(connectTitle);
-  connectSection.appendChild(contactPara, connectText);
-
   // Assemble footer content
   footerContent.appendChild(brandSection);
   footerContent.appendChild(linksSection);
-  footerContent.appendChild(connectSection);
 
   // Footer bottom
   const footerBottom = document.createElement("div");
