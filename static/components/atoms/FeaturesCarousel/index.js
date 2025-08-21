@@ -1,48 +1,33 @@
 export function renderFeaturesCarousel() {
-  const section = document.createElement('section');
-  section.className = 'features-section';
-
-  // Section header
-  const header = document.createElement('div');
-  header.className = 'features-header';
-  
-  const title = document.createElement('h2');
-  title.className = 'features-title';
-  title.innerHTML = '<span>✓ Clean</span> <span>✓ Private</span> <span>✓ Reliable</span> <span>✓ Intelligent</span>';
-  
-  const subtitle = document.createElement('p');
-  subtitle.className = 'features-subtitle';
-  subtitle.textContent = 'Premium temporary email service with smart integrations and cryptocurrency payments.';
-  
-  header.appendChild(title);
-  header.appendChild(subtitle);
+  const section = document.createElement("section");
+  section.className = "features-section";
 
   // Features container
-  const container = document.createElement('div');
-  container.className = 'features-container';
+  const container = document.createElement("div");
+  container.className = "features-container";
 
-  const carousel = document.createElement('div');
-  carousel.className = 'features-carousel';
+  const carousel = document.createElement("div");
+  carousel.className = "features-carousel";
 
   FEATURES.forEach(({ title, description }, index) => {
-    const featureCard = document.createElement('div');
-    featureCard.className = 'feature-card';
+    const featureCard = document.createElement("div");
+    featureCard.className = "feature-card";
     featureCard.style.animationDelay = `${index * 0.1}s`;
 
     // Icon placeholder - you can add specific icons later
-    const iconDiv = document.createElement('div');
-    iconDiv.className = 'feature-icon';
+    const iconDiv = document.createElement("div");
+    iconDiv.className = "feature-icon";
     iconDiv.innerHTML = getFeatureIcon(index);
 
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'feature-content';
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "feature-content";
 
-    const featureTitle = document.createElement('h3');
-    featureTitle.className = 'feature-title';
+    const featureTitle = document.createElement("h3");
+    featureTitle.className = "feature-title";
     featureTitle.textContent = title;
 
-    const featureDescription = document.createElement('p');
-    featureDescription.className = 'feature-description';
+    const featureDescription = document.createElement("p");
+    featureDescription.className = "feature-description";
     featureDescription.textContent = description;
 
     contentDiv.appendChild(featureTitle);
@@ -96,20 +81,23 @@ function getFeatureIcon(index) {
 }
 
 export const FEATURES = [
-  { 
-    title: 'Multiple Inboxes', 
-    description: 'Create new inbox to sign up to each new website. Inboxes are permanent and never deleted.' 
-  },
-  { 
-    title: 'Auto-Delete in 7 Days', 
-    description: 'Emails are automatically deleted after 7 days. No storage, no clutter.' 
-  },
-  { 
-    title: 'Privacy-First Payments', 
-    description: 'Use USDT for login and payment.'
+  {
+    title: "Multiple Inboxes",
+    description:
+      "Create new inbox to sign up to each new website. Inboxes are permanent and never deleted.",
   },
   {
-    title: 'Simple Integrations',
-    description: 'Browser extension and command-line tools help automation and productivity' 
-  }
+    title: "Auto-Delete in 7 Days",
+    description:
+      "Emails are automatically deleted after 7 days. No storage, no clutter.",
+  },
+  {
+    title: "Privacy-First Payments",
+    description: "Use USDT for login and payment.",
+  },
+  {
+    title: "Simple Integrations",
+    description:
+      "Browser extension and command-line tools help automation and productivity",
+  },
 ];
