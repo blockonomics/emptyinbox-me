@@ -51,10 +51,10 @@ export function cleanHtmlContent(htmlContent) {
     .trim();
 }
 
-export function sanitizeHtmlContent(htmlContent) {
+function sanitizeHtmlContent(htmlContent) {
   if (!htmlContent) return '';
   
-  return htmlContent
+  let content = htmlContent
     // Remove dangerous elements
     .replace(/<script[^>]*>.*?<\/script>/gis, '')
     .replace(/<iframe[^>]*>.*?<\/iframe>/gis, '')
@@ -62,33 +62,46 @@ export function sanitizeHtmlContent(htmlContent) {
     .replace(/<embed[^>]*>.*?<\/embed>/gis, '')
     .replace(/<form[^>]*>.*?<\/form>/gis, '')
     
-    // Remove or neutralize style elements
+    // Remove styling
     .replace(/<style[^>]*>.*?<\/style>/gis, '')
-    .replace(/style\s*=\s*["']([^"']*)["']/gi, (match, styleContent) => {
-      // Keep safe styles, remove potentially conflicting ones
-      const safeStyles = styleContent
-        .split(';')
-        .filter(style => {
-          const property = style.split(':')[0]?.trim().toLowerCase();
-          // Allow safe styling properties, block layout-affecting ones
-          return property && ![
-            'position', 'top', 'left', 'right', 'bottom', 'z-index',
-            'display', 'float', 'clear', 'overflow', 'width', 'height',
-            'margin', 'padding', 'border', 'background', 'font-family'
-          ].includes(property);
-        })
-        .join(';');
-      
-      return safeStyles ? `style="${safeStyles}"` : '';
-    })
-    
-    // Remove link tags that could affect styling
+    .replace(/style\s*=\s*["']([^"']*)["']/gi, '')
     .replace(/<link[^>]*>/gi, '')
-    
-    // Remove head and meta content
     .replace(/<head[^>]*>.*?<\/head>/gis, '')
     .replace(/<meta[^>]*>/gi, '')
     .replace(/<title[^>]*>.*?<\/title>/gis, '');
+
+  // If it's plain text or heavily stripped, format it naturally
+  if (!content.includes('<') || content.replace(/<[^>]*>/g, '').length > content.length * 0.8) {
+    return formatPlainTextMessage(content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim());
+  }
+  
+  return content;
+}
+
+function formatPlainTextMessage(text) {
+  if (!text) return '';
+  
+  return text
+    // Add paragraph breaks around URLs
+    .replace(/(https?:\/\/[^\s]+)/g, '</p><div class="url-block"><a href="$1" target="_blank" rel="noopener noreferrer">$1</a></div><p>')
+    
+    // Format token/code sections
+    .replace(/\b(Token|Code):\s*([^\s\n.]+)/g, '</p><div class="token-block"><span class="token-label">$1:</span><code class="token-value">$2</code></div><p>')
+    
+    // Add breaks before key phrases
+    .replace(/\b(To get|You can also|This password|If you didn't|Thanks,|Not you\?)/g, '</p><p><strong>$1</strong>')
+    
+    // Add breaks around greetings
+    .replace(/^(Hello,?|Hi,?)/g, '<p><strong>$1</strong>')
+    
+    // Wrap in initial paragraph
+    .replace(/^/, '<p>')
+    .replace(/$/, '</p>')
+    
+    // Clean up empty paragraphs and multiple breaks
+    .replace(/<p>\s*<\/p>/g, '')
+    .replace(/<\/p>\s*<p>/g, '</p><p>')
+    .replace(/(<\/p>|<p>){3,}/g, '</p><p>');
 }
 
 
