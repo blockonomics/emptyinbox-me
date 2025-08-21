@@ -44,7 +44,7 @@ export function createMessagePreview(message) {
           <span class="to-address" title="${message.to || message.inbox || 'Unknown'}">${message.to || message.inbox || 'Unknown'}</span>
         </div>
     
-        <div class="message-subject" title="${subject}" id="subject-${messageId}">
+        <div class="message-subject" title="${subject}" style="display: none;" id="subject-${messageId}">
           ${truncateText(subject, 60)}
         </div>
 
