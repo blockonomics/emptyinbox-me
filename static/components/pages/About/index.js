@@ -31,12 +31,17 @@ export function renderAboutPage() {
   const whyTitle = document.createElement("h2");
   whyTitle.textContent = "Why EmptyInbox";
 
-  const whyDescription = document.createElement("p");
-  whyDescription.textContent =
-    "Isn't it frustrating that even in 2025, you might still lose 30 minutes each week copying and pasting activation codes or hunting down reset‑password links? Probably 90% of your email storage is taken up by newsletters and marketing emails! Temporary email services try to solve this, but they have problems — they’re blacklisted by many websites, and their emails expire. If you sign up to a service using disposable addresses, you risk losing access to your account. We’ve personally dealt with these issues, so we built EmptyInbox to fix them. We hope you find it useful!";
+  const whyPara1 = document.createElement("p");
+  whyPara1.textContent =
+    "Isn't it frustrating that even in 2025, you might still lose 30 minutes each week copying and pasting activation codes or hunting down reset‑password links?";
+
+  const whyPara2 = document.createElement("p");
+  whyPara2.textContent =
+    "Probably 90% of your email storage is taken up by newsletters and marketing emails! Temporary email services try to solve this, but they have problems — they’re blacklisted by many websites, and their emails expire. If you sign up to a service using disposable addresses, you risk losing access to your account. We’ve personally dealt with these issues, so we built EmptyInbox to fix them. We hope you find it useful!";
 
   whySection.appendChild(whyTitle);
-  whySection.appendChild(whyDescription);
+  whySection.appendChild(whyPara1);
+  whySection.appendChild(whyPara2);
 
   /* ---------- How to Use ---------- */
   const howSection = document.createElement("section");
