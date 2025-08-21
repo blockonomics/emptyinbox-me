@@ -17,14 +17,28 @@ export async function renderInboxesPage() {
   const section = document.createElement('section');
   section.classList.add('inboxes');
 
-  // Example quota values — replace with actual logic
-  const currentQuota = 10;
-  const maxQuota = 200;
+  try {
+    const userData = await fetchUserData(authToken);
 
-  section.appendChild(renderQuotaHeader(currentQuota, maxQuota));
-  section.appendChild(createInboxCards());
+    // Extract current quota from user data
+    const currentQuota = userData.inbox_quota || 0;
 
-  container.appendChild(section);
-  main.appendChild(container);
-  document.body.appendChild(main);
+    // Calculate max quota from confirmed payments
+    const maxQuota = Array.isArray(userData.payments)
+      ? userData.payments.reduce((sum, p) => sum + (p.amount || 0), 0)
+      : 0;
+
+    section.appendChild(renderQuotaHeader(currentQuota, maxQuota));
+    section.appendChild(createInboxCards());
+
+    container.appendChild(section);
+    main.appendChild(container);
+    document.body.appendChild(main);
+
+    updateUserDisplay(userData);
+  } catch (error) {
+    console.error('User fetch failed:', error);
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+    window.location.href = ROUTES.LOGIN;
+  }
 }
