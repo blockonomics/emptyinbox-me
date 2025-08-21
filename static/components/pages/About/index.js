@@ -4,26 +4,6 @@ export function renderAboutPage() {
   const main = document.createElement("main");
   main.className = "about-main";
 
-  /* ---------- Hero Section ---------- */
-  const heroSection = document.createElement("section");
-  heroSection.className = "about-section";
-
-  const heroContent = document.createElement("div");
-  heroContent.className = "about-hero-content";
-
-  const heroTitle = document.createElement("h1");
-  heroTitle.className = "about-hero-title";
-  heroTitle.textContent = "About EmptyInbox.me";
-
-  const heroSubtitle = document.createElement("p");
-  heroSubtitle.className = "about-hero-subtitle";
-  heroSubtitle.textContent =
-    "We believe clarity leads to confidence. Built to help you cut through clutter and rediscover calm.";
-
-  heroContent.appendChild(heroTitle);
-  heroContent.appendChild(heroSubtitle);
-  heroSection.appendChild(heroContent);
-
   /* ---------- Why EmptyInbox ---------- */
   const whySection = document.createElement("section");
   whySection.className = "about-section";
@@ -96,7 +76,6 @@ export function renderAboutPage() {
   creditsSection.appendChild(creditsDescription);
 
   /* ---------- Assemble Page ---------- */
-  main.appendChild(heroSection);
   main.appendChild(whySection);
   main.appendChild(howSection);
   main.appendChild(contactSection);
