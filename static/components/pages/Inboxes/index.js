@@ -1,7 +1,7 @@
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../../../utils/constants.js';
-
 import { createInboxCards } from '../../organisms/InboxCards/index.js';
 import { renderQuotaHeader } from '../../molecules/QuotaHeader/index.js';
+import { fetchUserData } from '../../../services/apiService.js';
 
 export async function renderInboxesPage() {
   const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
