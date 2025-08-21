@@ -7,8 +7,8 @@ import { renderInboxesPage } from "../components/pages/Inboxes/index.js";
 import { renderSettingsPage } from "../components/pages/Settings/index.js";
 import { renderMessagesPage } from "../components/pages/Messages/index.js";
 import { renderApiDocsPage } from "./components/pages/ApiDocs/index.js";
+import { renderPricingPage } from "./components/pages/Pricing/index.js";
 import { ROUTES } from "./utils/constants.js";
-import { renderPricingPage } from "./components/pages/pricing/index.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   (async () => {
