@@ -95,8 +95,8 @@ export const FEATURES = [
     description: "Use USDT for login and payment.",
   },
   {
-    title: "Simple Integrations",
+    title: "Intelligent",
     description:
-      "Browser extension and command-line tools help automation and productivity",
+      "Common emails having activation code and reset password links are automatically detected",
   },
 ];
