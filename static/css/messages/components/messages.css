@@ -483,23 +483,75 @@
 }
 
 .isolated-content {
+  /* Mobile-friendly isolation */
   position: relative;
-  contain: layout style paint;
-  all: initial;
+  z-index: 1;
+  
+  /* Create a new formatting context */
+  overflow: hidden;
+  display: flow-root;
+  
+  /* Reset and constrain */
   font-family: inherit;
   font-size: 14px;
   line-height: 1.5;
   color: inherit;
-  overflow: hidden;
-  overflow-wrap: break-word;
+  background: #fff;
+  
+  /* Prevent layout breaks */
   max-width: 100%;
   box-sizing: border-box;
+  word-wrap: break-word;
+  
+  /* Mobile-specific */
+  -webkit-overflow-scrolling: touch;
 }
 
 .isolated-content * {
+  /* Force safe positioning */
   position: static !important;
   z-index: auto !important;
+  float: none !important;
+  
+  /* Constrain dimensions */
   max-width: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  
+  /* Safe spacing */
+  margin: 0.25em 0 !important;
+  padding: 0.25em !important;
+  
+  /* Typography reset */
   font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  
+  /* Mobile-friendly */
   box-sizing: border-box !important;
+  word-wrap: break-word !important;
+  -webkit-text-size-adjust: none !important;
+}
+
+/* Block dangerous CSS properties */
+.isolated-content [style*="position:"],
+.isolated-content [style*="z-index:"],
+.isolated-content [style*="display:"],
+.isolated-content [style*="overflow:"],
+.isolated-content [style*="width:"],
+.isolated-content [style*="height:"] {
+  position: static !important;
+  z-index: auto !important;
+  display: block !important;
+  overflow: visible !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* Mobile responsive images */
+.isolated-content img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  margin: 0.5em 0 !important;
 }
