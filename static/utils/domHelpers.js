@@ -123,6 +123,10 @@ export function extractActivationCode(htmlBody, textBody, subject) {
   const resetUrl = extractResetUrl(allText);
   if (resetUrl) return resetUrl;
 
+  // Try to extract verification URLs next
+  const verificationUrl = extractVerificationUrl(allText);
+  if (verificationUrl) return verificationUrl;
+
   // Regex patterns for activation/verification codes
   const patterns = [
     /activation\s+code[^A-Z0-9]*([A-Z0-9]{4,12})/gi,
@@ -148,6 +152,35 @@ export function extractActivationCode(htmlBody, textBody, subject) {
 
   return null;
 }
+
+function extractVerificationUrl(text) {
+  const verificationPatterns = [
+    /https?:\/\/[^\s<>"']*email-verification[^\s<>"']*/gi,
+    /https?:\/\/[^\s<>"']*verify[^\s<>"']*/gi,
+    /https?:\/\/[^\s<>"']*confirmation[^\s<>"']*/gi,
+  ];
+
+  for (const pattern of verificationPatterns) {
+    const matches = text.matchAll(pattern);
+    for (const match of matches) {
+      const url = match[0];
+      if (url && isValidVerificationUrl(url)) {
+        return url;
+      }
+    }
+  }
+  return null;
+}
+
+function isValidVerificationUrl(url) {
+  return (
+    url &&
+    url.length > 20 &&
+    (url.includes('verification') || url.includes('verify') || url.includes('confirmation')) &&
+    url.startsWith('http')
+  );
+}
+
 
 function extractResetUrl(htmlText) {
   // Look for password reset URLs
@@ -197,17 +230,22 @@ function isValidResetUrl(url) {
 
 export function getContentType(htmlBody, textBody, subject) {
   const allText = [subject || '', htmlBody || '', textBody || ''].join(' ');
-  
+ 
+  // Check for email verification
+  if (/email.verification|verify.*email|confirm.*email/gi.test(allText)) {
+    return 'email_verification';
+  }
+
   // Check for password reset
   if (/reset.*password|password.*reset|forgot.*password/gi.test(allText)) {
     return 'password_reset';
   }
-  
+ 
   // Check for activation/verification
   if (/activation|activate|verification|verify|confirm/gi.test(allText)) {
     return 'activation';
   }
-  
+ 
   return 'general';
 }
 

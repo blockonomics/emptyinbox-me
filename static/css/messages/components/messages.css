@@ -526,3 +526,80 @@
 .isolated-content [style*="position: absolute"] {
   position: static !important;
 }
+
+/* Verification button styles */
+.verification-section .verification-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.verify-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  /* Button appearance */
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white !important;
+  text-decoration: none !important;
+  
+  /* Sizing */
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  
+  /* Typography */
+  font-weight: 600;
+  font-size: 0.95rem;
+  
+  /* Effects */
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+  transition: all 0.2s ease;
+  
+  /* Mobile */
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.verify-button:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.verify-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.verify-button .button-text {
+  font-weight: inherit;
+}
+
+/* Secondary copy button for verification */
+.code-copy.secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+}
+
+.code-copy.secondary:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .verification-actions {
+    gap: 0.5rem;
+  }
+  
+  .verify-button {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+  }
+}

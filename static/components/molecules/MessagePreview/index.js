@@ -70,6 +70,35 @@ export function createMessagePreview(message) {
 // Helper functions
 function createActivationSection(content, contentType) {
   const isUrl = content.startsWith('http') || content.startsWith('/');
+  
+  if (contentType === 'email_verification' && isUrl) {
+    return `
+      <div class="activation-code-section verification-section">
+        <div class="code-container">
+          <div class="code-header">
+            <span class="code-icon">✅</span>
+            <span class="code-label">Email Verification</span>
+          </div>
+          <div class="verification-actions">
+            <a href="${content}" class="verify-button" target="_blank" rel="noopener noreferrer">
+              <span class="button-text">Verify Email Address</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </a>
+            <button class="code-copy secondary" onclick="copyActivationCode('${content.replace(/'/g, "\\'")}', this)" title="Copy verification link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                <path d="M4 16c-1.1 0-2-.9-2 2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+              </svg>
+              <span class="copy-text">Copy Link</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
   const isPasswordReset = contentType === 'password_reset' && isUrl;
   
   if (isPasswordReset) {
