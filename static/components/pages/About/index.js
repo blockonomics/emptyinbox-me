@@ -13,11 +13,11 @@ export function renderAboutPage() {
 
   const whyPara1 = document.createElement("p");
   whyPara1.textContent =
-    "Isn't it frustrating that even in 2025, you might still lose 30 minutes each week copying and pasting activation codes or hunting down reset‑password links?";
+    "We are in 2025, yet email inboxes are clunky, pesky and filled with trash. The drudgery of copying activation codes and reset‑password links still exists. 99% of inbox storage is filled with email that are never to be read again!";
 
   const whyPara2 = document.createElement("p");
   whyPara2.textContent =
-    "Probably 90% of your email storage is taken up by newsletters and marketing emails! Temporary email services try to solve this, but they have problems — they’re blacklisted by many websites, and their emails expire. If you sign up to a service using disposable addresses, you risk losing access to your account. We’ve personally dealt with these issues, so we built EmptyInbox to fix them. We hope you find it useful!";
+    "As developers in a SAAS startup, we frequently signup to different web services and also need to automate / test emails. We created EmptyInbox to streamline this flow and have a digitally minimal inbox. Hope you find this service useful! ";
 
   whySection.appendChild(whyTitle);
   whySection.appendChild(whyPara1);
