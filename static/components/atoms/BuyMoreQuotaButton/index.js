@@ -78,7 +78,7 @@ function setupPaymentModal() {
               order_amount="10"
               receive_address="0x5C0ed91604E92D7f488d62058293ce603BCC68eF"
               redirect_url="/inboxes.html?payment=success"
-              testnet=0>
+              testnet="0">
             </web3-payment>
           </div>
         </div>
