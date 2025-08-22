@@ -1,7 +1,7 @@
 import { renderBuyQuotaButton } from "../../atoms/BuyMoreQuotaButton/index.js";
 import { createInboxButtonWithLogic } from "../InboxButtonWithLogic/index.js";
 
-export function renderQuotaHeader(currentQuota, maxQuota) {
+export function renderInboxesHeader(currentQuota, maxQuota) {
   const quotaHeader = document.createElement("div");
   quotaHeader.classList.add("inboxes-header");
 
