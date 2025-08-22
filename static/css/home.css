@@ -207,6 +207,7 @@
   }
 }
 
+/* Section layout */
 .integrations-section {
   padding: 4rem 2rem;
   background-color: #f9fafb;
@@ -225,6 +226,7 @@
   gap: 2rem;
 }
 
+/* Integration cards */
 .integration {
   background: white;
   border: 1px solid #e5e7eb;
@@ -240,7 +242,7 @@
 }
 
 .integration-link {
-  display: inline-block;
+  display: block; /* ensures it sits above images */
   margin-bottom: 1rem;
   color: #2563eb;
   font-weight: 500;
@@ -251,11 +253,12 @@
   text-decoration: underline;
 }
 
+/* Images inside integrations */
 .integration-images {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* default for small screens */
 }
 
 .integration-img {
@@ -263,7 +266,7 @@
   height: auto;
   border-radius: 4px;
   border: 1px solid #e5e7eb;
-  cursor: pointer; /* shows hand cursor */
+  cursor: pointer;
 }
 
 /* Lightbox styles */
@@ -295,4 +298,17 @@
   font-size: 2rem;
   color: white;
   cursor: pointer;
+}
+
+/* Laptop+ adjustments: keep two web images side-by-side */
+@media (min-width: 1024px) {
+  .integration-images {
+    flex-wrap: nowrap; /* prevent wrapping */
+  }
+
+  .integration-images img {
+    flex: 1 1 auto; /* equal growth/shrink */
+    max-width: 48%; /* fit side-by-side with gap */
+    height: auto;
+  }
 }
