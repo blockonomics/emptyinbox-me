@@ -50,18 +50,18 @@ export function createFooter() {
   const footerMeta = document.createElement("div");
   footerMeta.className = "footer-meta";
 
-  const privacyLink = document.createElement("a");
-  privacyLink.href = "#privacy";
-  privacyLink.className = "footer-meta-link";
-  privacyLink.textContent = "Privacy";
+  // const privacyLink = document.createElement("a");
+  // privacyLink.href = "#privacy";
+  // privacyLink.className = "footer-meta-link";
+  // privacyLink.textContent = "Privacy";
 
-  const termsLink = document.createElement("a");
-  termsLink.href = "#terms";
-  termsLink.className = "footer-meta-link";
-  termsLink.textContent = "Terms";
+  // const termsLink = document.createElement("a");
+  // termsLink.href = "#terms";
+  // termsLink.className = "footer-meta-link";
+  // termsLink.textContent = "Terms";
 
-  footerMeta.appendChild(privacyLink);
-  footerMeta.appendChild(termsLink);
+  // footerMeta.appendChild(privacyLink);
+  // footerMeta.appendChild(termsLink);
 
   footerBottom.appendChild(copyright);
   footerBottom.appendChild(footerMeta);
