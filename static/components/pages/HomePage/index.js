@@ -2,7 +2,6 @@ import { renderHomePageHero } from "../../atoms/HomePageHero/index.js";
 import { renderFeaturesCarousel } from "../../atoms/FeaturesCarousel/index.js";
 import {
   enableImageLightbox,
-  initCarousels,
   renderIntegrationsSection,
 } from "../../atoms/IntegrationsSection/index.js";
 
@@ -13,6 +12,5 @@ export function renderHomePage() {
   main.appendChild(renderIntegrationsSection());
   document.body.appendChild(main);
 
-  initCarousels();
   enableImageLightbox();
 }

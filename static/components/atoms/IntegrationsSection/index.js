@@ -10,27 +10,16 @@ export function renderIntegrationsSection() {
       <div class="integration">
         <h3 class="integration-title">Bash</h3>
         <a href="https://github.com/shivaenigma/tmpmail" class="integration-link">Download from GitHub</a>
-        <div class="carousel" data-carousel>
-          <div class="carousel-track">
-            <img src="../../assets/bash1.jpg" alt="Bash integration screenshot 1">
-            <img src="../../assets/bash2.jpg" alt="Bash integration screenshot 2">
-          </div>
-          <button class="carousel-btn prev" data-carousel-prev>&#10094;</button>
-          <button class="carousel-btn next" data-carousel-next>&#10095;</button>
-        </div>
+        <img src="../../assets/bash.png" alt="Bash integration screenshot" class="integration-img">
       </div>
 
       <!-- Web Column -->
       <div class="integration">
         <h3 class="integration-title">Web</h3>
         <a href="https://emptyinbox.me/login.html" class="integration-link">Try out</a>
-        <div class="carousel" data-carousel>
-          <div class="carousel-track">
-            <img src="../../assets/web1.jpg" alt="Web integration screenshot 1">
-            <img src="../../assets/web2.jpg" alt="Web integration screenshot 2">
-          </div>
-          <button class="carousel-btn prev" data-carousel-prev>&#10094;</button>
-          <button class="carousel-btn next" data-carousel-next>&#10095;</button>
+        <div class="integration-images">
+          <img src="../../assets/web1.jpg" alt="Web integration screenshot 1" class="integration-img">
+          <img src="../../assets/web2.jpg" alt="Web integration screenshot 2" class="integration-img">
         </div>
       </div>
 
@@ -38,35 +27,6 @@ export function renderIntegrationsSection() {
   `;
 
   return section;
-}
-
-export function initCarousels() {
-  document.querySelectorAll("[data-carousel]").forEach((carousel) => {
-    const track = carousel.querySelector(".carousel-track");
-    const slides = Array.from(track.children);
-    let index = 0;
-
-    const updateSlide = () => {
-      track.style.transform = `translateX(-${index * 100}%)`;
-    };
-
-    // Ensure correct initial position
-    updateSlide();
-
-    carousel
-      .querySelector("[data-carousel-prev]")
-      .addEventListener("click", () => {
-        index = (index - 1 + slides.length) % slides.length;
-        updateSlide();
-      });
-
-    carousel
-      .querySelector("[data-carousel-next]")
-      .addEventListener("click", () => {
-        index = (index + 1) % slides.length;
-        updateSlide();
-      });
-  });
 }
 
 export function enableImageLightbox() {
@@ -82,9 +42,9 @@ export function enableImageLightbox() {
   const lightboxImage = overlay.querySelector(".lightbox-image");
   const closeBtn = overlay.querySelector(".lightbox-close");
 
-  // Use event delegation so it works even if images load later
+  // Event delegation for any integration image
   document.addEventListener("click", (e) => {
-    const img = e.target.closest(".carousel-track img");
+    const img = e.target.closest(".integration-img");
     if (img) {
       lightboxImage.src = img.src;
       overlay.classList.add("active");
