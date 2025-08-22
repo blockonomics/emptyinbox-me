@@ -94,6 +94,7 @@ function setupPaymentModal() {
       modal = createModal();
       setupModalEvents(modal);
     }
+    modal.style.display = "flex";
   });
 
   function setupModalEvents(modal) {
