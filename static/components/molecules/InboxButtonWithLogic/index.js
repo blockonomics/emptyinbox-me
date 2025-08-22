@@ -6,7 +6,7 @@ import {
   LOCAL_STORAGE_KEYS,
   USER_STARTING_QUOTA,
 } from "../../../utils/constants.js";
-import { renderInboxesHeader } from "../../molecules/InboxesHeader/index.js";
+import { renderQuotaHeader } from "../../molecules/InboxesHeader/index.js";
 import { createInboxCards } from "../../organisms/InboxCards/index.js";
 
 export function createInboxButtonWithLogic() {
@@ -89,18 +89,33 @@ async function refreshInboxesData() {
     // Find and update the header
     const existingHeader = document.querySelector(".inboxes-header");
     if (existingHeader) {
-      const newHeader = renderInboxesHeader(currentQuota, maxQuota);
+      const newHeader = renderQuotaHeader(currentQuota, maxQuota);
       existingHeader.parentNode.replaceChild(newHeader, existingHeader);
     }
 
     // Find and update the inbox cards
     const inboxesSection = document.querySelector(".inboxes");
-    const existingCards = inboxesSection.querySelector(
-      '.inbox-cards, [class*="inbox-cards"]'
-    );
-    if (existingCards) {
-      const newCards = createInboxCards();
-      existingCards.parentNode.replaceChild(newCards, existingCards);
+    if (inboxesSection) {
+      // Look for the existing inbox container
+      let existingCards = inboxesSection.querySelector("#inboxes-container");
+
+      // If we can't find the container by ID, look for the element after the header
+      if (!existingCards) {
+        const header = inboxesSection.querySelector(".inboxes-header");
+        if (header && header.nextElementSibling) {
+          existingCards = header.nextElementSibling;
+        }
+      }
+
+      if (existingCards) {
+        // Create new cards container and replace
+        const newCards = createInboxCards();
+        existingCards.parentNode.replaceChild(newCards, existingCards);
+      } else {
+        // If no existing cards container found, just append new cards
+        const newCards = createInboxCards();
+        inboxesSection.appendChild(newCards);
+      }
     }
   } catch (error) {
     console.error("Failed to refresh inboxes data:", error);
