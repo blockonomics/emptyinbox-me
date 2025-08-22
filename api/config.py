@@ -1,5 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_apscheduler import APScheduler
+from datetime import datetime, timedelta
 import logging
 import os
 
@@ -27,3 +29,31 @@ if not app.debug:
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
     app.logger.setLevel(logging.INFO)
+
+# --- Cleanup job ---
+def delete_old_messages():
+    from db_models import Message
+    cutoff = int((datetime.utcnow() - timedelta(days=7)).timestamp())
+    deleted = db.session.query(Message).filter(Message.timestamp < cutoff).delete()
+    db.session.commit()
+    if deleted:
+        app.logger.info(f"Deleted {deleted} old messages")
+
+# --- APScheduler config ---
+class Config:
+    SCHEDULER_API_ENABLED = True
+
+app.config.from_object(Config)
+scheduler = APScheduler()
+scheduler.init_app(app)
+
+# Run every 24 hours
+scheduler.add_job(
+    id='Delete Old Messages',
+    func=delete_old_messages,
+    trigger='interval',
+    hours=24
+)
+
+scheduler.start()
+
