@@ -1,111 +1,46 @@
-import {
-  QUOTA_PER_USDT,
-  USER_STARTING_QUOTA,
-} from "../../../utils/constants.js";
-
 export async function renderPricingPage() {
-  const main = document.createElement("main");
-  const container = document.createElement("div");
-  container.classList.add("pricing-page");
+  document.body.innerHTML = `
+    <main class="pricing-page">
+      <section class="pricing-options">
+        
+        <!-- Free Tier -->
+        <div class="card-wrapper">
+          <div class="pricing-card">
+            <div class="card-header">
+              <span class="card-price">5 Inboxes</span>
+              <div class="card-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="m2 7 10 5 10-5"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <p class="card-price">Free</p>
+        </div>
 
-  // Hero Section
-  const heroSection = document.createElement("section");
-  heroSection.classList.add("pricing-hero");
+        <!-- Paid Tier -->
+        <div class="card-wrapper">
+          <div class="pricing-card">
+            <div class="card-header">
+              <div class="card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M13.4754 10.6182V12.4151C13.003 12.4388 12.5089 12.4518 12.0001 12.4518C11.4474 12.4518 10.9124 12.4367 10.4035 12.4083V10.9736H10.4032V10.6237C7.5798 10.7596 5.48975 11.2478 5.48975 11.8293C5.48975 12.5162 8.40454 13.0727 12.0002 13.0727C15.5957 13.0727 18.5107 12.5162 18.5107 11.8293C18.5106 11.2392 16.3602 10.7457 13.4754 10.6182Z" fill="#26A17B"/>
+                  <path d="M12.0001 0C5.37271 0 0 5.3724 0 11.9999C0 18.6272 5.37271 24.0001 12.0001 24.0001C18.6274 24.0001 24 18.6272 24 11.9999C24 5.3724 18.6273 0 12.0001 0ZM13.4751 14.0373V19.3305H10.403V14.0301C7.11427 13.8398 4.65412 13.0749 4.65412 12.1596C4.65412 11.2446 7.11427 10.4798 10.403 10.2892V8.80597H6.22063V5.73391H17.6579V8.80597H13.4751L13.4753 10.2821C16.8253 10.4603 19.3462 11.2334 19.3462 12.1596C19.3461 13.0861 16.8253 13.8593 13.4751 14.0373Z" fill="#26A17B"/>
+                </svg>
+              </div>
+              <div class="card-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="m2 7 10 5 10-5"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <p class="card-price">1 USDT per 10 inboxes</p>
+        </div>
 
-  const heroContent = document.createElement("div");
-  heroContent.classList.add("pricing-hero-content");
-
-  const heroTitle = document.createElement("h1");
-  heroTitle.classList.add("pricing-hero-title");
-  heroTitle.textContent = "Simple, One‑Time Pricing";
-
-  const heroSubtitle = document.createElement("p");
-  heroSubtitle.classList.add("pricing-hero-subtitle");
-  heroSubtitle.textContent =
-    `You start with ${USER_STARTING_QUOTA} aliases included. ` +
-    `Need more? Choose the pack that fits — pay once, keep them forever.`;
-
-  heroContent.appendChild(heroTitle);
-  heroContent.appendChild(heroSubtitle);
-  heroSection.appendChild(heroContent);
-  container.appendChild(heroSection);
-
-  // Pricing Cards Section
-  const cardSection = document.createElement("section");
-  cardSection.classList.add("pricing-card-section");
-
-  const pricingOptions = [
-    {
-      name: `${QUOTA_PER_USDT} Aliases`,
-      price: "1 USDT",
-      tagline: "Starter Pack — for occasional use.",
-      features: ["Instant activation", "No expiry date", "Yours to keep"],
-    },
-    {
-      name: `${QUOTA_PER_USDT * 10} Aliases`,
-      price: "10 USDT",
-      tagline: "Regular Pack — for steady, ongoing needs.",
-      features: ["Instant activation", "No expiry date", "Yours to keep"],
-    },
-    {
-      name: `${QUOTA_PER_USDT * 50} Aliases`,
-      price: "50 USDT",
-      tagline: "Bulk Pack — for heavy users or teams.",
-      features: ["Instant activation", "No expiry date", "Yours to keep"],
-    },
-  ];
-
-  pricingOptions.forEach((option) => {
-    const card = document.createElement("div");
-    card.classList.add("pricing-card");
-
-    const cardHeader = document.createElement("div");
-    cardHeader.classList.add("pricing-card-header");
-
-    const cardTitle = document.createElement("h2");
-    cardTitle.classList.add("pricing-card-title");
-    cardTitle.textContent = option.name;
-
-    const cardTagline = document.createElement("p");
-    cardTagline.classList.add("pricing-card-tagline");
-    cardTagline.textContent = option.tagline;
-
-    cardHeader.appendChild(cardTitle);
-    cardHeader.appendChild(cardTagline);
-
-    const priceBlock = document.createElement("div");
-    priceBlock.classList.add("pricing-card-price-block");
-
-    const price = document.createElement("div");
-    price.classList.add("pricing-card-price");
-    price.textContent = option.price;
-
-    priceBlock.appendChild(price);
-
-    const featureList = document.createElement("ul");
-    featureList.classList.add("pricing-feature-list");
-    option.features.forEach((feat) => {
-      const li = document.createElement("li");
-      li.innerHTML = `<span class="checkmark">✔</span> ${feat}`;
-      featureList.appendChild(li);
-    });
-
-    card.appendChild(cardHeader);
-    card.appendChild(priceBlock);
-    card.appendChild(featureList);
-
-    cardSection.appendChild(card);
-  });
-
-  container.appendChild(cardSection);
-
-  // Footer note
-  const footerNote = document.createElement("p");
-  footerNote.classList.add("pricing-footer-note");
-  footerNote.textContent =
-    "All prices are in USDT. Pay once, aliases are yours to keep.";
-  container.appendChild(footerNote);
-
-  main.appendChild(container);
-  document.body.appendChild(main);
+      </section>
+    </main>
+  `;
 }
