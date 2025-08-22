@@ -77,14 +77,17 @@ async function refreshInboxesData() {
     const userData = await fetchUserData(authToken);
 
     // Calculate quotas
-    const currentQuota =
-      typeof userData.inbox_quota === "number" ? userData.inbox_quota : 0;
     const maxQuota = Array.isArray(userData.payments)
       ? userData.payments.reduce(
           (sum, p) => sum + (typeof p.amount === "number" ? p.amount : 0),
           USER_STARTING_QUOTA
         )
       : USER_STARTING_QUOTA;
+
+    const inboxQuota =
+      typeof userData.inbox_quota === "number" ? userData.inbox_quota : 0;
+
+    const currentQuota = maxQuota - inboxQuota;
 
     // Find and update the header
     const existingHeader = document.querySelector(".inboxes-header");
