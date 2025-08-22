@@ -150,13 +150,23 @@ export function extractActivationCode(htmlBody, textBody, subject) {
   const verificationUrl = extractVerificationUrl(allText);
   if (verificationUrl) return verificationUrl;
 
+  // Common false positives to skip
+  const blacklist = new Set([
+    "EXPIRED",
+    "EXPIRES",
+    "MINUTES",
+    "HOURS",
+    "DAYS",
+    "SECONDS",
+  ]);
+
   // Regex patterns for activation/verification codes
   const patterns = [
-    /activation\s+code\b[^A-Z0-9]*([A-Z0-9]{4,12})\b/gi,
-    /verification\s+code\b[^A-Z0-9]*([A-Z0-9]{4,12})\b/gi,
-    /confirm\s+code\b[^A-Z0-9]*([A-Z0-9]{4,12})\b/gi,
-    /your\s+code\b[^A-Z0-9]*([A-Z0-9]{4,12})\b/gi,
-    /code\b[^A-Z0-9]*([A-Z0-9]{6,12})\b/gi,
+    /activation\s+code\b(?:\s*[:\-]|\s*\n+)\s*([A-Z0-9]{4,12})\b/gi,
+    /verification\s+code\b(?:\s*[:\-]|\s*\n+)\s*([A-Z0-9]{4,12})\b/gi,
+    /confirm\s+code\b(?:\s*[:\-]|\s*\n+)\s*([A-Z0-9]{4,12})\b/gi,
+    /your\s+code\b(?:\s*[:\-]|\s*\n+)\s*([A-Z0-9]{4,12})\b/gi,
+    /code\b(?:\s*[:\-]|\s*\n+)\s*([A-Z0-9]{6,12})\b/gi,
     /\b\d{6}\b/g, // numeric-only fallback
     /\b[A-Z0-9]{6,12}\b/g, // uppercase letters + digits only
   ];
@@ -166,8 +176,10 @@ export function extractActivationCode(htmlBody, textBody, subject) {
     for (const match of matches) {
       let code = match[1] || match[0];
       code = code
-        .replace(/^(activation|verification|confirm|your|code)[:\s]+/gi, "")
+        .replace(/^(activation|verification|confirm|your|code)[:\s\-]+/gi, "")
         .trim();
+
+      if (blacklist.has(code.toUpperCase())) continue; // skip bad words
 
       if (isValidCode(code)) {
         return code;
@@ -233,17 +245,36 @@ function extractResetUrl(htmlText) {
 }
 
 function isValidCode(code) {
+  if (!code) return false;
+
+  const blacklist = new Set([
+    "EXPIRED",
+    "EXPIRES",
+    "MINUTES",
+    "HOURS",
+    "DAYS",
+    "SECONDS",
+    "HTTP",
+    "WWW",
+    "GMAIL",
+    "YAHOO",
+    "OUTLOOK",
+    "EMAIL",
+    "MAIL",
+    "NULL",
+    "TRUE",
+    "FALSE",
+  ]);
+
+  const upper = code.toUpperCase();
+
   return (
-    code &&
     code.length >= 4 &&
     code.length <= 12 &&
-    !code.match(
-      /^(HTTP|WWW|GMAIL|YAHOO|OUTLOOK|EMAIL|MAIL|NULL|TRUE|FALSE)/i
-    ) &&
+    !blacklist.has(upper) &&
     !code.includes("@") &&
     !code.includes(".") &&
-    !code.match(/^[0-9]+$/) && // Not just numbers
-    !code.match(/^[A-Z]+$/) // Not just letters
+    /^[A-Z0-9]+$/.test(code) // only uppercase letters and digits
   );
 }
 
