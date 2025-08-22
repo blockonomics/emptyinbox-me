@@ -542,8 +542,6 @@
   justify-content: center;
   gap: 0.5rem;
 
-  width: 100%;
-
   /* Button appearance */
   background: linear-gradient(135deg, #10b981, #059669);
   color: white !important;
@@ -592,5 +590,11 @@
   }
   .verification-section .verification-actions {
     flex-direction: column;
+  }
+}
+/* Responsive adjustments */
+@media (min-width: 480px) {
+  .verify-button {
+    width: 100%;
   }
 }
