@@ -6,7 +6,7 @@ import {
   LOCAL_STORAGE_KEYS,
   USER_STARTING_QUOTA,
 } from "../../../utils/constants.js";
-import { renderQuotaHeader } from "../../molecules/InboxesHeader/index.js";
+import { renderInboxesHeader } from "../../molecules/InboxesHeader/index.js";
 import { createInboxCards } from "../../organisms/InboxCards/index.js";
 
 export function createInboxButtonWithLogic() {
@@ -89,7 +89,7 @@ async function refreshInboxesData() {
     // Find and update the header
     const existingHeader = document.querySelector(".inboxes-header");
     if (existingHeader) {
-      const newHeader = renderQuotaHeader(currentQuota, maxQuota);
+      const newHeader = renderInboxesHeader(currentQuota, maxQuota);
       existingHeader.parentNode.replaceChild(newHeader, existingHeader);
     }
 
