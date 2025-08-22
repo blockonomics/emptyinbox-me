@@ -92,7 +92,7 @@ export const FEATURES = [
   },
   {
     title: "Privacy-First Payments",
-    description: "Use USDT for login and payment.",
+    description: "Use Web 3 Wallet (USDT) for login and payment.",
   },
   {
     title: "Intelligent",
