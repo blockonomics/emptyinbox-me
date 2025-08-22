@@ -47,20 +47,17 @@ export function createFooter() {
   const linksNav = document.createElement("nav");
   linksNav.className = "footer-nav";
 
-  const linksToRender = NAV_LINKS.map(
-    ({ label, href, external, icon, className }) => {
-      if (isLoggedIn && href === ROUTES.LOGIN) {
-        return {
-          label: "Messages",
-          href: ROUTES.MESSAGES,
-          external,
-          icon,
-          className,
-        };
-      }
-      return { label, href, external, icon, className };
-    }
-  );
+  // Apply same filtering rules as navbar
+  let linksToRender;
+  if (isLoggedIn) {
+    // Logged in → show all except Login
+    linksToRender = NAV_LINKS.filter((link) => link.label !== "Login");
+  } else {
+    // Not logged in → show all except Inboxes, Settings, Messages
+    linksToRender = NAV_LINKS.filter(
+      (link) => !["Inboxes", "Settings", "Messages"].includes(link.label)
+    );
+  }
 
   linksToRender.forEach(({ label, href }) => {
     const link = document.createElement("a");
