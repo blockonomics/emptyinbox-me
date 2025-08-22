@@ -152,11 +152,11 @@ export function extractActivationCode(htmlBody, textBody, subject) {
 
   // Regex patterns for activation/verification codes
   const patterns = [
-    /activation\s+code[^A-Z0-9]*([A-Z0-9]{4,12})/gi,
-    /verification\s+code[^A-Z0-9]*([A-Z0-9]{4,12})/gi,
-    /confirm\s+code[^A-Z0-9]*([A-Z0-9]{4,12})/gi,
-    /your\s+code[^A-Z0-9]*([A-Z0-9]{4,12})/gi,
-    /code[^A-Z0-9]*([A-Z0-9]{6,12})/gi,
+    /activation\s+code\b[^A-Z0-9]*([A-Z0-9]{4,12})\b/gi,
+    /verification\s+code\b[^A-Z0-9]*([A-Z0-9]{4,12})\b/gi,
+    /confirm\s+code\b[^A-Z0-9]*([A-Z0-9]{4,12})\b/gi,
+    /your\s+code\b[^A-Z0-9]*([A-Z0-9]{4,12})\b/gi,
+    /code\b[^A-Z0-9]*([A-Z0-9]{6,12})\b/gi,
     /\b\d{6}\b/g, // numeric-only fallback
     /\b[A-Z0-9]{6,12}\b/g, // uppercase letters + digits only
   ];
