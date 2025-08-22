@@ -7,6 +7,7 @@
     rgba(255, 255, 255, 0.9) 0%,
     rgba(248, 250, 252, 0.8) 100%
   );
+  cursor: pointer;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -322,7 +323,7 @@
 }
 
 .code-value {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   letter-spacing: 0.5px;
   font-size: 1rem;
   font-weight: 600;
@@ -368,7 +369,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 0.8rem;
 }
 
@@ -486,18 +487,18 @@
   /* Basic containment without breaking functionality */
   position: relative;
   background: #fff;
-  
+
   /* Allow scrolling and proper sizing */
   overflow: auto;
   max-height: 400px;
   max-width: 100%;
-  
+
   /* Typography */
   font-family: inherit;
   font-size: 14px;
   line-height: 1.5;
   color: inherit;
-  
+
   /* Mobile-friendly */
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
@@ -508,7 +509,7 @@
   /* Prevent layout-breaking positioning */
   position: static !important;
   z-index: auto !important;
-  
+
   /* Allow normal sizing but prevent overflow */
   max-width: 100% !important;
   box-sizing: border-box !important;
@@ -540,24 +541,24 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  
+
   /* Button appearance */
   background: linear-gradient(135deg, #10b981, #059669);
   color: white !important;
   text-decoration: none !important;
-  
+
   /* Sizing */
   padding: 0.875rem 1.5rem;
   border-radius: 8px;
-  
+
   /* Typography */
   font-weight: 600;
   font-size: 0.95rem;
-  
+
   /* Effects */
   box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
   transition: all 0.2s ease;
-  
+
   /* Mobile */
   touch-action: manipulation;
 }
@@ -582,7 +583,7 @@
   .verification-actions {
     gap: 0.5rem;
   }
-  
+
   .verify-button {
     padding: 0.75rem 1.25rem;
     font-size: 0.9rem;
