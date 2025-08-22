@@ -542,13 +542,15 @@
   justify-content: center;
   gap: 0.5rem;
 
+  width: 100%;
+
   /* Button appearance */
   background: linear-gradient(135deg, #10b981, #059669);
   color: white !important;
   text-decoration: none !important;
 
   /* Sizing */
-  padding: 0.875rem 1.5rem;
+  padding: 0 1.5rem;
   border-radius: 8px;
 
   /* Typography */
@@ -586,6 +588,7 @@
 
   .verify-button {
     padding: 0.75rem 1.25rem;
+    flex-direction: column;
     font-size: 0.9rem;
   }
 }
