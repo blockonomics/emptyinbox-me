@@ -17,13 +17,13 @@ export async function renderPricingPage() {
 
   const heroTitle = document.createElement("h1");
   heroTitle.classList.add("pricing-hero-title");
-  heroTitle.textContent = "Simple Pricing";
+  heroTitle.textContent = "Simple, One‑Time Pricing";
 
   const heroSubtitle = document.createElement("p");
   heroSubtitle.classList.add("pricing-hero-subtitle");
   heroSubtitle.textContent =
     `You start with ${USER_STARTING_QUOTA} aliases included. ` +
-    `Need more? Add ${QUOTA_PER_USDT} aliases for 1 USDT — scale up as your need grow.`;
+    `Need more? Choose the pack that fits — pay once, keep them forever.`;
 
   heroContent.appendChild(heroTitle);
   heroContent.appendChild(heroSubtitle);
@@ -35,27 +35,76 @@ export async function renderPricingPage() {
   cardSection.classList.add("pricing-card-section");
 
   const pricingOptions = [
-    { qty: `${QUOTA_PER_USDT} aliases`, price: "1 USDT" },
+    {
+      name: `${QUOTA_PER_USDT} Aliases`,
+      price: "1 USDT",
+      tagline: "Starter Pack — for occasional use.",
+      features: ["Instant activation", "No expiry date", "Yours to keep"],
+    },
+    {
+      name: `${QUOTA_PER_USDT * 10} Aliases`,
+      price: "10 USDT",
+      tagline: "Regular Pack — for steady, ongoing needs.",
+      features: ["Instant activation", "No expiry date", "Yours to keep"],
+    },
+    {
+      name: `${QUOTA_PER_USDT * 50} Aliases`,
+      price: "50 USDT",
+      tagline: "Bulk Pack — for heavy users or teams.",
+      features: ["Instant activation", "No expiry date", "Yours to keep"],
+    },
   ];
 
   pricingOptions.forEach((option) => {
     const card = document.createElement("div");
     card.classList.add("pricing-card");
 
+    const cardHeader = document.createElement("div");
+    cardHeader.classList.add("pricing-card-header");
+
     const cardTitle = document.createElement("h2");
     cardTitle.classList.add("pricing-card-title");
-    cardTitle.textContent = option.qty;
+    cardTitle.textContent = option.name;
 
-    const cardDescription = document.createElement("p");
-    cardDescription.classList.add("pricing-card-description");
-    cardDescription.textContent = `Only ${option.price} • Instant activation`;
+    const cardTagline = document.createElement("p");
+    cardTagline.classList.add("pricing-card-tagline");
+    cardTagline.textContent = option.tagline;
 
-    card.appendChild(cardTitle);
-    card.appendChild(cardDescription);
+    cardHeader.appendChild(cardTitle);
+    cardHeader.appendChild(cardTagline);
+
+    const priceBlock = document.createElement("div");
+    priceBlock.classList.add("pricing-card-price-block");
+
+    const price = document.createElement("div");
+    price.classList.add("pricing-card-price");
+    price.textContent = option.price;
+
+    priceBlock.appendChild(price);
+
+    const featureList = document.createElement("ul");
+    featureList.classList.add("pricing-feature-list");
+    option.features.forEach((feat) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="checkmark">✔</span> ${feat}`;
+      featureList.appendChild(li);
+    });
+
+    card.appendChild(cardHeader);
+    card.appendChild(priceBlock);
+    card.appendChild(featureList);
+
     cardSection.appendChild(card);
   });
 
   container.appendChild(cardSection);
+
+  // Footer note
+  const footerNote = document.createElement("p");
+  footerNote.classList.add("pricing-footer-note");
+  footerNote.textContent =
+    "All prices are in USDT. Pay once, aliases are yours to keep.";
+  container.appendChild(footerNote);
 
   main.appendChild(container);
   document.body.appendChild(main);
