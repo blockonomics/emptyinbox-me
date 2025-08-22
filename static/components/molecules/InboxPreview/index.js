@@ -1,19 +1,15 @@
 import { createElement } from "../../../utils/domHelpers.js";
 
 export function createInboxPreview(inbox) {
-  const container = createElement('div', 'inbox-card');
+  const container = createElement("div", "inbox-card");
 
-  const createdDate = new Date(inbox.created_at).toLocaleString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+  const createdDate = new Date(inbox.created_at).toLocaleString("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
-
-  const servicesHTML = inbox.connected_services?.length
-    ? inbox.connected_services.map(service => `<span class="service-tag">${service}</span>`).join('')
-    : '<span class="service-tag empty">No services</span>';
 
   container.innerHTML = `
     <div class="inbox-header">
@@ -28,14 +24,13 @@ export function createInboxPreview(inbox) {
       </div>
       <div class="inbox-created">Created: ${createdDate}</div>
     </div>
-    <div class="inbox-services">${servicesHTML}</div>
   `;
 
   return container;
 }
 
 // Global copy function for inbox email
-window.copyInboxEmail = async function(email, button) {
+window.copyInboxEmail = async function (email, button) {
   try {
     await navigator.clipboard.writeText(email);
 
@@ -46,13 +41,13 @@ window.copyInboxEmail = async function(email, button) {
       </svg>
       <span class="copy-text">Copied!</span>
     `;
-    button.classList.add('copied');
+    button.classList.add("copied");
 
     setTimeout(() => {
       button.innerHTML = originalContent;
-      button.classList.remove('copied');
+      button.classList.remove("copied");
     }, 1500);
   } catch (err) {
-    console.error('Failed to copy inbox email:', err);
+    console.error("Failed to copy inbox email:", err);
   }
 };

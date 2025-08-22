@@ -160,7 +160,6 @@ def get_mailboxes(token):
     result = [{
         'inbox': inbox.inbox,
         'created_at': inbox.created_at.isoformat(),
-        'connected_services': inbox.connected_services or []
     } for inbox in inboxes]
 
     return result
