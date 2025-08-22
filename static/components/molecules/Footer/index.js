@@ -1,4 +1,4 @@
-import { NAV_LINKS, LOGO, ROUTES } from "../../../utils/constants.js";
+import { LOGO, ROUTES } from "../../../utils/constants.js";
 import { getApiKey } from "../../../utils/storage.js";
 
 export function createFooter() {
@@ -36,43 +36,8 @@ export function createFooter() {
   brandSection.appendChild(logoLink);
   brandSection.appendChild(brandText);
 
-  // Quick links section
-  const linksSection = document.createElement("div");
-  linksSection.className = "footer-links";
-
-  const linksTitle = document.createElement("h3");
-  linksTitle.className = "footer-section-title";
-  linksTitle.textContent = "Quick Links";
-
-  const linksNav = document.createElement("nav");
-  linksNav.className = "footer-nav";
-
-  // Apply same filtering rules as navbar
-  let linksToRender;
-  if (isLoggedIn) {
-    // Logged in → show all except Login
-    linksToRender = NAV_LINKS.filter((link) => link.label !== "Login");
-  } else {
-    // Not logged in → show all except Inboxes, Settings, Messages
-    linksToRender = NAV_LINKS.filter(
-      (link) => !["Inboxes", "Settings", "Messages"].includes(link.label)
-    );
-  }
-
-  linksToRender.forEach(({ label, href }) => {
-    const link = document.createElement("a");
-    link.href = href;
-    link.textContent = label;
-    link.className = "footer-link";
-    linksNav.appendChild(link);
-  });
-
-  linksSection.appendChild(linksTitle);
-  linksSection.appendChild(linksNav);
-
-  // Assemble footer content
+  // Assemble footer content (no quick links section)
   footerContent.appendChild(brandSection);
-  footerContent.appendChild(linksSection);
 
   // Footer bottom
   const footerBottom = document.createElement("div");
