@@ -1,7 +1,7 @@
-import { QUOTA_PER_USDT } from '../../../utils/constants.js';
+import { QUOTA_PER_USDT } from "../../../utils/constants.js";
 
 export function renderBuyQuotaButton() {
-  const header = document.createElement('div');
+  const header = document.createElement("div");
   header.innerHTML = `
     <button id="buy-quota-btn" class="buy-quota-btn">Buy More Quota</button>
   `;
@@ -15,13 +15,13 @@ export function renderBuyQuotaButton() {
 }
 
 function setupPaymentModal() {
-  const buyBtn = document.getElementById('buy-quota-btn');
+  const buyBtn = document.getElementById("buy-quota-btn");
 
   function createModal() {
-    const modal = document.createElement('div');
-    modal.id = 'payment-modal';
-    modal.className = 'payment-modal';
-    modal.style.display = 'none';
+    const modal = document.createElement("div");
+    modal.id = "payment-modal";
+    modal.className = "payment-modal";
+    modal.style.display = "none";
     modal.innerHTML = `
       <div class="modal-content">
         <div class="modal-header">
@@ -88,32 +88,31 @@ function setupPaymentModal() {
     return modal;
   }
 
-  buyBtn?.addEventListener('click', () => {
-    let modal = document.getElementById('payment-modal');
+  buyBtn?.addEventListener("click", () => {
+    let modal = document.getElementById("payment-modal");
     if (!modal) {
       modal = createModal();
       setupModalEvents(modal);
     }
-    modal.style.display = 'block';
   });
 
   function setupModalEvents(modal) {
-    const closeBtn = modal.querySelector('.close-modal');
-    const quotaInput = modal.querySelector('#quota-amount');
-    const usdtCost = modal.querySelector('#usdt-cost');
-    const presetBtns = modal.querySelectorAll('.preset-card');
-    const proceedBtn = modal.querySelector('#proceed-payment-btn');
-    const paymentContainer = modal.querySelector('#payment-widget-container');
+    const closeBtn = modal.querySelector(".close-modal");
+    const quotaInput = modal.querySelector("#quota-amount");
+    const usdtCost = modal.querySelector("#usdt-cost");
+    const presetBtns = modal.querySelectorAll(".preset-card");
+    const proceedBtn = modal.querySelector("#proceed-payment-btn");
+    const paymentContainer = modal.querySelector("#payment-widget-container");
 
     // Close modal events
-    closeBtn?.addEventListener('click', () => {
-      modal.style.display = 'none';
+    closeBtn?.addEventListener("click", () => {
+      modal.style.display = "none";
       resetModal();
     });
 
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener("click", (e) => {
       if (e.target === modal) {
-        modal.style.display = 'none';
+        modal.style.display = "none";
         resetModal();
       }
     });
@@ -123,67 +122,66 @@ function setupPaymentModal() {
       const quotaAmount = parseInt(quotaInput.value) || 0;
       const cost = quotaAmount / QUOTA_PER_USDT;
       usdtCost.textContent = cost.toFixed(2);
-      
+
       // Update the web3-payment widget amount
-      const paymentWidget = modal.querySelector('web3-payment');
+      const paymentWidget = modal.querySelector("web3-payment");
       if (paymentWidget) {
-        paymentWidget.setAttribute('order_amount', cost.toString());
+        paymentWidget.setAttribute("order_amount", cost.toString());
       }
     }
 
     // Input change event
-    quotaInput?.addEventListener('input', updateCost);
+    quotaInput?.addEventListener("input", updateCost);
 
     // Preset button events
-    presetBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
+    presetBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
         const quotaAmount = btn.dataset.quota;
         quotaInput.value = quotaAmount;
         updateCost();
-        
+
         // Remove active class from all buttons
-        presetBtns.forEach(b => b.classList.remove('active'));
+        presetBtns.forEach((b) => b.classList.remove("active"));
         // Add active class to clicked button
-        btn.classList.add('active');
+        btn.classList.add("active");
       });
     });
 
     // Proceed to payment
-    proceedBtn?.addEventListener('click', () => {
+    proceedBtn?.addEventListener("click", () => {
       const quotaAmount = parseInt(quotaInput.value);
-      
+
       if (!quotaAmount || quotaAmount < 10) {
-        alert('Please enter a valid quota amount (minimum 10)');
+        alert("Please enter a valid quota amount (minimum 10)");
         return;
       }
 
       // Hide the selection section and show payment widget
-      modal.querySelector('.quota-selection').style.display = 'none';
-      proceedBtn.style.display = 'none';
-      paymentContainer.style.display = 'block';
-      
+      modal.querySelector(".quota-selection").style.display = "none";
+      proceedBtn.style.display = "none";
+      paymentContainer.style.display = "block";
+
       // Update the redirect URL to include the quota amount
-      const paymentWidget = modal.querySelector('web3-payment');
-      const currentRedirect = paymentWidget.getAttribute('redirect_url');
+      const paymentWidget = modal.querySelector("web3-payment");
+      const currentRedirect = paymentWidget.getAttribute("redirect_url");
       const newRedirect = `${currentRedirect}&quota=${quotaAmount}`;
-      paymentWidget.setAttribute('redirect_url', newRedirect);
+      paymentWidget.setAttribute("redirect_url", newRedirect);
     });
 
     function resetModal() {
       // Reset the modal to initial state
-      modal.querySelector('.quota-selection').style.display = 'block';
-      proceedBtn.style.display = 'block';
-      paymentContainer.style.display = 'none';
-      quotaInput.value = '10';
+      modal.querySelector(".quota-selection").style.display = "block";
+      proceedBtn.style.display = "block";
+      paymentContainer.style.display = "none";
+      quotaInput.value = "10";
       updateCost();
-      presetBtns.forEach(b => b.classList.remove('active'));
+      presetBtns.forEach((b) => b.classList.remove("active"));
     }
 
     // Initialize with default selection
-    quotaInput.value = '100';
+    quotaInput.value = "100";
     updateCost();
     const defaultPreset = modal.querySelector('[data-quota="100"]');
-    if (defaultPreset) defaultPreset.classList.add('active');
+    if (defaultPreset) defaultPreset.classList.add("active");
   }
 }
-
