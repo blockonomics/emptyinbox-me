@@ -346,16 +346,15 @@ def passkey_register_complete():
                 'credential_id': credential_id
             }))
 
-            # Store the API key in a secure, HttpOnly cookie
+            # Store the session token in a secure, HttpOnly cookie
             resp.set_cookie(
-                "api_key",
-                api_key,
-                httponly=True,       # JS can't read it
-                secure=True,         # only sent over HTTPS
-                samesite="Strict",   # helps prevent CSRF
-                max_age=60*60*24*7   # 1 week
+                "session_token",
+                session_token,  
+                httponly=True,
+                secure=True,           # required if SameSite=None
+                samesite="None",       # allow cross-site requests from your frontend
+                max_age=60*60*24*7     # 1 week
             )
-
             return resp, 200
 
             
@@ -472,14 +471,14 @@ def passkey_authenticate_complete():
             'credential_id': credential_id
         }))
 
-        # Store the API key in a secure, HttpOnly cookie
+        # Store the session token in a secure, HttpOnly cookie
         resp.set_cookie(
-            "api_key",
-            api_key,
-            httponly=True,       # JS can't read it
-            secure=True,         # only sent over HTTPS
-            samesite="Strict",   # helps prevent CSRF
-            max_age=60*60*24*7   # 1 week
+            "session_token",
+            session_token,   
+            httponly=True,
+            secure=True,           # required if SameSite=None
+            samesite="None",       # allow cross-site requests from your frontend
+            max_age=60*60*24*7     # 1 week
         )
 
         return resp, 200

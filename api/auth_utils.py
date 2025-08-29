@@ -7,7 +7,7 @@ def auth_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
         app.logger.debug(f"Cookies: {request.cookies}")
-        token = request.cookies.get("session_token") or request.cookies.get("api_key")
+        token = request.cookies.get("session_token")
         if not token:
             abort(401)
         row = db.session.query(User.api_key).filter(User.api_key == token).first()
