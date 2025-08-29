@@ -404,6 +404,8 @@ def passkey_authenticate_begin():
         db.session.rollback()
         return error_response('Failed to start passkey authentication', 500)
 
+# Replace your passkey_authenticate_complete function with this:
+
 @auth_bp.route('/passkey/authenticate/complete', methods=['POST'])
 def passkey_authenticate_complete():
     """Complete passkey authentication process."""
@@ -437,6 +439,9 @@ def passkey_authenticate_complete():
             if not user:
                 return error_response('User not found for this passkey', 404)
 
+            # Access user.api_key while still in session context
+            api_key = user.api_key
+
             db.session.delete(stored_challenge)
             old_sessions = db.session.query(UserSession).filter_by(address=passkey_address).all()
             for old_session in old_sessions:
@@ -451,7 +456,7 @@ def passkey_authenticate_complete():
         return jsonify({
             'success': True,
             'token': session_token,
-            'api_key': user.api_key,
+            'api_key': api_key,
             'credential_id': credential_id
         }), 200
 
