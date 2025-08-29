@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import request, abort
 from config import db, app
-from db_models import UserSession
+from db_models import UserSession, User
 from datetime import datetime
 
 def auth_required(f):
