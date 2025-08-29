@@ -12,7 +12,7 @@ import random
 import re
 import logging
 from words import adjectives, nouns
-from auth_utils import extract_apikey
+from .auth_utils import auth_required
 
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
 IS_DEV = FLASK_ENV == 'development'

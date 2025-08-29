@@ -1,5 +1,16 @@
-import re
+from functools import wraps
+from flask import request, abort
+from config import db
+from db_models import User
 
-def extract_apikey(s):
-    match = re.match(r'\s*Bearer\s+(\w+)', str(s))
-    return match.group(1) if match else None
+def auth_required(f):
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        token = request.cookies.get("session_token") or request.cookies.get("api_key")
+        if not token:
+            abort(401)
+        row = db.session.query(User.api_key).filter(User.api_key == token).first()
+        if not row:
+            abort(401)
+        return f(token, *args, **kwargs)
+    return decorator
