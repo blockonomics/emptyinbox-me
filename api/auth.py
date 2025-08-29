@@ -372,16 +372,27 @@ def passkey_authenticate_begin():
                 timestamp=int(time.time())
             )
             db.session.add(auth_challenge)
+            
+            # Get all registered users to build allowCredentials
+            users = db.session.query(User).filter(User.user_id.like('passkey:%')).all()
+            
             db.session.commit()
+        
+        # Build allowCredentials from existing passkey users
+        allow_credentials = []
+        for user in users:
+            credential_id = user.user_id.replace('passkey:', '')
+            allow_credentials.append({
+                'type': 'public-key',
+                'id': credential_id
+            })
         
         # Return WebAuthn authentication options
         auth_options = {
             'challenge': base64url_encode(challenge),
             'timeout': 60000,
             'userVerification': 'preferred',
-            # allowCredentials could be populated with known credentials
-            # For simplicity, we'll allow any credential
-            'allowCredentials': []
+            'allowCredentials': allow_credentials
         }
         
         return jsonify(auth_options), 200
