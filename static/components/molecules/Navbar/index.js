@@ -88,7 +88,9 @@ export async function createNavbar() {
     nav.appendChild(link);
   });
 
-  nav.appendChild(renderLogoutButton());
+  if (authStatus.isAuthenticated) {
+    nav.appendChild(renderLogoutButton());
+  }
 
   container.appendChild(logoLink);
   container.appendChild(navToggle);
