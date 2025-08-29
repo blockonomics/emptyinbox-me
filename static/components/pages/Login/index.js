@@ -9,21 +9,21 @@ export function renderLoginPage() {
   container.innerHTML = `
     <section class="login">
       <h1>Welcome Back</h1>
-      <p>Connect your wallet to continue your journey with EmptyInbox.me</p>
+      <p>Sign in securely with your passkey to continue your journey with EmptyInbox.me</p>
       
-      <div class="wallet-connect-section">
-        <button id="connect-wallet-btn" type="button" class="wallet-connect-btn">
-          <span class="wallet-icon">🔗</span>
-          <span class="button-text">Connect Wallet</span>
+      <div class="passkey-auth-section">
+        <button id="signin-passkey-btn" type="button" class="passkey-btn">
+          <span class="passkey-icon">🔐</span>
+          <span class="button-text">Sign in with Passkey</span>
         </button>
         
-        <div id="wallet-status" class="wallet-status hidden">
-          <p>Connected: <span id="wallet-address"></span></p>
-          <button id="sign-in-btn" type="button" class="sign-in-btn">Sign In</button>
-        </div>
+        <button id="register-passkey-btn" type="button" class="passkey-btn secondary">
+          <span class="passkey-icon">➕</span>
+          <span class="button-text">Create New Passkey</span>
+        </button>
         
         <div id="loading" class="loading hidden">
-          <p>Connecting to wallet...</p>
+          <p>Processing...</p>
         </div>
         
         <div id="error-message" class="error-message hidden">
@@ -31,15 +31,18 @@ export function renderLoginPage() {
         </div>
       </div>
 
-      <div class="supported-wallets">
-        <p class="wallet-info">Supported wallets:</p>
-        <div class="wallet-icons">
-          <span>MetaMask</span>
+      <div class="passkey-info">
+        <p class="passkey-description">Passkeys provide secure, password-free authentication using your device's biometrics or PIN.</p>
+        <div class="supported-methods">
+          <span>Face ID</span>
+          <span>Touch ID</span>
+          <span>Windows Hello</span>
+          <span>Android Biometric</span>
         </div>
       </div>
 
       <p class="login-footer">
-        New to crypto wallets? <a href="https://support.metamask.io/start/creating-a-new-wallet/" target="_blank">Learn how to get started</a>
+        New to passkeys? <a href="https://support.apple.com/en-us/102195" target="_blank">Learn more about passkeys</a>
       </p>
     </section>
   `;
@@ -47,204 +50,207 @@ export function renderLoginPage() {
   main.appendChild(container);
   document.body.appendChild(main);
 
-  // Initialize wallet connection functionality
-  initializeWalletAuth();
+  // Initialize passkey authentication functionality
+  initializePasskeyAuth();
 }
 
-const requestAccountsWithTimeout = async (timeout = 10000) => {
-  return Promise.race([
-    window.ethereum.request({ method: "eth_requestAccounts" }),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Wallet unlock timeout")), timeout)
-    ),
-  ]);
-};
-
-async function initializeWalletAuth() {
-  const connectBtn = document.getElementById("connect-wallet-btn");
-  const signInBtn = document.getElementById("sign-in-btn");
-  const walletStatus = document.getElementById("wallet-status");
-  const walletAddress = document.getElementById("wallet-address");
+async function initializePasskeyAuth() {
+  const signinBtn = document.getElementById("signin-passkey-btn");
+  const registerBtn = document.getElementById("register-passkey-btn");
   const loading = document.getElementById("loading");
   const errorMessage = document.getElementById("error-message");
 
-  let userAddress = null;
-  let challenge = null;
-  let isConnecting = false;
+  let isProcessing = false;
 
-  // Helper function to update connect button state
-  function updateConnectButtonState(state) {
-    const buttonText = connectBtn.querySelector(".button-text");
-    const walletIcon = connectBtn.querySelector(".wallet-icon");
-
-    switch (state) {
-      case "connecting":
-        connectBtn.disabled = true;
-        buttonText.textContent = "Connecting...";
-        walletIcon.textContent = "⏳";
-        connectBtn.classList.add("connecting");
-        break;
-
-      case "error":
-      case "idle":
-      default:
-        connectBtn.disabled = false;
-        buttonText.textContent = "Connect Wallet";
-        walletIcon.textContent = "🔗";
-        connectBtn.classList.remove("connecting");
-        break;
-    }
+  // Check if WebAuthn is supported
+  if (!window.PublicKeyCredential) {
+    showError(
+      "Passkeys are not supported in this browser. Please use a modern browser like Chrome, Safari, or Firefox."
+    );
+    signinBtn.disabled = true;
+    registerBtn.disabled = true;
+    return;
   }
 
-  // Helper function to update sign-in button state
-  function updateSignInButtonState(isLoading) {
-    signInBtn.disabled = isLoading;
-    signInBtn.textContent = isLoading ? "Signing In..." : "Sign In";
-  }
+  // Helper function to update button states
+  function updateButtonState(button, isLoading) {
+    const buttonText = button.querySelector(".button-text");
+    const icon = button.querySelector(".passkey-icon");
 
-  // Check if wallet is already connected
-  if (window.ethereum) {
-    try {
-      const accounts = await window.ethereum.request({
-        method: "eth_accounts",
-      });
-      if (accounts.length > 0) {
-        showConnectedState(accounts[0]);
+    if (isLoading) {
+      button.disabled = true;
+      buttonText.textContent = "Processing...";
+      icon.textContent = "⏳";
+      button.classList.add("processing");
+    } else {
+      button.disabled = false;
+      button.classList.remove("processing");
+
+      if (button.id === "signin-passkey-btn") {
+        buttonText.textContent = "Sign in with Passkey";
+        icon.textContent = "🔐";
+      } else {
+        buttonText.textContent = "Create New Passkey";
+        icon.textContent = "➕";
       }
-    } catch (error) {
-      console.log("No wallet connected");
     }
   }
 
-  connectBtn.addEventListener("click", async () => {
-    if (isConnecting) {
-      showError("Connection already in progress. Please wait...");
-      return;
-    }
-
-    if (!window.ethereum) {
-      showError(
-        "No crypto wallet detected. Please install MetaMask or another Web3 wallet."
-      );
-      return;
-    }
+  // Sign in with existing passkey
+  signinBtn.addEventListener("click", async () => {
+    if (isProcessing) return;
 
     try {
-      isConnecting = true;
-      updateConnectButtonState("connecting");
+      isProcessing = true;
+      updateButtonState(signinBtn, true);
       showLoading(true);
       hideError();
 
-      const existingAccounts = await window.ethereum.request({
-        method: "eth_accounts",
+      // Get authentication options from backend
+      const authOptions = await getAuthenticationOptions();
+
+      // Create WebAuthn request
+      const credential = await navigator.credentials.get({
+        publicKey: {
+          challenge: base64urlToBuffer(authOptions.challenge),
+          allowCredentials: authOptions.allowCredentials?.map((cred) => ({
+            id: base64urlToBuffer(cred.id),
+            type: cred.type,
+          })),
+          userVerification: "preferred",
+          timeout: 60000,
+        },
       });
-      if (existingAccounts.length > 0) {
-        showConnectedState(existingAccounts[0]);
-        return;
+
+      if (!credential) {
+        throw new Error("No credential returned");
       }
 
-      const accounts = await requestAccountsWithTimeout();
-      if (accounts.length > 0) {
-        showConnectedState(accounts[0]);
-      }
-    } catch (error) {
-      console.error("Wallet connection error:", error);
-
-      switch (error.code) {
-        case -32002:
-          showError(
-            "Wallet connection request is already pending. Please check your wallet and approve the connection."
-          );
-          break;
-        case 4001:
-          showError("Wallet connection was rejected by user.");
-          break;
-        case "TIMEOUT":
-          showError(
-            "Still waiting for wallet unlock… Please check your MetaMask extension and enter your password."
-          );
-          break;
-        default:
-          showError("Failed to connect wallet: " + error.message);
-      }
-    } finally {
-      isConnecting = false;
-      updateConnectButtonState("idle");
-      showLoading(false);
-    }
-  });
-
-  signInBtn.addEventListener("click", async () => {
-    if (!userAddress) return;
-
-    try {
-      updateSignInButtonState(true);
-      showLoading(true);
-      hideError();
-
-      // Get challenge from backend
-      challenge = await getAuthChallenge(userAddress);
-
-      // Sign the challenge
-      const signature = await signMessage(challenge.message);
-
-      // Verify signature with backend
-      const authResult = await verifySignature(
-        userAddress,
-        signature,
-        challenge.message
-      );
+      // Verify authentication with backend
+      const authResult = await verifyAuthentication({
+        id: credential.id,
+        rawId: bufferToBase64url(credential.rawId),
+        response: {
+          authenticatorData: bufferToBase64url(
+            credential.response.authenticatorData
+          ),
+          clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+          signature: bufferToBase64url(credential.response.signature),
+          userHandle: credential.response.userHandle
+            ? bufferToBase64url(credential.response.userHandle)
+            : null,
+        },
+        type: credential.type,
+      });
 
       if (authResult.success) {
-        const { token, api_key: apiKey } = authResult;
         // Store auth token and redirect
         localStorage.setItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN, authResult.token);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.API_KEY, apiKey);
+        if (authResult.api_key) {
+          localStorage.setItem(LOCAL_STORAGE_KEYS.API_KEY, authResult.api_key);
+        }
         window.location.href = "/messages.html";
       } else {
         showError("Authentication failed. Please try again.");
       }
     } catch (error) {
-      console.error("Sign in error:", error);
-      if (error.code === 4001) {
-        showError("Message signing was rejected by user.");
+      console.error("Passkey sign in error:", error);
+
+      if (error.name === "NotAllowedError") {
+        showError("Authentication was cancelled or failed. Please try again.");
+      } else if (error.name === "InvalidStateError") {
+        showError(
+          "This passkey is not recognized. Please try registering a new one."
+        );
       } else {
         showError("Sign in failed: " + error.message);
       }
     } finally {
-      updateSignInButtonState(false);
+      isProcessing = false;
+      updateButtonState(signinBtn, false);
       showLoading(false);
     }
   });
 
-  // Listen for account changes
-  if (window.ethereum) {
-    window.ethereum.on("accountsChanged", (accounts) => {
-      if (accounts.length > 0) {
-        showConnectedState(accounts[0]);
-      } else {
-        // Wallet disconnected
-        userAddress = null;
-        connectBtn.classList.remove("hidden");
-        walletStatus.classList.add("hidden");
-        updateConnectButtonState("idle");
+  // Register new passkey
+  registerBtn.addEventListener("click", async () => {
+    if (isProcessing) return;
+
+    try {
+      isProcessing = true;
+      updateButtonState(registerBtn, true);
+      showLoading(true);
+      hideError();
+
+      // Get registration options from backend
+      const regOptions = await getRegistrationOptions();
+
+      // Create WebAuthn credential
+      const credential = await navigator.credentials.create({
+        publicKey: {
+          challenge: base64urlToBuffer(regOptions.challenge),
+          rp: regOptions.rp,
+          user: {
+            id: base64urlToBuffer(regOptions.user.id),
+            name: regOptions.user.name,
+            displayName: regOptions.user.displayName,
+          },
+          pubKeyCredParams: regOptions.pubKeyCredParams,
+          timeout: 60000,
+          attestation: "none",
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "preferred",
+            requireResidentKey: false,
+          },
+        },
+      });
+
+      if (!credential) {
+        throw new Error("No credential created");
       }
-    });
 
-    // Listen for chain changes
-    window.ethereum.on("chainChanged", () => {
-      // Reload the page when chain changes
-      window.location.reload();
-    });
-  }
+      // Register credential with backend
+      const regResult = await registerCredential({
+        id: credential.id,
+        rawId: bufferToBase64url(credential.rawId),
+        response: {
+          attestationObject: bufferToBase64url(
+            credential.response.attestationObject
+          ),
+          clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+        },
+        type: credential.type,
+      });
 
-  function showConnectedState(address) {
-    userAddress = address;
-    walletAddress.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
-    connectBtn.classList.add("hidden");
-    walletStatus.classList.remove("hidden");
-    hideError();
-  }
+      if (regResult.success) {
+        // Store auth token and redirect
+        localStorage.setItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN, regResult.token);
+        if (regResult.api_key) {
+          localStorage.setItem(LOCAL_STORAGE_KEYS.API_KEY, regResult.api_key);
+        }
+        window.location.href = "/messages.html";
+      } else {
+        showError("Registration failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Passkey registration error:", error);
+
+      if (error.name === "NotAllowedError") {
+        showError("Registration was cancelled. Please try again.");
+      } else if (error.name === "InvalidStateError") {
+        showError(
+          "A passkey already exists for this device. Try signing in instead."
+        );
+      } else {
+        showError("Registration failed: " + error.message);
+      }
+    } finally {
+      isProcessing = false;
+      updateButtonState(registerBtn, false);
+      showLoading(false);
+    }
+  });
 
   function showLoading(show) {
     loading.classList.toggle("hidden", !show);
@@ -260,36 +266,94 @@ async function initializeWalletAuth() {
   }
 }
 
-async function getAuthChallenge(address) {
-  const response = await fetch(`${API_BASE_URL}/api/auth/challenge`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ address }),
-  });
+// API functions
+async function getRegistrationOptions() {
+  const response = await fetch(
+    `${API_BASE_URL}/api/auth/passkey/register/begin`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    }
+  );
 
   if (!response.ok) {
-    throw new Error("Failed to get authentication challenge");
+    throw new Error("Failed to get registration options");
   }
 
   return response.json();
 }
 
-async function signMessage(message) {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
-  return await signer.signMessage(message);
-}
-
-async function verifySignature(address, signature, message) {
-  const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ address, signature, message }),
-  });
+async function registerCredential(credential) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/auth/passkey/register/complete`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(credential),
+    }
+  );
 
   if (!response.ok) {
-    throw new Error("Failed to verify signature");
+    throw new Error("Failed to register credential");
   }
 
   return response.json();
+}
+
+async function getAuthenticationOptions() {
+  const response = await fetch(
+    `${API_BASE_URL}/api/auth/passkey/authenticate/begin`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to get authentication options");
+  }
+
+  return response.json();
+}
+
+async function verifyAuthentication(credential) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/auth/passkey/authenticate/complete`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(credential),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to verify authentication");
+  }
+
+  return response.json();
+}
+
+// Utility functions for base64url encoding/decoding
+function base64urlToBuffer(base64url) {
+  const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64.padEnd(
+    base64.length + ((4 - (base64.length % 4)) % 4),
+    "="
+  );
+  const binary = atob(padded);
+  const buffer = new ArrayBuffer(binary.length);
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return buffer;
+}
+
+function bufferToBase64url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }

@@ -12,6 +12,8 @@ eth_account= "*"
 flask_sqlalchemy="*"
 requests = "*"
 flask-apscheduler = "*"
+cryptography = "*"
+cbor2 = "*"
 
 [scripts]
 start="gunicorn --daemon --reload --error-logfile app.log --access-logfile app.log -b :5000 tempmail_api:app"  
