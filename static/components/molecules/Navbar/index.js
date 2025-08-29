@@ -1,6 +1,7 @@
 import { fetchUserData } from "../../../services/apiService.js";
 import { NAV_LINKS, LOGO, ROUTES } from "../../../utils/constants.js";
 import { clearAllAuthData } from "../../../utils/storage.js";
+import { renderLogoutButton } from "../../atoms/LogoutButton/index.js";
 
 // In your navbar creation function
 export async function createNavbar() {
@@ -86,6 +87,8 @@ export async function createNavbar() {
 
     nav.appendChild(link);
   });
+
+  nav.appendChild(renderLogoutButton());
 
   container.appendChild(logoLink);
   container.appendChild(navToggle);

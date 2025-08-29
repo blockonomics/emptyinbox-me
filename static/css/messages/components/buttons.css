@@ -17,6 +17,12 @@
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
+@media (max-width: 769px) {
+  .logout-btn {
+    margin-top: 1rem;
+  }
+}
+
 .logout-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);

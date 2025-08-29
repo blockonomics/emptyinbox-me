@@ -19,6 +19,10 @@ auth_bp = Blueprint('auth', __name__)
 DOMAIN = os.getenv('DOMAIN', 'emptyinbox.me')
 RP_NAME = os.getenv('RP_NAME', 'EmptyInbox.me')
 
+FLASK_ENV = os.getenv('FLASK_ENV', 'production')
+IS_DEV = FLASK_ENV == 'development'
+URL_SCHEME = 'http://' if IS_DEV else 'https://'
+
 # --- Utility Functions ---
 def generate_nonce() -> str:
     return str(random.randint(100_000_000, 999_999_999))
@@ -28,8 +32,8 @@ def create_auth_message(address: str, nonce: str) -> tuple[str, int]:
     message = (
         f"EmptyInbox.me wants you to sign in with your Ethereum account:\n"
         f"{address}\n\n"
-        f"I accept the EmptyInbox.me Terms of Service: https://{DOMAIN}/tos\n\n"
-        f"URI: https://{DOMAIN}\nVersion: 1\nChain ID: 1\n"
+        f"I accept the EmptyInbox.me Terms of Service: {URL_SCHEME}{DOMAIN}/tos\n\n"
+        f"URI: {URL_SCHEME}{DOMAIN}\nVersion: 1\nChain ID: 1\n"
         f"Nonce: {nonce}\nIssued At: {timestamp}"
     )
     return message, timestamp
@@ -124,7 +128,7 @@ def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[b
             return False, {}
         
         # Verify origin
-        expected_origin = f"https://{DOMAIN}"
+        expected_origin = f"{URL_SCHEME}{DOMAIN}"
         if client_data['origin'] != expected_origin:
             app.logger.error(f"Origin mismatch: expected {expected_origin}, got {client_data['origin']}")
             return False, {}
@@ -159,7 +163,7 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
             return False, {}
         
         # Verify origin
-        expected_origin = f"https://{DOMAIN}"
+        expected_origin = f"{URL_SCHEME}{DOMAIN}"
         if client_data['origin'] != expected_origin:
             app.logger.error(f"Origin mismatch: expected {expected_origin}, got {client_data['origin']}")
             return False, {}

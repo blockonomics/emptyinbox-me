@@ -2,22 +2,13 @@ import {
   API_BASE_URL,
   LOCAL_STORAGE_KEYS,
   ROUTES,
-  TOAST_TYPES,
 } from "../../../utils/constants.js";
 import { clearAllAuthData } from "../../../utils/storage.js";
-import { showToast } from "../Toast/index.js";
 
-export function renderConnectedWalletCard() {
+export function renderLogoutButton() {
   const header = document.createElement("div");
-  header.classList.add("connected-wallet-card");
   header.innerHTML = `
-    <div class="user-info">
-      <div class="wallet-info">
-        <span class="wallet-label">Connected Passkey:</span>
-        <span id="user-address" class="wallet-address">Loading...</span>
-      </div>
-      <button id="logout-btn" class="logout-btn">Log Out</button>
-    </div>
+    <button id="logout-btn" class="logout-btn">Log Out</button>
   `;
 
   // Add event listeners
