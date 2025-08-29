@@ -144,7 +144,7 @@ async function initializePasskeyAuth() {
       });
 
       if (authResult.success) {
-        // Store auth token and redirect
+        console.log("Logged in");
         localStorage.setItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN, true);
         window.location.href = "/messages.html";
       } else {

@@ -1,5 +1,10 @@
 import { fetchUserData } from "../../../services/apiService.js";
-import { NAV_LINKS, LOGO, ROUTES } from "../../../utils/constants.js";
+import {
+  NAV_LINKS,
+  LOGO,
+  ROUTES,
+  LOCAL_STORAGE_KEYS,
+} from "../../../utils/constants.js";
 import { clearAllAuthData } from "../../../utils/storage.js";
 import { renderLogoutButton } from "../../atoms/LogoutButton/index.js";
 
@@ -45,6 +50,7 @@ export async function createNavbar() {
 
   // Check auth before rendering nav links
   const authStatus = await checkAuthStatus();
+  console.log(authStatus);
 
   let linksToRender;
   if (authStatus.isAuthenticated) {
@@ -120,9 +126,9 @@ window.addEventListener("scroll", () => {
 });
 
 async function checkAuthStatus() {
-  const token = localStorage.getItem("authToken");
+  const isLoggedIn = localStorage.getItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN);
 
-  if (!token) {
+  if (!isLoggedIn) {
     return { isAuthenticated: false };
   }
 
