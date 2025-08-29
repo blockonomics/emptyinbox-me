@@ -6,6 +6,7 @@ from db_models import User
 def auth_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
+        app.logger.debug(f"Cookies: {request.cookies}")
         token = request.cookies.get("session_token") or request.cookies.get("api_key")
         if not token:
             abort(401)
