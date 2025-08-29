@@ -124,7 +124,7 @@ def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[b
             return False, {}
         
         # Verify origin
-        expected_origin = f"http://{DOMAIN}"
+        expected_origin = f"https://{DOMAIN}"
         if client_data['origin'] != expected_origin:
             app.logger.error(f"Origin mismatch: expected {expected_origin}, got {client_data['origin']}")
             return False, {}
@@ -159,7 +159,7 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
             return False, {}
         
         # Verify origin
-        expected_origin = f"http://{DOMAIN}"
+        expected_origin = f"https://{DOMAIN}"
         if client_data['origin'] != expected_origin:
             app.logger.error(f"Origin mismatch: expected {expected_origin}, got {client_data['origin']}")
             return False, {}
