@@ -50,7 +50,7 @@ export const TOAST_TYPES = {
 };
 
 export const LOCAL_STORAGE_KEYS = {
-  AUTH_TOKEN: "authToken",
+  IS_LOGGED_IN: "isLoggedIn",
 };
 
 export const QUOTA_PER_USDT = 10;
