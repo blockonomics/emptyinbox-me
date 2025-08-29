@@ -351,6 +351,8 @@ def passkey_register_complete():
         db.session.rollback()
         return error_response('Failed to complete passkey registration', 500)
 
+# Only change this one function in your auth.py:
+
 @auth_bp.route('/passkey/authenticate/begin', methods=['POST'])
 def passkey_authenticate_begin():
     """Start passkey authentication process."""
@@ -376,23 +378,23 @@ def passkey_authenticate_begin():
             # Get all registered users to build allowCredentials
             users = db.session.query(User).filter(User.user_id.like('passkey:%')).all()
             
+            # Build allowCredentials while still in session context
+            allow_credentials = []
+            for user in users:
+                credential_id = user.user_id.replace('passkey:', '')
+                allow_credentials.append({
+                    'type': 'public-key',
+                    'id': credential_id
+                })
+            
             db.session.commit()
-        
-        # Build allowCredentials from existing passkey users
-        allow_credentials = []
-        for user in users:
-            credential_id = user.user_id.replace('passkey:', '')
-            allow_credentials.append({
-                'type': 'public-key',
-                'id': credential_id
-            })
         
         # Return WebAuthn authentication options
         auth_options = {
             'challenge': base64url_encode(challenge),
             'timeout': 60000,
             'userVerification': 'preferred',
-            'allowCredentials': allow_credentials
+            'allowCredentials': allow_credentials  # Now populated instead of empty
         }
         
         return jsonify(auth_options), 200
