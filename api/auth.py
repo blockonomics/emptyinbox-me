@@ -5,6 +5,8 @@ from eth_account.messages import encode_defunct
 from eth_account import Account
 from config import db, app
 from urllib.parse import urlparse
+import traceback
+
 
 from db_models import AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus
 from constants import USER_STARTING_QUOTA
@@ -28,6 +30,7 @@ def generate_nonce() -> str:
     return str(random.randint(100_000_000, 999_999_999))
 
 def create_auth_message(address: str, nonce: str) -> tuple[str, int]:
+    """Create wallet authentication message (kept for payment verification)."""
     timestamp = int(time.time())
     message = (
         f"EmptyInbox.me wants you to sign in with your Ethereum account:\n"
@@ -37,6 +40,16 @@ def create_auth_message(address: str, nonce: str) -> tuple[str, int]:
         f"Nonce: {nonce}\nIssued At: {timestamp}"
     )
     return message, timestamp
+
+def verify_signature(message: str, signature: str, expected_address: str) -> bool:
+    """Verify wallet signature (kept for payment verification)."""
+    try:
+        message_hash = encode_defunct(text=message)
+        recovered = Account.recover_message(message_hash, signature=signature)
+        return recovered.lower() == expected_address.lower()
+    except Exception as e:
+        app.logger.error(f"Signature verification failed: {e}")
+        return False
 
 def cleanup_expired_auth_records():
     """Deletes expired AuthChallenge and UserSession records from the database."""
@@ -69,14 +82,6 @@ def cleanup_expired_auth_records():
         app.logger.exception("Cleanup failed")
         raise
 
-def verify_signature(message: str, signature: str, expected_address: str) -> bool:
-    try:
-        message_hash = encode_defunct(text=message)
-        recovered = Account.recover_message(message_hash, signature=signature)
-        return recovered.lower() == expected_address.lower()
-    except Exception as e:
-        app.logger.error(f"Signature verification failed: {e}")
-        return False
 
 def create_user_token(address: str) -> str:
     raw = f"{address}:{int(time.time())}:{random.randint(100_000, 999_999)}"
@@ -194,10 +199,13 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
         app.logger.error(f"Passkey registration verification failed: {e}")
         return False, {}
 
-# --- Existing Wallet Auth Routes ---
+# --- Wallet Auth Routes (Kept for Payment Verification) ---
+# Note: These are no longer used for login, but may be needed for payment flows
+
 @auth_bp.route('/challenge', methods=['POST'])
 def auth_challenge():
-    app.logger.info("Received challenge request")
+    """Generate wallet challenge (kept for payment verification)."""
+    app.logger.info("Received wallet challenge request")
     try:
         cleanup_expired_auth_records()
         address = request.json.get('address')
@@ -219,67 +227,6 @@ def auth_challenge():
         db.session.rollback()
         return error_response('Failed to generate challenge', 500)
 
-@auth_bp.route('/verify', methods=['POST'])
-def auth_verify():
-    try:
-        data = request.json
-        address, signature, message = data.get('address'), data.get('signature'), data.get('message')
-
-        if not all([address, signature, message]):
-            return error_response('Address, signature, and message required')
-
-        try:
-            nonce = next(line for line in message.split('\n') if line.startswith('Nonce:')).split(': ')[1]
-        except StopIteration:
-            return error_response('Malformed authentication message')
-
-        with app.app_context():
-            challenge_id = f"challenge:{address}:{nonce}"
-            challenge = db.session.query(AuthChallenge).filter_by(id=challenge_id)\
-                .filter(AuthChallenge.expires_at > datetime.utcnow()).first()
-
-            if not challenge or challenge.message != message:
-                return error_response('Challenge expired or mismatched')
-
-            if not verify_signature(message, signature, address):
-                return error_response('Invalid signature', 401)
-
-            db.session.delete(challenge)
-
-            # Check if user exists, create if not (first-time login)
-            from db_models import User  # Import User model
-            user = db.session.query(User).filter_by(eth_account=address).first()
-            
-            if not user:
-                # Generate API key for new user
-                api_key = create_user_token(address)[:32]  # Reuse token generation logic
-                user = User(eth_account=address, api_key=api_key, inbox_quota=USER_STARTING_QUOTA)
-                db.session.add(user)
-                app.logger.info(f"Created new user for address: {address}")
-            
-            # CLEAN UP OLD SESSIONS FOR THIS USER
-            old_sessions = db.session.query(UserSession).filter_by(address=address).all()
-            if old_sessions:
-                for old_session in old_sessions:
-                    db.session.delete(old_session)
-                app.logger.info(f"Cleaned up {len(old_sessions)} old sessions for {address}")
-            
-            # Create NEW session token (different from API key)
-            session_token = create_user_token(address)
-            session_obj = UserSession(session_token, address, int(time.time()))
-            db.session.add(session_obj)
-            db.session.commit()
-            
-            return jsonify({
-                'success': True,
-                'token': session_token,
-                'address': address,
-                'api_key': user.api_key
-            }), 200
-    except Exception as e:
-        app.logger.error(f"Verification failed: {e}")
-        db.session.rollback()
-        return error_response('Authentication failed', 500)
 
 # --- New Passkey Auth Routes ---
 @auth_bp.route('/passkey/register/begin', methods=['POST'])
@@ -377,7 +324,7 @@ def passkey_register_complete():
             # Create user account
             api_key = create_user_token(credential_id)[:32]
             user = User(
-                eth_account=f"passkey:{credential_id}",  # Use passkey: prefix to distinguish
+                user_id=f"passkey:{credential_id}",
                 api_key=api_key,
                 inbox_quota=USER_STARTING_QUOTA
             )
@@ -447,67 +394,59 @@ def passkey_authenticate_begin():
 @auth_bp.route('/passkey/authenticate/complete', methods=['POST'])
 def passkey_authenticate_complete():
     """Complete passkey authentication process."""
+    credential_data = request.json
+    credential_id = credential_data.get('id')
+
+    if not credential_id:
+        return error_response('Missing credential ID')
+
     try:
-        credential_data = request.json
-        credential_id = credential_data.get('id')
-        
-        if not credential_id:
-            return error_response('Missing credential ID')
-        
         # Get the challenge from client data
         client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
         client_data = json.loads(client_data_json.decode())
         challenge_b64 = client_data['challenge']
         challenge = base64url_decode(challenge_b64)
-        
-        # Find matching challenge in database
+
         with app.app_context():
             stored_challenge = db.session.query(AuthChallenge).filter(
                 AuthChallenge.message == base64url_encode(challenge)
             ).filter(AuthChallenge.expires_at > datetime.utcnow()).first()
-            
+
             if not stored_challenge:
                 return error_response('Challenge expired or not found')
-            
-            # Verify authentication
+
             is_valid, parsed_data = verify_passkey_signature(credential_data, challenge)
             if not is_valid:
                 return error_response('Invalid passkey authentication')
-            
-            # Find user by credential ID
+
             passkey_address = f"passkey:{credential_id}"
-            user = db.session.query(User).filter_by(eth_account=passkey_address).first()
-            
+            user = db.session.query(User).filter_by(user_id=passkey_address).first()
             if not user:
                 return error_response('User not found for this passkey', 404)
-            
-            # Clean up challenge and old sessions
+
             db.session.delete(stored_challenge)
-            
             old_sessions = db.session.query(UserSession).filter_by(address=passkey_address).all()
             for old_session in old_sessions:
                 db.session.delete(old_session)
-            
-            # Create new session
+
             session_token = create_user_token(credential_id)
             session_obj = UserSession(session_token, passkey_address, int(time.time()))
             db.session.add(session_obj)
-            
             db.session.commit()
-            
-            app.logger.info(f"Passkey authentication successful for: {credential_id}")
-            
-            return jsonify({
-                'success': True,
-                'token': session_token,
-                'api_key': user.api_key,
-                'credential_id': credential_id
-            }), 200
-            
+
+        app.logger.info(f"Passkey authentication successful for: {credential_id}")
+        return jsonify({
+            'success': True,
+            'token': session_token,
+            'api_key': user.api_key,
+            'credential_id': credential_id
+        }), 200
+
     except Exception as e:
         app.logger.error(f"Passkey authentication complete failed: {e}")
         db.session.rollback()
         return error_response('Failed to complete passkey authentication', 500)
+
 
 # --- Existing Routes ---
 @auth_bp.route('/me', methods=['GET'])
@@ -527,14 +466,14 @@ def auth_me():
 
             # Then get the full user object
             from db_models import User
-            user = db.session.query(User).filter_by(eth_account=session.address).first()
+            user = db.session.query(User).filter_by(user_id=session.address).first()
             
             if not user:
                 return error_response('User not found', 404)
 
             # Fetch confirmed payments for the user
             payments = db.session.query(PaymentIntent).filter_by(
-                eth_account=user.eth_account,
+                user_id=user.user_id,
                 status=PaymentStatus.CONFIRMED.value  # Assuming CONFIRMED = "1"
             ).order_by(PaymentIntent.created_at.desc()).all()
 
@@ -549,7 +488,7 @@ def auth_me():
             auth_method = 'passkey' if session.address.startswith('passkey:') else 'wallet'
             
             return jsonify({
-                'address': user.eth_account,
+                'address': user.user_id,
                 'api_key': user.api_key,
                 'inbox_quota': user.inbox_quota,
                 'login_time': session.login_time,

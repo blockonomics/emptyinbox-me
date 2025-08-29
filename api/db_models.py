@@ -29,7 +29,7 @@ class Inbox(db.Model):
 class User(db.Model):
     __tablename__ = 'users'
 
-    eth_account = db.Column(db.String(42), primary_key=True)
+    user_id = db.Column(db.String(255), primary_key=True)
     api_key = db.Column(db.String(250), unique=True, nullable=False)
     inbox_quota = db.Column(db.Integer, default=0)
 
@@ -69,7 +69,7 @@ class PaymentIntent(db.Model):
     __tablename__ = 'payment_intents'
 
     txhash = db.Column(db.String(66), primary_key=True)
-    eth_account = db.Column(db.String(42), nullable=False)
+    user_id = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     amount = db.Column(db.Integer)
     status = db.Column(db.String(1), nullable=False, default="0")

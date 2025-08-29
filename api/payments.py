@@ -31,7 +31,7 @@ def get_current_user():
         if not user:
             return None
 
-        return user.eth_account
+        return user.user_id
 
     except Exception:
         return None
@@ -41,8 +41,8 @@ def error_response(message: str, code: int = 400):
 
 @payments_bp.route('/monitor', methods=['POST'])
 def monitor_transaction():
-    current_user_eth = get_current_user()
-    if not current_user_eth:
+    current_user_id = get_current_user()
+    if not current_user_id:
         return error_response("Unauthorized", 401)
 
     data = request.get_json()
@@ -72,7 +72,7 @@ def monitor_transaction():
         )
 
         if response.status_code == 200:
-            payment_intent = PaymentIntent(txhash=txhash, eth_account=current_user_eth, amount=inbox_quota)
+            payment_intent = PaymentIntent(txhash=txhash, user_id=current_user_id, amount=inbox_quota)
             db.session.add(payment_intent)
             db.session.commit()
             return jsonify({"message": "Monitoring started"})
@@ -106,7 +106,7 @@ def blockonomics_callback():
     if intent.status == PaymentStatus.CONFIRMED.value:
         return jsonify({"message": "Payment already confirmed"}), 200
 
-    user = db.session.query(User).filter_by(eth_account=intent.eth_account).first()
+    user = db.session.query(User).filter_by(user_id=intent.user_id).first()
     if not user:
         return error_response("User not found", 404)
     
