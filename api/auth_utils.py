@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import request, abort
-from config import db
+from config import db, app
 from db_models import User
 
 def auth_required(f):
