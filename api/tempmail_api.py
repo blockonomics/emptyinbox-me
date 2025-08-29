@@ -42,23 +42,6 @@ DOMAIN = os.getenv('DOMAIN')
 app.register_blueprint(auth_bp, url_prefix=url_prefix + '/auth')
 app.register_blueprint(payments_bp, url_prefix=url_prefix + '/payments')
 
-def auth_required(f):
-    @wraps(f)
-    def decorator(*args, **kwargs):
-        # Read token directly from cookie
-        token = request.cookies.get("session_token") or request.cookies.get("api_key")
-
-        if not token:
-            abort(401)
-
-        # Validate token in DB
-        row = db.session.query(User.api_key).filter(User.api_key == token).first()
-        if not row:
-            abort(401)
-
-        return f(token, *args, **kwargs)
-    return decorator
-
 @app.route(f'{url_prefix}/messages', methods=['GET'])
 @auth_required
 def get_messages(token):
