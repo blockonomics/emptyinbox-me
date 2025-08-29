@@ -493,7 +493,6 @@ def passkey_authenticate_complete():
 @auth_required 
 def auth_me(token):
     try:
-        app.logger.error(f"Token from decorator: {token}")
         with app.app_context():
             session = (
                 db.session.query(UserSession)
