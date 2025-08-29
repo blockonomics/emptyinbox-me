@@ -6,7 +6,7 @@ from eth_account import Account
 from config import db, app
 from urllib.parse import urlparse
 import traceback
-from .auth_utils import auth_required
+from auth_utils import auth_required
 
 
 from db_models import AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus

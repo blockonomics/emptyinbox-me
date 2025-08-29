@@ -6,7 +6,6 @@ from config import db
 
 from constants import USDT_DECIMALS, QUOTA_PER_USDT
 from db_models import User, UserSession, PaymentIntent, PaymentStatus
-from auth_utils import extract_apikey
 
 payments_bp = Blueprint('payments', __name__)
 
