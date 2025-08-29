@@ -12,7 +12,7 @@ import random
 import re
 import logging
 from words import adjectives, nouns
-from auth_utils import auth_required
+from auth_utils import auth_required, get_api_key_from_token
 
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
 IS_DEV = FLASK_ENV == 'development'
@@ -46,6 +46,7 @@ app.register_blueprint(payments_bp, url_prefix=url_prefix + '/payments')
 @auth_required
 def get_messages(token):
     '''Returns message list(id, inbox, subject, content, timestamp, sender)'''
+    api_key = get_api_key_from_token(token)
     messages = db.session.query(
         Message.id, 
         Message.inbox, 
@@ -55,7 +56,7 @@ def get_messages(token):
     ).join(
         Inbox, Message.inbox == Inbox.inbox
     ).filter(
-        Inbox.api_key==token
+        Inbox.api_key==api_key
     ).order_by(
         Message.timestamp.desc()
     ).all()
@@ -118,8 +119,8 @@ def get_mailboxname():
     noun = random.choice(nouns)
     return f'{adjective_part}.{noun}'
 
-def is_quota_available(token):
-    row = db.session.query(User).filter(User.api_key==token,User.inbox_quota>0).first()
+def is_quota_available(api_key):
+    row = db.session.query(User).filter(User.api_key==api_key,User.inbox_quota>0).first()
     if row:
         return True
     return False
@@ -128,12 +129,13 @@ def is_quota_available(token):
 @auth_required
 def create_mailbox(token):
     '''Creates new inbox'''
-    if not is_quota_available(token):
+    api_key = get_api_key_from_token(token)
+    if not is_quota_available(api_key):
         return "Insufficient Inbox quota", 403
     email_address = f'{get_mailboxname()}@{DOMAIN}'
     db.session.add(Inbox(api_key=token, inbox=email_address))
     #We used one inbox, decrease quota
-    db.session.query(User).filter(User.api_key==token).update({"inbox_quota":User.inbox_quota-1}) 
+    db.session.query(User).filter(User.api_key==api_key).update({"inbox_quota":User.inbox_quota-1}) 
     db.session.commit()
     return email_address, 201
 
@@ -141,9 +143,10 @@ def create_mailbox(token):
 @auth_required
 def get_mailboxes(token):
     '''Get inboxes belonging to the authenticated user, ordered by newest first'''
+    api_key = get_api_key_from_token(token)
     inboxes = db.session.execute(
         db.select(Inbox)
-          .filter(Inbox.api_key == token)
+          .filter(Inbox.api_key == api_key)
           .order_by(Inbox.created_at.desc())
     ).scalars().all()
 

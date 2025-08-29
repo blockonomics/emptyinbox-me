@@ -24,3 +24,11 @@ def auth_required(f):
         # Pass the token
         return f(token, *args, **kwargs)
     return decorator
+
+def get_api_key_from_token(token):
+    return (
+        db.session.query(User.api_key)
+        .join(UserSession, User.user_id == UserSession.address)
+        .filter(UserSession.token == token)
+        .scalar()
+    )
