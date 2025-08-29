@@ -133,7 +133,7 @@ def create_mailbox(token):
     if not is_quota_available(api_key):
         return "Insufficient Inbox quota", 403
     email_address = f'{get_mailboxname()}@{DOMAIN}'
-    db.session.add(Inbox(api_key=token, inbox=email_address))
+    db.session.add(Inbox(api_key=api_key, inbox=email_address))
     #We used one inbox, decrease quota
     db.session.query(User).filter(User.api_key==api_key).update({"inbox_quota":User.inbox_quota-1}) 
     db.session.commit()
