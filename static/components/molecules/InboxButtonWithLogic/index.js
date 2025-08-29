@@ -71,10 +71,7 @@ export function createInboxButtonWithLogic() {
 // Helper function to refresh the inboxes data
 async function refreshInboxesData() {
   try {
-    const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
-    if (!authToken) return;
-
-    const userData = await fetchUserData(authToken);
+    const userData = await fetchUserData();
 
     // Calculate quotas
     const maxQuota = Array.isArray(userData.payments)

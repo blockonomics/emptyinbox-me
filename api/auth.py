@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from datetime import datetime, timedelta
 import os, random, time, hashlib, base64, json
 from eth_account.messages import encode_defunct
@@ -339,12 +339,24 @@ def passkey_register_complete():
             
             app.logger.info(f"Created new passkey user: {credential_id}")
             
-            return jsonify({
+            resp = make_response(jsonify({
                 'success': True,
                 'token': session_token,
-                'api_key': api_key,
                 'credential_id': credential_id
-            }), 200
+            }))
+
+            # Store the API key in a secure, HttpOnly cookie
+            resp.set_cookie(
+                "api_key",
+                api_key,
+                httponly=True,       # JS can't read it
+                secure=True,         # only sent over HTTPS
+                samesite="Strict",   # helps prevent CSRF
+                max_age=60*60*24*7   # 1 week
+            )
+
+            return resp, 200
+
             
     except Exception as e:
         app.logger.error(f"Passkey registration complete failed: {e}")
@@ -453,20 +465,30 @@ def passkey_authenticate_complete():
             db.session.commit()
 
         app.logger.info(f"Passkey authentication successful for: {credential_id}")
-        return jsonify({
+        resp = make_response(jsonify({
             'success': True,
             'token': session_token,
-            'api_key': api_key,
             'credential_id': credential_id
-        }), 200
+        }))
+
+        # Store the API key in a secure, HttpOnly cookie
+        resp.set_cookie(
+            "api_key",
+            api_key,
+            httponly=True,       # JS can't read it
+            secure=True,         # only sent over HTTPS
+            samesite="Strict",   # helps prevent CSRF
+            max_age=60*60*24*7   # 1 week
+        )
+
+        return resp, 200
+
 
     except Exception as e:
         app.logger.error(f"Passkey authentication complete failed: {e}")
         db.session.rollback()
         return error_response('Failed to complete passkey authentication', 500)
 
-
-# --- Existing Routes ---
 @auth_bp.route('/me', methods=['GET'])
 def auth_me():
     try:
@@ -475,45 +497,44 @@ def auth_me():
             return error_response('Authentication required', 401)
 
         with app.app_context():
-            # First, validate the session token
             session = db.session.query(UserSession).filter_by(token=token)\
                 .filter(UserSession.expires_at > datetime.utcnow()).first()
 
             if not session:
                 return error_response('Invalid or expired authentication token', 401)
 
-            # Then get the full user object
             from db_models import User
             user = db.session.query(User).filter_by(user_id=session.address).first()
-            
             if not user:
                 return error_response('User not found', 404)
 
-            # Fetch confirmed payments for the user
             payments = db.session.query(PaymentIntent).filter_by(
                 user_id=user.user_id,
-                status=PaymentStatus.CONFIRMED.value  # Assuming CONFIRMED = "1"
+                status=PaymentStatus.CONFIRMED.value
             ).order_by(PaymentIntent.created_at.desc()).all()
 
-            # Format payment data
+            # Access all attributes while still in session context
             payment_data = [{
                 'txhash': p.txhash,
                 'amount': p.amount,
                 'created_at': p.created_at.isoformat()
             } for p in payments]
 
-            # Determine auth method
             auth_method = 'passkey' if session.address.startswith('passkey:') else 'wallet'
             
-            return jsonify({
+            # Store all needed data in variables while in session
+            response_data = {
                 'address': user.user_id,
                 'api_key': user.api_key,
                 'inbox_quota': user.inbox_quota,
                 'login_time': session.login_time,
-                'session_expires_at': session.expires_at.isoformat() if hasattr(session, 'expires_at') else None,
+                'session_expires_at': session.expires_at.isoformat(),
                 'payments': payment_data,
                 'auth_method': auth_method
-            }), 200
+            }
+            
+            return jsonify(response_data), 200
+            
     except Exception as e:
         app.logger.error(f"User info retrieval failed: {e}")
         return error_response('Failed to fetch user information', 500)

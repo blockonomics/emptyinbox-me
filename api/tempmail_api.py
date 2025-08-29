@@ -21,7 +21,12 @@ url_prefix = '/api' if IS_DEV else ''
 # Allow CORS for development
 if IS_DEV:
     from flask_cors import CORS
-    CORS(app)
+    CORS(
+        app,
+        supports_credentials=True,
+        origins=["http://localhost:8000"]  # must match your frontend origin exactly
+    )
+
 
 if __name__ != '__main__':
     gunicorn_logger = logging.getLogger('gunicorn.error')
@@ -52,7 +57,7 @@ def auth_required(f):
 
 import json
 
-@app.route('/messages', methods=['GET'])
+@app.route(f'{url_prefix}/messages', methods=['GET'])
 @auth_required
 def get_messages(token):
     '''Returns message list(id, inbox, subject, content, timestamp, sender)'''
@@ -134,7 +139,7 @@ def is_quota_available(token):
         return True
     return False
 
-@app.route('/inbox', methods=['POST'])
+@app.route(f'{url_prefix}/inbox', methods=['GET']) 
 @auth_required
 def create_mailbox(token):
     '''Creates new inbox'''
@@ -147,7 +152,7 @@ def create_mailbox(token):
     db.session.commit()
     return email_address, 201
 
-@app.route('/inboxes', methods=['GET'])
+@app.route(f'{url_prefix}/inboxes', methods=['GET']) 
 @auth_required
 def get_mailboxes(token):
     '''Get inboxes belonging to the authenticated user, ordered by newest first'''

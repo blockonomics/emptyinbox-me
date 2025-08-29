@@ -51,7 +51,6 @@ export const TOAST_TYPES = {
 
 export const LOCAL_STORAGE_KEYS = {
   AUTH_TOKEN: "authToken",
-  API_KEY: "apiKey",
 };
 
 export const QUOTA_PER_USDT = 10;

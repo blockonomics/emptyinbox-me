@@ -128,7 +128,7 @@ async function checkAuthStatus() {
 
   try {
     // Verify token with backend
-    const response = await fetchUserData(token);
+    const response = await fetchUserData();
 
     if (response?.address) {
       return { isAuthenticated: true };

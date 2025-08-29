@@ -24,7 +24,7 @@ export async function renderSettingsPage() {
   document.body.appendChild(main);
 
   try {
-    const userData = await fetchUserData(authToken);
+    const userData = await fetchUserData();
     updateUserDisplay(userData);
     setupSettingsEventListeners();
   } catch (error) {

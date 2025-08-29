@@ -146,9 +146,6 @@ async function initializePasskeyAuth() {
       if (authResult.success) {
         // Store auth token and redirect
         localStorage.setItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN, authResult.token);
-        if (authResult.api_key) {
-          localStorage.setItem(LOCAL_STORAGE_KEYS.API_KEY, authResult.api_key);
-        }
         window.location.href = "/messages.html";
       } else {
         showError("Authentication failed. Please try again.");
@@ -226,9 +223,6 @@ async function initializePasskeyAuth() {
       if (regResult.success) {
         // Store auth token and redirect
         localStorage.setItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN, regResult.token);
-        if (regResult.api_key) {
-          localStorage.setItem(LOCAL_STORAGE_KEYS.API_KEY, regResult.api_key);
-        }
         window.location.href = "/messages.html";
       } else {
         showError("Registration failed. Please try again.");

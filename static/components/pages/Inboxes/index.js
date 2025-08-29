@@ -33,7 +33,7 @@ export async function renderInboxesPage() {
   document.body.appendChild(main); // Append early to avoid layout shift
 
   try {
-    const userData = await fetchUserData(authToken);
+    const userData = await fetchUserData();
 
     // Extract current quota from user data
     const maxQuota = Array.isArray(userData.payments)

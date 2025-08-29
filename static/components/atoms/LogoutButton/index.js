@@ -63,10 +63,10 @@ window.addEventListener("DOMContentLoaded", () => {
   const quotaAmount = params.get("quota");
 
   if (paymentSuccess === "success" && txhash && crypto === "usdt") {
-    const apiKey = localStorage.getItem(LOCAL_STORAGE_KEYS.API_KEY);
+    const sessionToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
 
-    if (!apiKey) {
-      console.error("No API key found in localStorage");
+    if (!sessionToken) {
+      console.error("No Session Token found in localStorage");
       return;
     }
 
@@ -77,8 +77,9 @@ window.addEventListener("DOMContentLoaded", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: apiKey,
+        Authorization: sessionToken,
       },
+      credentials: "include",
       body: JSON.stringify({
         txhash,
         quotaAmount: quotaAmount ? parseInt(quotaAmount) : null,
