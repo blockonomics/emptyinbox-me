@@ -2,10 +2,7 @@ import { createCreateInboxButton } from "../../atoms/CreateInboxButton/index.js"
 import { createInbox } from "../../../services/apiService.js";
 import { ButtonStates } from "../../molecules/ButtonStates/index.js";
 import { fetchUserData } from "../../../services/apiService.js";
-import {
-  LOCAL_STORAGE_KEYS,
-  USER_STARTING_QUOTA,
-} from "../../../utils/constants.js";
+import { USER_STARTING_QUOTA } from "../../../utils/constants.js";
 import { renderInboxesHeader } from "../../molecules/InboxesHeader/index.js";
 import { createInboxCards } from "../../organisms/InboxCards/index.js";
 

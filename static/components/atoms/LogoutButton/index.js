@@ -1,8 +1,4 @@
-import {
-  API_BASE_URL,
-  LOCAL_STORAGE_KEYS,
-  ROUTES,
-} from "../../../utils/constants.js";
+import { API_BASE_URL, ROUTES } from "../../../utils/constants.js";
 import { clearAllAuthData } from "../../../utils/storage.js";
 
 export function renderLogoutButton() {
@@ -28,17 +24,13 @@ function logout() {
       logoutBtn.disabled = true;
       logoutBtn.textContent = "Logging Out...";
 
-      // 1. Call backend logout
-      const token = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
-      if (token) {
-        await fetch(`${API_BASE_URL}/api/auth/logout`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-      }
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
 
       // 2. Clear all local storage
       clearAllAuthData();
@@ -63,13 +55,6 @@ window.addEventListener("DOMContentLoaded", () => {
   const quotaAmount = params.get("quota");
 
   if (paymentSuccess === "success" && txhash && crypto === "usdt") {
-    const sessionToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
-
-    if (!sessionToken) {
-      console.error("No Session Token found in localStorage");
-      return;
-    }
-
     console.log("Starting payment monitoring for txhash:", txhash);
     console.log("Quota amount:", quotaAmount);
 
@@ -77,7 +62,6 @@ window.addEventListener("DOMContentLoaded", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: sessionToken,
       },
       credentials: "include",
       body: JSON.stringify({

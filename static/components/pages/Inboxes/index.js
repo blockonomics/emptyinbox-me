@@ -8,8 +8,8 @@ import { renderInboxesHeader } from "../../molecules/InboxesHeader/index.js";
 import { fetchUserData } from "../../../services/apiService.js";
 
 export async function renderInboxesPage() {
-  const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
-  if (!authToken) {
+  const isLoggedIn = localStorage.getItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN);
+  if (!isLoggedIn) {
     window.location.href = ROUTES.LOGIN;
     return;
   }
@@ -65,7 +65,7 @@ export async function renderInboxesPage() {
     section.appendChild(errorMessage);
 
     setTimeout(() => {
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN);
       window.location.href = ROUTES.LOGIN;
     }, 3000);
   }

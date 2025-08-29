@@ -1,11 +1,11 @@
 import { LOGO, ROUTES } from "../../../utils/constants.js";
-import { getSessionToken } from "../../../utils/storage.js";
+import { getIsLoggedIn } from "../../../utils/storage.js";
 
 export function createFooter() {
   const footer = document.createElement("footer");
   footer.className = "site-footer";
 
-  const isLoggedIn = Boolean(getSessionToken());
+  const isLoggedIn = getIsLoggedIn();
 
   const container = document.createElement("div");
   container.className = "footer-container";

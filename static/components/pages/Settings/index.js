@@ -5,8 +5,8 @@ import { setupSettingsEventListeners } from "../../../events/index.js";
 import { updateUserDisplay } from "./helper.js";
 
 export async function renderSettingsPage() {
-  const authToken = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
-  if (!authToken) {
+  const isLoggedIn = localStorage.getItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN);
+  if (!isLoggedIn) {
     window.location.href = ROUTES.LOGIN;
     return;
   }
@@ -29,7 +29,7 @@ export async function renderSettingsPage() {
     setupSettingsEventListeners();
   } catch (error) {
     console.error("User fetch failed:", error);
-    localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN);
     window.location.href = ROUTES.LOGIN;
   }
 }

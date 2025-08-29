@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "../utils/constants.js";
-import { getSessionToken } from "../utils/storage.js";
+import { getIsLoggedIn } from "../utils/storage.js";
 
 export async function fetchUserData() {
   const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
