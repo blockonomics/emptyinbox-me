@@ -42,20 +42,22 @@ DOMAIN = os.getenv('DOMAIN')
 app.register_blueprint(auth_bp, url_prefix=url_prefix + '/auth')
 app.register_blueprint(payments_bp, url_prefix=url_prefix + '/payments')
 
-# Authentication decorator
 def auth_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
-        token = extract_apikey(request.headers.get('Authorization'))
-        if not token:  
+        # Read token directly from cookie
+        token = request.cookies.get("session_token") or request.cookies.get("api_key")
+
+        if not token:
             abort(401)
-        row = db.session.query(User.api_key).filter(User.api_key==token).first()
+
+        # Validate token in DB
+        row = db.session.query(User.api_key).filter(User.api_key == token).first()
         if not row:
             abort(401)
+
         return f(token, *args, **kwargs)
     return decorator
-
-import json
 
 @app.route(f'{url_prefix}/messages', methods=['GET'])
 @auth_required
