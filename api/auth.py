@@ -6,6 +6,7 @@ from eth_account import Account
 from config import db, app
 from urllib.parse import urlparse
 import traceback
+from tempmail_api import auth_required 
 
 
 from db_models import AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus
@@ -490,15 +491,16 @@ def passkey_authenticate_complete():
         return error_response('Failed to complete passkey authentication', 500)
 
 @auth_bp.route('/me', methods=['GET'])
-def auth_me():
+@auth_required 
+def auth_me(token):
     try:
-        token = get_token_from_header()
-        if not token:
-            return error_response('Authentication required', 401)
-
         with app.app_context():
-            session = db.session.query(UserSession).filter_by(token=token)\
-                .filter(UserSession.expires_at > datetime.utcnow()).first()
+            session = (
+                db.session.query(UserSession)
+                .filter_by(token=token)
+                .filter(UserSession.expires_at > datetime.utcnow())
+                .first()
+            )
 
             if not session:
                 return error_response('Invalid or expired authentication token', 401)
@@ -508,21 +510,24 @@ def auth_me():
             if not user:
                 return error_response('User not found', 404)
 
-            payments = db.session.query(PaymentIntent).filter_by(
-                user_id=user.user_id,
-                status=PaymentStatus.CONFIRMED.value
-            ).order_by(PaymentIntent.created_at.desc()).all()
+            payments = (
+                db.session.query(PaymentIntent)
+                .filter_by(user_id=user.user_id, status=PaymentStatus.CONFIRMED.value)
+                .order_by(PaymentIntent.created_at.desc())
+                .all()
+            )
 
-            # Access all attributes while still in session context
-            payment_data = [{
-                'txhash': p.txhash,
-                'amount': p.amount,
-                'created_at': p.created_at.isoformat()
-            } for p in payments]
+            payment_data = [
+                {
+                    'txhash': p.txhash,
+                    'amount': p.amount,
+                    'created_at': p.created_at.isoformat()
+                }
+                for p in payments
+            ]
 
             auth_method = 'passkey' if session.address.startswith('passkey:') else 'wallet'
-            
-            # Store all needed data in variables while in session
+
             response_data = {
                 'address': user.user_id,
                 'api_key': user.api_key,
@@ -532,20 +537,17 @@ def auth_me():
                 'payments': payment_data,
                 'auth_method': auth_method
             }
-            
+
             return jsonify(response_data), 200
-            
+
     except Exception as e:
         app.logger.error(f"User info retrieval failed: {e}")
         return error_response('Failed to fetch user information', 500)
 
 @auth_bp.route('/logout', methods=['POST'])
-def auth_logout():
+@auth_required
+def auth_logout(token):
     try:
-        token = get_token_from_header()
-        if not token:
-            return error_response('No authentication token', 401)
-
         with app.app_context():
             user = db.session.query(UserSession).filter_by(token=token).first()
             if user:
