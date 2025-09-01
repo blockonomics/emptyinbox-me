@@ -398,57 +398,35 @@ def passkey_register_complete():
 
 @auth_bp.route('/passkey/authenticate/begin', methods=['POST'])
 def passkey_authenticate_begin():
-    """Start passkey authentication process."""
+    """Start usernameless passkey authentication process."""
     try:
         cleanup_expired_auth_records()
         
-        username = request.json.get('username')
-        if not username:
-            return error_response('Username is required')
-        
-        # Generate challenge
+        # Generate challenge for usernameless authentication
         challenge = generate_challenge()
-        challenge_id = f"passkey_auth:{username}:{int(time.time())}"
+        challenge_id = f"passkey_auth:usernameless:{int(time.time())}"
         
         with app.app_context():
-            # Check if user exists
-            user = db.session.query(User).filter_by(username=username).first()
-            if not user:
-                return error_response('User not found')
-            
-            # Get user's passkey credentials
-            credentials = db.session.query(PasskeyCredential).filter_by(user_id=user.user_id).all()
-            
-            if not credentials:
-                return error_response('No passkeys found for user')
-            
-            # Store challenge
+            # Store usernameless challenge
             passkey_challenge = PasskeyChallenge(
                 challenge_id=challenge_id,
-                username=username,
+                username=None,  # Always None for sign-in flow
                 challenge=base64url_encode(challenge),
                 operation_type='authentication'
             )
             db.session.add(passkey_challenge)
-            
-            # Build allowCredentials
-            allow_credentials = []
-            for cred in credentials:
-                allow_credentials.append({
-                    'type': 'public-key',
-                    'id': cred.credential_id
-                })
-            
             db.session.commit()
         
         # Return WebAuthn authentication options
+        # Empty allowCredentials allows any registered passkey
         auth_options = {
             'challenge': base64url_encode(challenge),
             'timeout': 60000,
             'userVerification': 'preferred',
-            'allowCredentials': allow_credentials
+            'allowCredentials': []  # Empty = any passkey can authenticate
         }
         
+        app.logger.info("Usernameless passkey authentication begun")
         return jsonify(auth_options), 200
         
     except Exception as e:
@@ -462,10 +440,9 @@ def passkey_authenticate_complete():
     try:
         credential_data = request.json
         credential_id = credential_data.get('id')
-        username = credential_data.get('username')
 
-        if not credential_id or not username:
-            return error_response('Missing credential ID or username')
+        if not credential_id:
+            return error_response('Missing credential ID')
 
         # Get the challenge from client data
         client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
@@ -474,28 +451,27 @@ def passkey_authenticate_complete():
         challenge = base64url_decode(challenge_b64)
 
         with app.app_context():
-            # Find matching challenge
-            stored_challenge = db.session.query(PasskeyChallenge).filter_by(
-                username=username,
-                challenge=base64url_encode(challenge),
-                operation_type='authentication'
-            ).filter(PasskeyChallenge.expires_at > datetime.utcnow()).first()
-
-            if not stored_challenge:
-                return error_response('Challenge expired or not found')
-
-            # Verify user and credential exist
-            user = db.session.query(User).filter_by(username=username).first()
-            if not user:
-                return error_response('User not found')
-            
+            # Find user by credential
             credential = db.session.query(PasskeyCredential).filter_by(
-                user_id=user.user_id,
                 credential_id=credential_id
             ).first()
             
             if not credential:
-                return error_response('Credential not found for user')
+                return error_response('Credential not found')
+            
+            user = db.session.query(User).filter_by(user_id=credential.user_id).first()
+            if not user:
+                return error_response('User not found for credential')
+
+            # Find matching usernameless challenge
+            stored_challenge = db.session.query(PasskeyChallenge).filter_by(
+                challenge=base64url_encode(challenge),
+                operation_type='authentication',
+                username=None  # Only usernameless challenges
+            ).filter(PasskeyChallenge.expires_at > datetime.utcnow()).first()
+
+            if not stored_challenge:
+                return error_response('Challenge expired or not found')
 
             # Verify signature
             is_valid, parsed_data = verify_passkey_signature(credential_data, challenge)
@@ -516,8 +492,6 @@ def passkey_authenticate_complete():
             session_obj = UserSession(session_token, user.user_id, int(time.time()))
             db.session.add(session_obj)
             db.session.commit()
-
-        app.logger.info(f"Passkey authentication successful for: {username}")
         
         resp = make_response(jsonify({"success": True, "message": "Login successful"}))
         resp.set_cookie(

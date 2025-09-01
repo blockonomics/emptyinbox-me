@@ -102,13 +102,12 @@ export async function registerCredential(credential) {
   return response.json();
 }
 
-export async function getAuthenticationOptions(username) {
+export async function getAuthenticationOptions() {
   const response = await fetch(
     `${API_BASE_URL}/api/auth/passkey/authenticate/begin`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
     }
   );
 
@@ -119,43 +118,20 @@ export async function getAuthenticationOptions(username) {
   return response.json();
 }
 
-export async function verifyAuthentication(credential, username) {
-  // Debug: Log what we're actually sending
-  console.log("=== DEBUG: Authentication Data ===");
-  console.log("credential:", credential);
-  console.log("username:", username);
-  console.log("credential.id:", credential?.id);
-
-  const credentialWithUsername = {
-    ...credential,
-    username: username,
-  };
-
-  console.log(
-    "Final payload:",
-    JSON.stringify(credentialWithUsername, null, 2)
-  );
-  console.log("================================");
+export async function verifyAuthentication(credentials) {
 
   const response = await fetch(
     `${API_BASE_URL}/api/auth/passkey/authenticate/complete`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(credentialWithUsername),
+      body: JSON.stringify(credentials),
       credentials: "include",
     }
   );
 
-  console.log("Look at this");
-  console.log(response);
-  console.log(response.ok);
-
   if (!response.ok) {
     const errorData = await response.text();
-    console.error("Auth error:", errorData);
-    console.error("Response status:", response.status);
-    console.error("Response headers:", [...response.headers.entries()]);
     throw new Error(`Failed to verify authentication: ${errorData}`);
   }
 

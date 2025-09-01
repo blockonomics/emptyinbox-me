@@ -70,15 +70,17 @@ class PasskeyChallenge(db.Model):
     __tablename__ = 'passkey_challenges'
     
     challenge_id = db.Column(db.String(255), primary_key=True)  # Random challenge ID
-    username = db.Column(db.String(255), nullable=False)  # Username for this challenge
-    challenge = db.Column(db.String(1000), nullable=False)  # Base64url encoded challenge
-    operation_type = db.Column(db.String(20), nullable=False)  # "registration" or "authentication"
+    username = db.Column(db.String(255), nullable=True)         # Only for registration
+    credential_id = db.Column(db.String(1000), nullable=True)   # Only for authentication
+    challenge = db.Column(db.String(1000), nullable=False)      # Base64url encoded challenge
+    operation_type = db.Column(db.String(20), nullable=False)   # "registration" or "authentication"
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     expires_at = db.Column(db.DateTime, nullable=False)
     
-    def __init__(self, challenge_id, username, challenge, operation_type):
+    def __init__(self, challenge_id, challenge, operation_type, username=None, credential_id=None):
         self.challenge_id = challenge_id
         self.username = username
+        self.credential_id = credential_id
         self.challenge = challenge
         self.operation_type = operation_type
         self.created_at = datetime.utcnow()
