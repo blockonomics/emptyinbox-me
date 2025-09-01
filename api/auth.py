@@ -295,6 +295,7 @@ def passkey_register_begin():
             'attestation': 'none',
             'authenticatorSelection': {
                 'authenticatorAttachment': 'platform',
+                'residentKey': 'required',
                 'userVerification': 'preferred'
             }
         }
