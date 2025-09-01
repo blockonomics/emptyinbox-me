@@ -1,6 +1,7 @@
 from config import db
 from datetime import datetime, timedelta
 from enum import Enum
+from sqlalchemy.types import JSON
 
 class PaymentStatus(Enum):
     PENDING = "0"
@@ -16,8 +17,6 @@ class Message(db.Model):
     timestamp = db.Column(db.BigInteger)
     content = db.Column(db.BLOB(8 << 20))
 
-from sqlalchemy.types import JSON
-
 class Inbox(db.Model):
     __tablename__ = 'inboxes'
 
@@ -30,8 +29,24 @@ class User(db.Model):
     __tablename__ = 'users'
 
     user_id = db.Column(db.String(255), primary_key=True)
+    username = db.Column(db.String(255), unique=True, nullable=False)  # New field
     api_key = db.Column(db.String(250), unique=True, nullable=False)
     inbox_quota = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # New field
+
+class PasskeyCredential(db.Model):
+    __tablename__ = 'passkey_credentials'
+
+    credential_id = db.Column(db.String(1000), primary_key=True)  # Base64url encoded credential ID
+    user_id = db.Column(db.String(255), db.ForeignKey('users.user_id'), nullable=False)
+    public_key = db.Column(db.Text, nullable=False)  # COSE public key
+    counter = db.Column(db.BigInteger, default=0)  # Signature counter
+    device_type = db.Column(db.String(50))  # e.g., "platform", "cross-platform"
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used = db.Column(db.DateTime)
+    
+    # Relationship
+    user = db.relationship('User', backref='passkey_credentials')
 
 class AuthChallenge(db.Model):
     __tablename__ = 'auth_challenges'
@@ -51,17 +66,38 @@ class AuthChallenge(db.Model):
         self.timestamp = timestamp
         self.expires_at = datetime.utcnow() + timedelta(minutes=5)
 
+class PasskeyChallenge(db.Model):
+    __tablename__ = 'passkey_challenges'
+    
+    challenge_id = db.Column(db.String(255), primary_key=True)  # Random challenge ID
+    username = db.Column(db.String(255), nullable=False)  # Username for this challenge
+    challenge = db.Column(db.String(1000), nullable=False)  # Base64url encoded challenge
+    operation_type = db.Column(db.String(20), nullable=False)  # "registration" or "authentication"
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    
+    def __init__(self, challenge_id, username, challenge, operation_type):
+        self.challenge_id = challenge_id
+        self.username = username
+        self.challenge = challenge
+        self.operation_type = operation_type
+        self.created_at = datetime.utcnow()
+        self.expires_at = datetime.utcnow() + timedelta(minutes=5)
+
 class UserSession(db.Model):
     __tablename__ = 'user_sessions'
 
     token = db.Column(db.String, primary_key=True)
-    address = db.Column(db.String(42), nullable=False)
+    user_id = db.Column(db.String(255), db.ForeignKey('users.user_id'), nullable=False)
     login_time = db.Column(db.Integer, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
+    
+    # Relationship
+    user = db.relationship('User', backref='sessions')
 
-    def __init__(self, token, address, login_time):
+    def __init__(self, token, user_id, login_time):
         self.token = token
-        self.address = address
+        self.user_id = user_id
         self.login_time = login_time
         self.expires_at = datetime.utcnow() + timedelta(days=30)
 

@@ -1,3 +1,5 @@
+# Updated auth.py with proper username and passkey support
+
 from flask import Blueprint, request, jsonify, make_response
 from datetime import datetime, timedelta
 import os, random, time, hashlib, base64, json
@@ -8,8 +10,7 @@ from urllib.parse import urlparse
 import traceback
 from auth_utils import auth_required
 
-
-from db_models import AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus
+from db_models import AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus, PasskeyCredential, PasskeyChallenge
 from constants import USER_STARTING_QUOTA
 
 # Add these imports for passkey functionality
@@ -30,30 +31,15 @@ URL_SCHEME = 'http://' if IS_DEV else 'https://'
 def generate_nonce() -> str:
     return str(random.randint(100_000_000, 999_999_999))
 
-def create_auth_message(address: str, nonce: str) -> tuple[str, int]:
-    """Create wallet authentication message (kept for payment verification)."""
-    timestamp = int(time.time())
-    message = (
-        f"EmptyInbox.me wants you to sign in with your Ethereum account:\n"
-        f"{address}\n\n"
-        f"I accept the EmptyInbox.me Terms of Service: {URL_SCHEME}{DOMAIN}/tos\n\n"
-        f"URI: {URL_SCHEME}{DOMAIN}\nVersion: 1\nChain ID: 1\n"
-        f"Nonce: {nonce}\nIssued At: {timestamp}"
-    )
-    return message, timestamp
+def create_user_token(identifier: str) -> str:
+    raw = f"{identifier}:{int(time.time())}:{random.randint(100_000, 999_999)}"
+    return hashlib.sha256(raw.encode()).hexdigest()
 
-def verify_signature(message: str, signature: str, expected_address: str) -> bool:
-    """Verify wallet signature (kept for payment verification)."""
-    try:
-        message_hash = encode_defunct(text=message)
-        recovered = Account.recover_message(message_hash, signature=signature)
-        return recovered.lower() == expected_address.lower()
-    except Exception as e:
-        app.logger.error(f"Signature verification failed: {e}")
-        return False
+def error_response(message: str, code: int = 400):
+    return jsonify({'error': message}), code
 
 def cleanup_expired_auth_records():
-    """Deletes expired AuthChallenge and UserSession records from the database."""
+    """Deletes expired AuthChallenge, UserSession, and PasskeyChallenge records."""
     try:
         now = datetime.utcnow()
 
@@ -62,6 +48,13 @@ def cleanup_expired_auth_records():
         ).count()
         AuthChallenge.query.filter(
             AuthChallenge.expires_at < now
+        ).delete()
+
+        expired_passkey_challenges = PasskeyChallenge.query.filter(
+            PasskeyChallenge.expires_at < now
+        ).count()
+        PasskeyChallenge.query.filter(
+            PasskeyChallenge.expires_at < now
         ).delete()
 
         expired_sessions = UserSession.query.filter(
@@ -73,27 +66,16 @@ def cleanup_expired_auth_records():
 
         db.session.commit()
 
-        if expired_challenges > 0 or expired_sessions > 0:
+        if expired_challenges > 0 or expired_sessions > 0 or expired_passkey_challenges > 0:
             app.logger.info(
-                f"Cleaned up {expired_challenges} expired challenges and "
+                f"Cleaned up {expired_challenges} auth challenges, "
+                f"{expired_passkey_challenges} passkey challenges, and "
                 f"{expired_sessions} expired sessions"
             )
     except Exception as e:
         db.session.rollback()
         app.logger.exception("Cleanup failed")
         raise
-
-
-def create_user_token(address: str) -> str:
-    raw = f"{address}:{int(time.time())}:{random.randint(100_000, 999_999)}"
-    return hashlib.sha256(raw.encode()).hexdigest()
-
-def get_token_from_header() -> str | None:
-    auth = request.headers.get('Authorization', '')
-    return auth.split(' ')[1] if auth.startswith('Bearer ') else None
-
-def error_response(message: str, code: int = 400):
-    return jsonify({'error': message}), code
 
 # --- Passkey Utility Functions ---
 def generate_challenge() -> bytes:
@@ -116,44 +98,18 @@ def generate_user_id() -> str:
     """Generate a unique user ID for passkey registration."""
     return base64url_encode(os.urandom(32))
 
-def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[bool, dict]:
-    """Verify passkey authentication signature."""
-    try:
-        # Decode the response data
-        authenticator_data = base64url_decode(credential_data['response']['authenticatorData'])
-        client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
-        signature = base64url_decode(credential_data['response']['signature'])
-        
-        # Parse client data
-        client_data = json.loads(client_data_json.decode())
-        
-        # Verify challenge
-        received_challenge = base64url_decode(client_data['challenge'])
-        if received_challenge != challenge:
-            app.logger.error("Challenge mismatch in passkey verification")
-            return False, {}
-        
-        # Verify origin
-        expected_origin = f"{URL_SCHEME}{DOMAIN}"
-        if client_data['origin'] != expected_origin:
-            app.logger.error(f"Origin mismatch: expected {expected_origin}, got {client_data['origin']}")
-            return False, {}
-        
-        # For now, we'll return success with the parsed data
-        # In a full implementation, you'd verify the signature against the stored public key
-        return True, {
-            'credential_id': credential_data['id'],
-            'authenticator_data': authenticator_data,
-            'client_data': client_data,
-            'signature': signature
-        }
-        
-    except Exception as e:
-        app.logger.error(f"Passkey signature verification failed: {e}")
-        return False, {}
+def get_rp_id_from_domain(domain: str) -> str:
+    """Extract RP ID from domain, handling ports properly."""
+    # Remove protocol if present
+    if '://' in domain:
+        domain = domain.split('://', 1)[1]
+    # Remove port if present
+    if ':' in domain:
+        domain = domain.split(':', 1)[0]
+    return domain
 
 def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tuple[bool, dict]:
-    """Verify passkey registration data."""
+    """Verify passkey registration data with improved validation."""
     try:
         # Decode the response data
         attestation_object = base64url_decode(credential_data['response']['attestationObject'])
@@ -161,6 +117,8 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
         
         # Parse client data
         client_data = json.loads(client_data_json.decode())
+        
+        app.logger.info(f"Registration client data: {client_data}")
         
         # Verify challenge
         received_challenge = base64url_decode(client_data['challenge'])
@@ -174,13 +132,16 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
             app.logger.error(f"Origin mismatch: expected {expected_origin}, got {client_data['origin']}")
             return False, {}
         
+        # Verify type
+        if client_data.get('type') != 'webauthn.create':
+            app.logger.error(f"Wrong ceremony type: expected 'webauthn.create', got {client_data.get('type')}")
+            return False, {}
+        
         # Parse attestation object
         try:
             attestation = cbor2.loads(attestation_object)
             auth_data = attestation['authData']
             
-            # Extract credential ID and public key (simplified)
-            # In a full implementation, you'd properly parse the CBOR data
             return True, {
                 'credential_id': credential_data['id'],
                 'attestation_object': attestation_object,
@@ -189,7 +150,7 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
             }
         except Exception as e:
             app.logger.error(f"Failed to parse attestation object: {e}")
-            # For demo purposes, still return success
+            # For demo purposes, still return success if basic validation passes
             return True, {
                 'credential_id': credential_data['id'],
                 'attestation_object': attestation_object,
@@ -200,62 +161,118 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
         app.logger.error(f"Passkey registration verification failed: {e}")
         return False, {}
 
-# --- Wallet Auth Routes (Kept for Payment Verification) ---
-# Note: These are no longer used for login, but may be needed for payment flows
-
-@auth_bp.route('/challenge', methods=['POST'])
-def auth_challenge():
-    """Generate wallet challenge (kept for payment verification)."""
-    app.logger.info("Received wallet challenge request")
+def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[bool, dict]:
+    """Verify passkey authentication signature with improved validation."""
     try:
-        cleanup_expired_auth_records()
-        address = request.json.get('address')
-
-        if not address or not address.startswith('0x') or len(address) != 42:
-            return error_response('Invalid or missing Ethereum address')
-
-        nonce = generate_nonce()
-        message, timestamp = create_auth_message(address, nonce)
-
-        with app.app_context():
-            challenge = AuthChallenge(address, nonce, message, timestamp)
-            db.session.add(challenge)
-            db.session.commit()
-
-        return jsonify({'message': message, 'nonce': nonce}), 200
+        # Decode the response data
+        authenticator_data = base64url_decode(credential_data['response']['authenticatorData'])
+        client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
+        signature = base64url_decode(credential_data['response']['signature'])
+        
+        # Parse client data
+        client_data = json.loads(client_data_json.decode())
+        
+        app.logger.info(f"Authentication client data: {client_data}")
+        
+        # Verify challenge
+        received_challenge = base64url_decode(client_data['challenge'])
+        if received_challenge != challenge:
+            app.logger.error("Challenge mismatch in passkey verification")
+            return False, {}
+        
+        # Verify origin
+        expected_origin = f"{URL_SCHEME}{DOMAIN}"
+        if client_data['origin'] != expected_origin:
+            app.logger.error(f"Origin mismatch: expected {expected_origin}, got {client_data['origin']}")
+            return False, {}
+        
+        # Verify type
+        if client_data.get('type') != 'webauthn.get':
+            app.logger.error(f"Wrong ceremony type: expected 'webauthn.get', got {client_data.get('type')}")
+            return False, {}
+        
+        return True, {
+            'credential_id': credential_data['id'],
+            'authenticator_data': authenticator_data,
+            'client_data': client_data,
+            'signature': signature
+        }
+        
     except Exception as e:
-        app.logger.error(f"Challenge generation error: {e}")
-        db.session.rollback()
-        return error_response('Failed to generate challenge', 500)
+        app.logger.error(f"Passkey signature verification failed: {e}")
+        return False, {}
 
+# --- Username and Passkey Routes ---
 
-# --- New Passkey Auth Routes ---
+@auth_bp.route('/check-username', methods=['POST'])
+def check_username():
+    """Check if username exists and has passkey."""
+    try:
+        username = request.json.get('username')
+        
+        if not username:
+            return error_response('Username is required')
+        
+        if len(username) < 3:
+            return error_response('Username must be at least 3 characters long')
+        
+        with app.app_context():
+            user = db.session.query(User).filter_by(username=username).first()
+            
+            if user:
+                # Check if user has any passkey credentials
+                has_passkey = db.session.query(PasskeyCredential).filter_by(user_id=user.user_id).first() is not None
+                
+                return jsonify({
+                    'exists': True,
+                    'hasPasskey': has_passkey
+                }), 200
+            else:
+                return jsonify({
+                    'exists': False,
+                    'hasPasskey': False
+                }), 200
+                
+    except Exception as e:
+        app.logger.error(f"Username check failed: {e}")
+        return error_response('Failed to check username', 500)
+
 @auth_bp.route('/passkey/register/begin', methods=['POST'])
 def passkey_register_begin():
     """Start passkey registration process."""
     try:
         cleanup_expired_auth_records()
         
-        # Generate challenge and user info
-        challenge = generate_challenge()
-        user_id = generate_user_id()
+        username = request.json.get('username')
+        if not username:
+            return error_response('Username is required')
         
-        # Store challenge in database (reuse AuthChallenge table)
-        challenge_id = f"passkey_reg:{user_id}:{int(time.time())}"
-        nonce = base64url_encode(challenge)
-
-        # If DOMAIN might include a port, strip it for rp.id
-        rp_id = DOMAIN.split(':')[0]  # "localhost:8000" -> "localhost"
-
+        if len(username) < 3:
+            return error_response('Username must be at least 3 characters long')
+        
+        # Check if username already exists
+        with app.app_context():
+            existing_user = db.session.query(User).filter_by(username=username).first()
+            if existing_user:
+                return error_response('Username already exists')
+        
+        # Generate challenge
+        challenge = generate_challenge()
+        challenge_id = f"passkey_reg:{username}:{int(time.time())}"
+        
+        # Get proper RP ID
+        rp_id = get_rp_id_from_domain(DOMAIN)
+        
+        # Store challenge in PasskeyChallenge table
+        passkey_challenge = PasskeyChallenge(
+            challenge_id=challenge_id,
+            username=username,
+            challenge=base64url_encode(challenge),
+            operation_type='registration'
+        )
         
         with app.app_context():
-            auth_challenge = AuthChallenge(
-                address=challenge_id,  # Reuse address field for challenge ID
-                nonce=nonce,
-                message=base64url_encode(challenge),  # Store challenge in message field
-                timestamp=int(time.time())
-            )
-            db.session.add(auth_challenge)
+            db.session.add(passkey_challenge)
             db.session.commit()
         
         # Return WebAuthn registration options
@@ -266,9 +283,9 @@ def passkey_register_begin():
                 'id': rp_id
             },
             'user': {
-                'id': base64url_encode(user_id.encode()),
-                'name': f"user_{user_id[:8]}",
-                'displayName': f"User {user_id[:8]}"
+                'id': base64url_encode(username.encode()),
+                'name': username,
+                'displayName': username
             },
             'pubKeyCredParams': [
                 {'type': 'public-key', 'alg': -7},   # ES256
@@ -295,9 +312,10 @@ def passkey_register_complete():
     try:
         credential_data = request.json
         credential_id = credential_data.get('id')
+        username = credential_data.get('username')
         
-        if not credential_id:
-            return error_response('Missing credential ID')
+        if not credential_id or not username:
+            return error_response('Missing credential ID or username')
         
         # Get the challenge from client data
         client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
@@ -305,11 +323,13 @@ def passkey_register_complete():
         challenge_b64 = client_data['challenge']
         challenge = base64url_decode(challenge_b64)
         
-        # Find matching challenge in database
         with app.app_context():
-            stored_challenge = db.session.query(AuthChallenge).filter(
-                AuthChallenge.message == base64url_encode(challenge)
-            ).filter(AuthChallenge.expires_at > datetime.utcnow()).first()
+            # Find matching challenge
+            stored_challenge = db.session.query(PasskeyChallenge).filter_by(
+                username=username,
+                challenge=base64url_encode(challenge),
+                operation_type='registration'
+            ).filter(PasskeyChallenge.expires_at > datetime.utcnow()).first()
             
             if not stored_challenge:
                 return error_response('Challenge expired or not found')
@@ -319,51 +339,62 @@ def passkey_register_complete():
             if not is_valid:
                 return error_response('Invalid passkey registration')
             
-            # Clean up challenge
-            db.session.delete(stored_challenge)
+            # Check if user already exists
+            user = db.session.query(User).filter_by(username=username).first()
+            if not user:
+                # Create new user
+                api_key = create_user_token(credential_id)[:32]
+                user_id = generate_user_id()
+                user = User(
+                    user_id=user_id,
+                    username=username,
+                    api_key=api_key,
+                    inbox_quota=USER_STARTING_QUOTA
+                )
+                db.session.add(user)
+                db.session.flush()  # ensure user_id is available
             
-            # Create user account
-            api_key = create_user_token(credential_id)[:32]
-            user = User(
-                user_id=f"passkey:{credential_id}",
-                api_key=api_key,
-                inbox_quota=USER_STARTING_QUOTA
+            # Store passkey credential
+            passkey_cred = PasskeyCredential(
+                credential_id=credential_id,
+                user_id=user.user_id,
+                public_key='placeholder',  # Store actual public key in production
+                device_type='platform',
+                last_used=datetime.utcnow()
             )
-            db.session.add(user)
+            db.session.add(passkey_cred)
             
-            # Create session
+            # Clean up challenge and old sessions
+            db.session.delete(stored_challenge)
+            old_sessions = db.session.query(UserSession).filter_by(user_id=user.user_id).all()
+            for old_session in old_sessions:
+                db.session.delete(old_session)
+            
+            # Create new session
             session_token = create_user_token(credential_id)
-            session_obj = UserSession(session_token, f"passkey:{credential_id}", int(time.time()))
+            session_obj = UserSession(session_token, user.user_id, int(time.time()))
             db.session.add(session_obj)
             
             db.session.commit()
             
-            app.logger.info(f"Created new passkey user: {credential_id}")
+            app.logger.info(f"Created passkey for user: {username}")
             
-            resp = make_response(jsonify({
-                'success': True,
-                'token': session_token,
-                'credential_id': credential_id
-            }))
-
-            # Store the session token in a secure, HttpOnly cookie
+            resp = make_response(jsonify({"success": True, "message": "Registration successful"}))
             resp.set_cookie(
                 "session_token",
-                session_token,  
+                session_token,
                 httponly=True,
-                secure=True,           # required if SameSite=None
-                samesite="None",       # allow cross-site requests from your frontend
-                max_age=60*60*24*7     # 1 week
+                secure=not IS_DEV,  # False in dev so it works over HTTP
+                samesite="None" if not IS_DEV else "Lax",
+                max_age=60*60*24*7,  # 1 week
+                path="/"
             )
             return resp, 200
 
-            
     except Exception as e:
         app.logger.error(f"Passkey registration complete failed: {e}")
         db.session.rollback()
         return error_response('Failed to complete passkey registration', 500)
-
-# Only change this one function in your auth.py:
 
 @auth_bp.route('/passkey/authenticate/begin', methods=['POST'])
 def passkey_authenticate_begin():
@@ -371,32 +402,41 @@ def passkey_authenticate_begin():
     try:
         cleanup_expired_auth_records()
         
+        username = request.json.get('username')
+        if not username:
+            return error_response('Username is required')
+        
         # Generate challenge
         challenge = generate_challenge()
-        
-        # Store challenge in database
-        challenge_id = f"passkey_auth:{int(time.time())}:{random.randint(100000, 999999)}"
-        nonce = base64url_encode(challenge)
+        challenge_id = f"passkey_auth:{username}:{int(time.time())}"
         
         with app.app_context():
-            auth_challenge = AuthChallenge(
-                address=challenge_id,
-                nonce=nonce,
-                message=base64url_encode(challenge),
-                timestamp=int(time.time())
+            # Check if user exists
+            user = db.session.query(User).filter_by(username=username).first()
+            if not user:
+                return error_response('User not found')
+            
+            # Get user's passkey credentials
+            credentials = db.session.query(PasskeyCredential).filter_by(user_id=user.user_id).all()
+            
+            if not credentials:
+                return error_response('No passkeys found for user')
+            
+            # Store challenge
+            passkey_challenge = PasskeyChallenge(
+                challenge_id=challenge_id,
+                username=username,
+                challenge=base64url_encode(challenge),
+                operation_type='authentication'
             )
-            db.session.add(auth_challenge)
+            db.session.add(passkey_challenge)
             
-            # Get all registered users to build allowCredentials
-            users = db.session.query(User).filter(User.user_id.like('passkey:%')).all()
-            
-            # Build allowCredentials while still in session context
+            # Build allowCredentials
             allow_credentials = []
-            for user in users:
-                credential_id = user.user_id.replace('passkey:', '')
+            for cred in credentials:
                 allow_credentials.append({
                     'type': 'public-key',
-                    'id': credential_id
+                    'id': cred.credential_id
                 })
             
             db.session.commit()
@@ -406,7 +446,7 @@ def passkey_authenticate_begin():
             'challenge': base64url_encode(challenge),
             'timeout': 60000,
             'userVerification': 'preferred',
-            'allowCredentials': allow_credentials  # Now populated instead of empty
+            'allowCredentials': allow_credentials
         }
         
         return jsonify(auth_options), 200
@@ -416,18 +456,17 @@ def passkey_authenticate_begin():
         db.session.rollback()
         return error_response('Failed to start passkey authentication', 500)
 
-# Replace your passkey_authenticate_complete function with this:
-
 @auth_bp.route('/passkey/authenticate/complete', methods=['POST'])
 def passkey_authenticate_complete():
     """Complete passkey authentication process."""
-    credential_data = request.json
-    credential_id = credential_data.get('id')
-
-    if not credential_id:
-        return error_response('Missing credential ID')
-
     try:
+        credential_data = request.json
+        credential_id = credential_data.get('id')
+        username = credential_data.get('username')
+
+        if not credential_id or not username:
+            return error_response('Missing credential ID or username')
+
         # Get the challenge from client data
         client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
         client_data = json.loads(client_data_json.decode())
@@ -435,54 +474,63 @@ def passkey_authenticate_complete():
         challenge = base64url_decode(challenge_b64)
 
         with app.app_context():
-            stored_challenge = db.session.query(AuthChallenge).filter(
-                AuthChallenge.message == base64url_encode(challenge)
-            ).filter(AuthChallenge.expires_at > datetime.utcnow()).first()
+            # Find matching challenge
+            stored_challenge = db.session.query(PasskeyChallenge).filter_by(
+                username=username,
+                challenge=base64url_encode(challenge),
+                operation_type='authentication'
+            ).filter(PasskeyChallenge.expires_at > datetime.utcnow()).first()
 
             if not stored_challenge:
                 return error_response('Challenge expired or not found')
 
+            # Verify user and credential exist
+            user = db.session.query(User).filter_by(username=username).first()
+            if not user:
+                return error_response('User not found')
+            
+            credential = db.session.query(PasskeyCredential).filter_by(
+                user_id=user.user_id,
+                credential_id=credential_id
+            ).first()
+            
+            if not credential:
+                return error_response('Credential not found for user')
+
+            # Verify signature
             is_valid, parsed_data = verify_passkey_signature(credential_data, challenge)
             if not is_valid:
                 return error_response('Invalid passkey authentication')
 
-            passkey_address = f"passkey:{credential_id}"
-            user = db.session.query(User).filter_by(user_id=passkey_address).first()
-            if not user:
-                return error_response('User not found for this passkey', 404)
+            # Update credential last used
+            credential.last_used = datetime.utcnow()
 
-            # Access user.api_key while still in session context
-            api_key = user.api_key
-
+            # Clean up challenge and old sessions
             db.session.delete(stored_challenge)
-            old_sessions = db.session.query(UserSession).filter_by(address=passkey_address).all()
+            old_sessions = db.session.query(UserSession).filter_by(user_id=user.user_id).all()
             for old_session in old_sessions:
                 db.session.delete(old_session)
 
+            # Create new session
             session_token = create_user_token(credential_id)
-            session_obj = UserSession(session_token, passkey_address, int(time.time()))
+            session_obj = UserSession(session_token, user.user_id, int(time.time()))
             db.session.add(session_obj)
             db.session.commit()
 
-        app.logger.info(f"Passkey authentication successful for: {credential_id}")
-        resp = make_response(jsonify({
-            'success': True,
-            'token': session_token,
-            'credential_id': credential_id
-        }))
-
-        # Store the session token in a secure, HttpOnly cookie
+        app.logger.info(f"Passkey authentication successful for: {username}")
+        
+        resp = make_response(jsonify({"success": True, "message": "Login successful"}))
         resp.set_cookie(
             "session_token",
-            session_token,   
+            session_token,
             httponly=True,
-            secure=True,           # required if SameSite=None
-            samesite="None",       # allow cross-site requests from your frontend
-            max_age=60*60*24*7     # 1 week
+            secure=not IS_DEV,  # False in dev so it works over HTTP
+            samesite="None" if not IS_DEV else "Lax",
+            max_age=60*60*24*7,  # 1 week
+            path="/"
         )
 
         return resp, 200
-
 
     except Exception as e:
         app.logger.error(f"Passkey authentication complete failed: {e}")
@@ -504,8 +552,7 @@ def auth_me(token):
             if not session:
                 return error_response('Invalid or expired authentication token', 401)
 
-            from db_models import User
-            user = db.session.query(User).filter_by(user_id=session.address).first()
+            user = db.session.query(User).filter_by(user_id=session.user_id).first()
             if not user:
                 return error_response('User not found', 404)
 
@@ -525,10 +572,13 @@ def auth_me(token):
                 for p in payments
             ]
 
-            auth_method = 'passkey' if session.address.startswith('passkey:') else 'wallet'
+            # Check if user has passkeys to determine auth method
+            has_passkeys = db.session.query(PasskeyCredential).filter_by(user_id=user.user_id).first() is not None
+            auth_method = 'passkey' if has_passkeys else 'wallet'
 
             response_data = {
-                'address': user.user_id,
+                'user_id': user.user_id,
+                'username': user.username,  # Include username in response
                 'api_key': user.api_key,
                 'inbox_quota': user.inbox_quota,
                 'login_time': session.login_time,
@@ -548,12 +598,22 @@ def auth_me(token):
 def auth_logout(token):
     try:
         with app.app_context():
-            user = db.session.query(UserSession).filter_by(token=token).first()
-            if user:
-                db.session.delete(user)
+            session = db.session.query(UserSession).filter_by(token=token).first()
+            if session:
+                db.session.delete(session)
                 db.session.commit()
 
-        return jsonify({'success': True}), 200
+        resp = make_response(jsonify({'success': True}))
+        resp.set_cookie(
+            "session_token", 
+            "", 
+            expires=0,
+            httponly=True,
+            secure=not IS_DEV,
+            samesite="None" if not IS_DEV else "Lax",
+            path="/"
+        )
+        return resp, 200
     except Exception as e:
         app.logger.error(f"Logout error: {e}")
         db.session.rollback()

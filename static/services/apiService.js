@@ -5,7 +5,6 @@ export async function fetchUserData() {
   const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
     credentials: "include",
   });
-
   if (!response.ok) throw new Error("User fetch failed");
   return await response.json();
 }
@@ -50,4 +49,115 @@ export async function createInbox() {
   });
 
   return { response, success: response.ok };
+}
+
+// Username check API call
+export async function checkUsername(username) {
+  const response = await fetch(`${API_BASE_URL}/api/auth/check-username`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to check username");
+  }
+
+  return response.json();
+}
+
+// Passkey Authentication API calls
+export async function getRegistrationOptions(username) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/auth/passkey/register/begin`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to get registration options");
+  }
+
+  return response.json();
+}
+
+export async function registerCredential(credential) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/auth/passkey/register/complete`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(credential),
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to register credential");
+  }
+
+  return response.json();
+}
+
+export async function getAuthenticationOptions(username) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/auth/passkey/authenticate/begin`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to get authentication options");
+  }
+
+  return response.json();
+}
+
+export async function verifyAuthentication(credential, username) {
+  // Debug: Log what we're actually sending
+  console.log("=== DEBUG: Authentication Data ===");
+  console.log("credential:", credential);
+  console.log("username:", username);
+  console.log("credential.id:", credential?.id);
+
+  const credentialWithUsername = {
+    ...credential,
+    username: username,
+  };
+
+  console.log(
+    "Final payload:",
+    JSON.stringify(credentialWithUsername, null, 2)
+  );
+  console.log("================================");
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/auth/passkey/authenticate/complete`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(credentialWithUsername),
+      credentials: "include",
+    }
+  );
+
+  console.log("Look at this");
+  console.log(response);
+  console.log(response.ok);
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    console.error("Auth error:", errorData);
+    console.error("Response status:", response.status);
+    console.error("Response headers:", [...response.headers.entries()]);
+    throw new Error(`Failed to verify authentication: ${errorData}`);
+  }
+
+  return response.json();
 }

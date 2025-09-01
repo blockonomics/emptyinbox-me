@@ -28,7 +28,7 @@ def auth_required(f):
 def get_api_key_from_token(token):
     return (
         db.session.query(User.api_key)
-        .join(UserSession, User.user_id == UserSession.address)
+        .join(UserSession, User.user_id == UserSession.user_id)
         .filter(UserSession.token == token)
         .scalar()
     )
