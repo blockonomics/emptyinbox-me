@@ -601,6 +601,7 @@ def auth_me(token):
 
     except Exception as e:
         app.logger.error(f"User info retrieval failed: {e}")
+        db.session.rollback()
         return error_response('Failed to fetch user information', 500)
 
 @auth_bp.route('/logout', methods=['POST'])
