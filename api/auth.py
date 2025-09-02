@@ -474,7 +474,6 @@ def passkey_authenticate_complete():
         client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
         client_data = json.loads(client_data_json.decode())
         challenge_b64 = client_data['challenge']
-        challenge = base64url_decode(challenge_b64)
 
         with app.app_context():
             # Find user by credential
@@ -493,9 +492,9 @@ def passkey_authenticate_complete():
 
             # Find matching usernameless challenge
             stored_challenge = db.session.query(PasskeyChallenge).filter_by(
-                challenge=base64url_encode(challenge),
+                challenge=challenge_b64,
                 operation_type='authentication',
-                username=None  # Only usernameless challenges
+                username=None
             ).filter(PasskeyChallenge.expires_at > datetime.utcnow()).first()
 
             if not stored_challenge:
