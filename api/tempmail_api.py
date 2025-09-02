@@ -108,7 +108,8 @@ def get_messages(token):
 @auth_required
 def get_message(token, msgid):
     '''Returns message content for the given message id'''
-    row = db.session.query(Message.content).join(Inbox, Message.inbox == Inbox.inbox).filter(Inbox.api_key==token).filter(Message.id==msgid).first()
+    api_key = get_api_key_from_token(token)
+    row = db.session.query(Message.content).join(Inbox, Message.inbox == Inbox.inbox).filter(Inbox.api_key==api_key).filter(Message.id==msgid).first()
     if not row:
         return "msgid doesn't exist", 404
         
