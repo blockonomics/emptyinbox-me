@@ -6,7 +6,25 @@ export function renderSettingsCards() {
   const section = document.createElement('section');
   section.classList.add('messages-stats');
 
-  // 🔹 Create Billing Section (your custom markup)
+  // 👤 Username Section
+  const usernameSection = document.createElement('section');
+  usernameSection.classList.add('stat-card');
+
+  const usernameHeader = document.createElement('h3');
+  usernameHeader.textContent = 'Username';
+  usernameHeader.classList.add('username-header');
+
+  const usernameValue = document.createElement('div');
+  usernameValue.id = 'username-display';
+  usernameValue.classList.add('quota-display'); // reuse same style as API key value
+
+  usernameSection.appendChild(usernameHeader);
+  usernameSection.appendChild(usernameValue);
+
+  // 💳 API Key Section
+  const apiKeyCard = createApiKeyCard();
+
+  // 🧾 Billing Section
   const billingSection = document.createElement('section');
   billingSection.classList.add('stat-card');
 
@@ -21,9 +39,10 @@ export function renderSettingsCards() {
   billingSection.appendChild(billingHeader);
   billingSection.appendChild(billingContainer);
 
-  // 🔹 Append other cards if needed
-  section.appendChild(createApiKeyCard());
-  section.appendChild(billingSection); // 👈 Your billing section goes here
+  // Append in order: Username → API Key → Billing
+  section.appendChild(usernameSection);
+  section.appendChild(apiKeyCard);
+  section.appendChild(billingSection);
 
   return section;
 }

@@ -15,12 +15,6 @@ export async function renderSettingsPage() {
   const container = document.createElement("div");
   container.classList.add("messages-page");
 
-  const usernameBox = document.createElement("div");
-  usernameBox.id = "username-box";
-  usernameBox.classList.add("username-box");
-  usernameBox.textContent = "Loading username..."; // placeholder
-  container.appendChild(usernameBox);
-
   const section = document.createElement("section");
   section.classList.add("messages");
   section.appendChild(renderSettingsCards());

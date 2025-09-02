@@ -1,20 +1,19 @@
 import { QUOTA_PER_USDT } from "../../../utils/constants.js";
 
 export function updateUserDisplay(userData) {
-  // 🔗 Header elements
+  const usernameDisplay = document.getElementById("username-display");
   const apiKeyDisplay = document.getElementById("api-key-display");
   const billingContainer = document.getElementById("billing-transactions");
-  const usernameBox = document.getElementById("username-box");
 
   // 👤 Username
-  if (usernameBox) {
-    usernameBox.textContent = `Username: ${userData.username || "Unknown"}`;
+  if (usernameDisplay) {
+    usernameDisplay.textContent = userData.username || "Unknown";
   }
 
   // 🔑 API key
   apiKeyDisplay.textContent = userData.api_key || "Unavailable";
 
-  // 🧾 Billing transactions only
+  // 🧾 Billing transactions
   billingContainer.innerHTML = "";
   if (userData.payments && userData.payments.length > 0) {
     userData.payments.forEach((payment) => {
