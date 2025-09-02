@@ -333,7 +333,7 @@ def passkey_register_begin():
             'timeout': 60000,
             'attestation': 'none',
             'authenticatorSelection': {
-                'authenticatorAttachment': 'platform',
+                # REMOVED: authenticatorAttachment to allow system choice
                 'residentKey': 'required',
                 'userVerification': 'required'
             }
