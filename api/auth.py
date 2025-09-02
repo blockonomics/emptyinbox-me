@@ -108,8 +108,48 @@ def get_rp_id_from_domain(domain: str) -> str:
         domain = domain.split(':', 1)[0]
     return domain
 
+def extract_public_key_from_auth_data(auth_data: bytes) -> str:
+    """Extract the public key from authenticator data."""
+    try:
+        # AuthData structure:
+        # rpIdHash (32) + flags (1) + signCount (4) + attestedCredentialData (variable)
+        if len(auth_data) < 37:
+            raise ValueError("Auth data too short")
+        
+        flags = auth_data[32]
+        attested_credential_data_included = bool(flags & 0x40)
+        
+        if not attested_credential_data_included:
+            raise ValueError("No attested credential data")
+        
+        # Skip to attested credential data (after rpIdHash + flags + signCount)
+        offset = 37
+        
+        # AAGUID (16 bytes)
+        aaguid = auth_data[offset:offset+16]
+        offset += 16
+        
+        # Credential ID length (2 bytes, big endian)
+        cred_id_len = int.from_bytes(auth_data[offset:offset+2], 'big')
+        offset += 2
+        
+        # Credential ID
+        credential_id = auth_data[offset:offset+cred_id_len]
+        offset += cred_id_len
+        
+        # Public key (CBOR encoded)
+        public_key_cbor = auth_data[offset:]
+        public_key = cbor2.loads(public_key_cbor)
+        
+        # Return base64 encoded public key for storage
+        return base64url_encode(cbor2.dumps(public_key))
+        
+    except Exception as e:
+        app.logger.error(f"Failed to extract public key: {e}")
+        return None
+
 def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tuple[bool, dict]:
-    """Verify passkey registration data with improved validation."""
+    """Verify passkey registration data with proper public key extraction."""
     try:
         # Decode the response data
         attestation_object = base64url_decode(credential_data['response']['attestationObject'])
@@ -137,25 +177,24 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
             app.logger.error(f"Wrong ceremony type: expected 'webauthn.create', got {client_data.get('type')}")
             return False, {}
         
-        # Parse attestation object
+        # Parse attestation object and extract public key
         try:
             attestation = cbor2.loads(attestation_object)
             auth_data = attestation['authData']
             
+            # Extract the actual public key
+            public_key = extract_public_key_from_auth_data(auth_data)
+            
             return True, {
                 'credential_id': credential_data['id'],
+                'public_key': public_key,
                 'attestation_object': attestation_object,
                 'client_data': client_data,
                 'auth_data': auth_data
             }
         except Exception as e:
             app.logger.error(f"Failed to parse attestation object: {e}")
-            # For demo purposes, still return success if basic validation passes
-            return True, {
-                'credential_id': credential_data['id'],
-                'attestation_object': attestation_object,
-                'client_data': client_data
-            }
+            return False, {}
         
     except Exception as e:
         app.logger.error(f"Passkey registration verification failed: {e}")
@@ -275,7 +314,7 @@ def passkey_register_begin():
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Return WebAuthn registration options - OPTIMIZED FOR ANDROID/GPM
+        # Return WebAuthn registration options
         registration_options = {
             'challenge': base64url_encode(challenge),
             'rp': {
@@ -291,15 +330,13 @@ def passkey_register_begin():
                 {'type': 'public-key', 'alg': -7},   # ES256
                 {'type': 'public-key', 'alg': -257}  # RS256
             ],
-            'timeout': 300000,
+            'timeout': 60000,
             'attestation': 'none',
             'authenticatorSelection': {
-                # REMOVED: authenticatorAttachment to allow cross-platform (GPM)
-                'residentKey': 'required',     # Required for usernameless auth
-                'requireResidentKey': True,    # Explicit true for discoverable credentials
-                'userVerification': 'preferred'
-            },
-            'excludeCredentials': []
+                'authenticatorAttachment': 'platform',
+                'residentKey': 'required',
+                'userVerification': 'required'
+            }
         }
         
         return jsonify(registration_options), 200
@@ -357,11 +394,15 @@ def passkey_register_complete():
                 db.session.add(user)
                 db.session.flush()  # ensure user_id is available
             
-            # Store passkey credential
+            # Store passkey credential with actual public key
+            public_key = parsed_data.get('public_key')
+            if not public_key:
+                return error_response('Failed to extract public key from registration')
+            
             passkey_cred = PasskeyCredential(
                 credential_id=credential_id,
                 user_id=user.user_id,
-                public_key='placeholder',  # Store actual public key in production
+                public_key=public_key,  # Store actual extracted public key
                 device_type='platform',
                 last_used=datetime.utcnow()
             )
@@ -401,7 +442,7 @@ def passkey_register_complete():
 
 @auth_bp.route('/passkey/authenticate/begin', methods=['POST'])
 def passkey_authenticate_begin():
-    """Start usernameless passkey authentication - optimized for Android/GPM."""
+    """Start usernameless passkey authentication process."""
     try:
         cleanup_expired_auth_records()
         
@@ -413,24 +454,34 @@ def passkey_authenticate_begin():
             # Store usernameless challenge
             passkey_challenge = PasskeyChallenge(
                 challenge_id=challenge_id,
-                username=None,  # Always None for usernameless flow
+                username=None,  # Always None for sign-in flow
                 challenge=base64url_encode(challenge),
                 operation_type='authentication'
             )
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Optimized for Android - let GPM handle the credential selection
+        # Return WebAuthn authentication options
+        # Empty allowCredentials allows any registered passkey
         auth_options = {
             'challenge': base64url_encode(challenge),
-            'timeout': 300000,
-            'rpId': get_rp_id_from_domain(DOMAIN),
-            'userVerification': 'preferred',
-            # No allowCredentials - this is key for discoverable credentials
-            # and allows GPM to present available options to the user
+            'timeout': 60000,
+            'userVerification': 'required',
         }
+        challenge_record = PasskeyChallenge.query.filter_by(challenge_id=challenge_id).first()
+
+        if challenge_record and challenge_record.credential_id:
+            auth_options['allowCredentials'] = [
+                {
+                    'type': 'public-key',
+                    'id': base64url_encode(challenge_record.credential_id),
+                    'transports': ['internal']
+                }
+            ]
+        else:
+            auth_options['allowCredentials'] = []  # fallback to discoverable credentials
         
-        app.logger.info("Usernameless passkey authentication begun (Android optimized)")
+        app.logger.info("Usernameless passkey authentication begun")
         return jsonify(auth_options), 200
         
     except Exception as e:
@@ -467,10 +518,11 @@ def passkey_authenticate_complete():
             if not user:
                 return error_response('User not found for credential')
 
-            # Find matching challenge (either username-based or usernameless)
+            # Find matching usernameless challenge
             stored_challenge = db.session.query(PasskeyChallenge).filter_by(
                 challenge=base64url_encode(challenge),
-                operation_type='authentication'
+                operation_type='authentication',
+                username=None  # Only usernameless challenges
             ).filter(PasskeyChallenge.expires_at > datetime.utcnow()).first()
 
             if not stored_challenge:
