@@ -329,6 +329,11 @@
       function checkPlatformSpecificFeatures() {
         const platform = detectPlatform();
 
+        // Log additional system information
+        log(`Current domain: ${window.location.hostname}`);
+        log(`Protocol: ${window.location.protocol}`);
+        log(`Full URL: ${window.location.href}`);
+
         if (platform === "Windows") {
           log("Windows detected - checking for Windows Hello support...");
           // Windows Hello is typically available when WebAuthn is supported
@@ -347,6 +352,11 @@
         } else if (platform === "macOS") {
           log("macOS detected - checking for Touch ID/Face ID support...");
           // Touch ID/Face ID is typically available when WebAuthn is supported
+        } else if (platform === "Linux") {
+          log(
+            "Linux detected - checking for platform authenticator support..."
+          );
+          // Linux may have limited platform authenticator support
         }
       }
 
