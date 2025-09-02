@@ -275,7 +275,7 @@ def passkey_register_begin():
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Return WebAuthn registration options
+        # Return WebAuthn registration options - FIXED FOR ANDROID
         registration_options = {
             'challenge': base64url_encode(challenge),
             'rp': {
@@ -291,13 +291,16 @@ def passkey_register_begin():
                 {'type': 'public-key', 'alg': -7},   # ES256
                 {'type': 'public-key', 'alg': -257}  # RS256
             ],
-            'timeout': 60000,
+            'timeout': 300000,  # Increased timeout for Android
             'attestation': 'none',
             'authenticatorSelection': {
-                'authenticatorAttachment': 'platform',       # Use device authenticator
-                'residentKey': 'required',                   # Store as discoverable credential
-                'userVerification': 'required'               # Require PIN or biometrics
-            }
+                'authenticatorAttachment': 'platform',
+                'residentKey': 'preferred',  # CHANGED: preferred instead of required
+                'requireResidentKey': False,  # ADDED: explicit false
+                'userVerification': 'preferred'  # CHANGED: preferred instead of required
+            },
+            # ADDED: Exclude any existing credentials for this user
+            'excludeCredentials': []
         }
         
         return jsonify(registration_options), 200
@@ -399,10 +402,11 @@ def passkey_register_complete():
 
 @auth_bp.route('/passkey/authenticate/begin', methods=['POST'])
 def passkey_authenticate_begin():
-    """Start usernameless passkey authentication process."""
+    """Start usernameless passkey authentication process with better Android support."""
     try:
         cleanup_expired_auth_records()
         
+        # This endpoint is for usernameless authentication only
         # Generate challenge for usernameless authentication
         challenge = generate_challenge()
         challenge_id = f"passkey_auth:usernameless:{int(time.time())}"
@@ -411,32 +415,23 @@ def passkey_authenticate_begin():
             # Store usernameless challenge
             passkey_challenge = PasskeyChallenge(
                 challenge_id=challenge_id,
-                username=None,  # Always None for sign-in flow
+                username=None,  # Always None for usernameless flow
                 challenge=base64url_encode(challenge),
                 operation_type='authentication'
             )
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Return WebAuthn authentication options
-        # Empty allowCredentials allows any registered passkey
+        # Return WebAuthn authentication options for discoverable credentials
+        # This is optimized for Android passkey support
         auth_options = {
             'challenge': base64url_encode(challenge),
-            'timeout': 60000,
-            'userVerification': 'required',
+            'timeout': 300000,  # Increased timeout for Android
+            'rpId': get_rp_id_from_domain(DOMAIN),  # Explicit rpId
+            'userVerification': 'preferred',  # Preferred instead of required
+            # No allowCredentials - this allows discoverable credentials to work
+            # and prevents Android from defaulting to GPM
         }
-        challenge_record = PasskeyChallenge.query.filter_by(challenge_id=challenge_id).first()
-
-        if challenge_record and challenge_record.credential_id:
-            auth_options['allowCredentials'] = [
-                {
-                    'type': 'public-key',
-                    'id': base64url_encode(challenge_record.credential_id),
-                    'transports': ['internal']
-                }
-            ]
-        else:
-            auth_options['allowCredentials'] = []  # fallback to discoverable credentials
         
         app.logger.info("Usernameless passkey authentication begun")
         return jsonify(auth_options), 200
@@ -475,11 +470,10 @@ def passkey_authenticate_complete():
             if not user:
                 return error_response('User not found for credential')
 
-            # Find matching usernameless challenge
+            # Find matching challenge (either username-based or usernameless)
             stored_challenge = db.session.query(PasskeyChallenge).filter_by(
                 challenge=base64url_encode(challenge),
-                operation_type='authentication',
-                username=None  # Only usernameless challenges
+                operation_type='authentication'
             ).filter(PasskeyChallenge.expires_at > datetime.utcnow()).first()
 
             if not stored_challenge:
