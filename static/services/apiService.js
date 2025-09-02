@@ -47,7 +47,7 @@ export async function fetchInboxes() {
 // 📤 Create inbox
 export async function createInbox() {
   const response = await fetch(`${API_BASE_URL}/api/inbox`, {
-    method: "GET",
+    method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
   });

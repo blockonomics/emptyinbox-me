@@ -125,7 +125,7 @@ def is_quota_available(api_key):
         return True
     return False
 
-@app.route(f'{url_prefix}/inbox', methods=['GET']) 
+@app.route(f'{url_prefix}/inbox', methods=['POST']) 
 @auth_required
 def create_mailbox(token):
     '''Creates new inbox'''
