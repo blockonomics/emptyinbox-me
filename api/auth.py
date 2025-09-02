@@ -294,9 +294,9 @@ def passkey_register_begin():
             'timeout': 60000,
             'attestation': 'none',
             'authenticatorSelection': {
-                'authenticatorAttachment': 'cross-platform',
-                'requireResidentKey': False,
-                'userVerification': 'required'
+                'authenticatorAttachment': 'platform',       # Use device authenticator
+                'residentKey': 'required',                   # Store as discoverable credential
+                'userVerification': 'required'               # Require PIN or biometrics
             }
         }
         
@@ -423,9 +423,20 @@ def passkey_authenticate_begin():
         auth_options = {
             'challenge': base64url_encode(challenge),
             'timeout': 60000,
-            'userVerification': 'preferred',
-            'allowCredentials': []  # Empty = any passkey can authenticate
+            'userVerification': 'required',
         }
+        challenge_record = PasskeyChallenge.query.filter_by(challenge_id=challenge_id).first()
+
+        if challenge_record and challenge_record.credential_id:
+            auth_options['allowCredentials'] = [
+                {
+                    'type': 'public-key',
+                    'id': base64url_encode(challenge_record.credential_id),
+                    'transports': ['internal']
+                }
+            ]
+        else:
+            auth_options['allowCredentials'] = []  # fallback to discoverable credentials
         
         app.logger.info("Usernameless passkey authentication begun")
         return jsonify(auth_options), 200
