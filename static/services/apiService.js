@@ -81,10 +81,7 @@ export async function getRegistrationOptions(username) {
 
 export async function registerCredential(username) {
   try {
-    console.log("Starting passkey registration for:", username);
-
     const options = await getRegistrationOptions(username);
-    console.log("Registration options received:", options);
 
     const publicKey = {
       ...options,
@@ -95,9 +92,6 @@ export async function registerCredential(username) {
       },
     };
 
-    console.log("Creating credential with options:", publicKey);
-
-    // Use standard timeout without AbortSignal for better compatibility
     const credential = await navigator.credentials.create({
       publicKey
     });
@@ -105,8 +99,6 @@ export async function registerCredential(username) {
     if (!credential) {
       throw new Error("No credential returned from authenticator");
     }
-
-    console.log("Credential created successfully:", credential);
 
     const credentialData = {
       id: credential.id,
@@ -119,49 +111,31 @@ export async function registerCredential(username) {
       username,
     };
 
-    console.log("Sending credential data to server");
-
-    const response = await fetch(
-      `${API_BASE_URL}/api/auth/passkey/register/complete`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentialData),
-        credentials: "include",
-      }
-    );
+    // const response = await fetch(
+    //   `${API_BASE_URL}/api/auth/passkey/register/complete`,
+    //   {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify(credentialData),
+    //     credentials: "include",
+    //   }
+    // );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Registration failed:", errorText);
-      throw new Error(`Failed to register credential: ${errorText}`);
+      throw new Error(`Registration failed: ${errorText}`);
     }
 
-    const result = await response.json();
-    console.log("Registration completed successfully:", result);
-    return result;
+    return await response.json();
+    
   } catch (error) {
-    console.error("Registration error:", error);
-
-    // Provide more specific error messages for common issues
+    // Simplified error handling
     if (error.name === "NotAllowedError") {
-      throw new Error(
-        "Registration was cancelled or failed. Please try again."
-      );
+      throw new Error("Registration was cancelled. Please try again.");
     } else if (error.name === "InvalidStateError") {
-      throw new Error(
-        "A passkey already exists for this account. Please sign in instead."
-      );
+      throw new Error("A passkey already exists for this account.");
     } else if (error.name === "NotSupportedError") {
-      throw new Error(
-        "Your device doesn't support passkeys. Please use a modern device with biometric authentication."
-      );
-    } else if (error.name === "SecurityError") {
-      throw new Error(
-        "Security error occurred. Please ensure you're using HTTPS and the correct domain."
-      );
-    } else if (error.name === "AbortError") {
-      throw new Error("Registration timed out. Please try again.");
+      throw new Error("Passkeys are not supported on this device.");
     } else {
       throw new Error(`Registration failed: ${error.message}`);
     }
