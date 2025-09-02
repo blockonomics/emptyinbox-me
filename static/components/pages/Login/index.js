@@ -188,60 +188,9 @@ async function initializeLogin() {
       updateButtonState(signInBtn, true, "Authenticating...");
       showLoading(true);
       hideError();
-
-      console.log("Starting usernameless authentication");
-
-      // Get authentication options from backend (no username needed for resident key)
-      const authOptions = await getAuthenticationOptions();
-
-      console.log("Creating WebAuthn authentication request");
-
-      // Create WebAuthn request with improved options
-      const credential = await navigator.credentials.get({
-        publicKey: {
-          challenge: base64urlToBuffer(authOptions.challenge),
-          allowCredentials:
-            authOptions.allowCredentials?.length > 0
-              ? authOptions.allowCredentials.map((cred) => ({
-                  id: base64urlToBuffer(cred.id),
-                  type: cred.type,
-                }))
-              : [], // Empty array allows any registered passkey
-          userVerification: "preferred",
-          timeout: 120000, // 2 minute timeout
-          rpId: authOptions.rpId, // Explicitly set RP ID
-        },
-        signal: AbortSignal.timeout(120000), // 2 minute timeout
-        mediation: "conditional", // Better for Android GPM
-      });
-
-      if (!credential) {
-        throw new Error("No credential returned");
-      }
-
-      console.log("Credential retrieved:", credential);
-
-      // Verify authentication with backend
-      const credentialData = {
-        id: credential.id,
-        rawId: bufferToBase64url(credential.rawId),
-        response: {
-          authenticatorData: bufferToBase64url(
-            credential.response.authenticatorData
-          ),
-          clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
-          signature: bufferToBase64url(credential.response.signature),
-          userHandle: credential.response.userHandle
-            ? bufferToBase64url(credential.response.userHandle)
-            : null,
-        },
-        type: credential.type,
-      };
-
-      console.log("Sending credential data for verification");
-
+      
       // For sign-in, the backend should derive username from the credential
-      const authResult = await verifyAuthentication(credentialData);
+      const authResult = await verifyAuthentication();
 
       if (authResult.success) {
         console.log("Logged in successfully");
