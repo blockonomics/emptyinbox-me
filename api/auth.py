@@ -473,7 +473,10 @@ def passkey_authenticate_complete():
         # Get the challenge from client data
         client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
         client_data = json.loads(client_data_json.decode())
-        challenge_b64 = client_data['challenge']
+        challenge_b64 = client_data['challenge']  # This is already base64url encoded
+        challenge = base64url_decode(challenge_b64)  # Convert to bytes for signature verification
+
+        app.logger.info(f"Challenge from client: {challenge_b64}")
 
         with app.app_context():
             # Find user by credential
@@ -490,18 +493,30 @@ def passkey_authenticate_complete():
                 app.logger.error(f"User not found for credential: {credential_id}")
                 return error_response('User not found for credential')
 
-            # Find matching usernameless challenge
+            # Find matching usernameless challenge using the base64url string
             stored_challenge = db.session.query(PasskeyChallenge).filter_by(
-                challenge=challenge_b64,
+                challenge=challenge_b64,  # Use the base64url string directly
                 operation_type='authentication',
-                username=None
+                username=None  # Only usernameless challenges
             ).filter(PasskeyChallenge.expires_at > datetime.utcnow()).first()
+
+            app.logger.info(f"Looking for stored challenge: {challenge_b64}")
+            if stored_challenge:
+                app.logger.info(f"Found stored challenge: {stored_challenge.challenge}")
+            else:
+                app.logger.info("No matching stored challenge found")
+                # Debug: show all available challenges
+                all_challenges = db.session.query(PasskeyChallenge).filter_by(
+                    operation_type='authentication',
+                    username=None
+                ).all()
+                app.logger.info(f"All auth challenges: {[c.challenge for c in all_challenges]}")
 
             if not stored_challenge:
                 app.logger.error("Challenge expired or not found")
                 return error_response('Challenge expired or not found')
 
-            # Verify signature
+            # Verify signature (use challenge bytes here)
             is_valid, parsed_data = verify_passkey_signature(credential_data, challenge)
             if not is_valid:
                 app.logger.error("Invalid passkey authentication")
