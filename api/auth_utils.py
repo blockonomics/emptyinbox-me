@@ -11,6 +11,17 @@ def auth_required(f):
             app.logger.debug(f"Cookies: {request.cookies}")
             token = request.cookies.get("session_token")
             if not token:
+                # Check Authorization header (Bearer token)
+                auth_header = request.headers.get("Authorization", "")
+                if auth_header.startswith("Bearer "):
+                    token = auth_header[7:]  # Remove "Bearer " prefix
+                elif auth_header:
+                    token = auth_header  # Direct token without Bearer prefix
+            
+            app.logger.info(f"Token found: {token is not None}")
+            
+            if not token:
+                app.logger.error("No session token found in cookies or Authorization header")
                 abort(401)
 
             # Look up the session in UserSession
