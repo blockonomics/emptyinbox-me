@@ -209,7 +209,6 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
         app.logger.error(f"Passkey registration verification failed: {e}")
         return False, {}
 
-# 4. Enhanced error handling in verify_passkey_signature():
 def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[bool, dict]:
     """Verify passkey authentication signature with enhanced error handling."""
     try:
@@ -473,10 +472,10 @@ def passkey_authenticate_complete():
         # Get the challenge from client data
         client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
         client_data = json.loads(client_data_json.decode())
-        challenge_b64 = client_data['challenge']  # This is already base64url encoded
-        challenge = base64url_decode(challenge_b64)  # Convert to bytes for signature verification
+        challenge_b64 = client_data['challenge']
+        challenge = base64url_decode(challenge_b64)
 
-        app.logger.info(f"Challenge from client: {challenge_b64}")
+        session_token = None
 
         with app.app_context():
             # Find user by credential
@@ -493,30 +492,18 @@ def passkey_authenticate_complete():
                 app.logger.error(f"User not found for credential: {credential_id}")
                 return error_response('User not found for credential')
 
-            # Find matching usernameless challenge using the base64url string
+            # Find matching usernameless challenge
             stored_challenge = db.session.query(PasskeyChallenge).filter_by(
-                challenge=challenge_b64,  # Use the base64url string directly
+                challenge=challenge_b64,
                 operation_type='authentication',
-                username=None  # Only usernameless challenges
+                username=None
             ).filter(PasskeyChallenge.expires_at > datetime.utcnow()).first()
-
-            app.logger.info(f"Looking for stored challenge: {challenge_b64}")
-            if stored_challenge:
-                app.logger.info(f"Found stored challenge: {stored_challenge.challenge}")
-            else:
-                app.logger.info("No matching stored challenge found")
-                # Debug: show all available challenges
-                all_challenges = db.session.query(PasskeyChallenge).filter_by(
-                    operation_type='authentication',
-                    username=None
-                ).all()
-                app.logger.info(f"All auth challenges: {[c.challenge for c in all_challenges]}")
 
             if not stored_challenge:
                 app.logger.error("Challenge expired or not found")
                 return error_response('Challenge expired or not found')
 
-            # Verify signature (use challenge bytes here)
+            # Verify signature
             is_valid, parsed_data = verify_passkey_signature(credential_data, challenge)
             if not is_valid:
                 app.logger.error("Invalid passkey authentication")
@@ -536,17 +523,18 @@ def passkey_authenticate_complete():
             session_obj = UserSession(session_token, user.user_id, int(time.time()))
             db.session.add(session_obj)
             db.session.commit()
-        
-        app.logger.info(f"Authentication successful for user: {user.username}")
+            
+            # Log success INSIDE the session context
+            app.logger.info(f"Authentication successful for user: {user.username}")
         
         resp = make_response(jsonify({"success": True, "message": "Login successful"}))
         resp.set_cookie(
             "session_token",
             session_token,
             httponly=True,
-            secure=not IS_DEV,  # False in dev so it works over HTTP
+            secure=not IS_DEV,
             samesite="None" if not IS_DEV else "Lax",
-            max_age=60*60*24*7,  # 1 week
+            max_age=60*60*24*7,
             path="/"
         )
 
@@ -554,7 +542,10 @@ def passkey_authenticate_complete():
 
     except Exception as e:
         app.logger.error(f"Passkey authentication complete failed: {e}")
-        db.session.rollback()
+        try:
+            db.session.rollback()
+        except:
+            pass
         return error_response('Failed to complete passkey authentication', 500)
 
 @auth_bp.route('/me', methods=['GET'])
