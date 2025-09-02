@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Passkey Debug - EmptyInbox</title>
+    <title>Passkey Debug - EmptyBox</title>
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -141,6 +141,14 @@
             <div class="info-label">Conditional Mediation</div>
             <div class="info-value" id="conditionalMediation">Checking...</div>
           </div>
+          <div class="info-item">
+            <div class="info-label">Current Domain</div>
+            <div class="info-value" id="currentDomain">-</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">HTTPS Status</div>
+            <div class="info-value" id="httpsStatus">-</div>
+          </div>
         </div>
       </div>
 
@@ -156,6 +164,9 @@
         </button>
         <button class="test-button" onclick="testConditionalMediation()">
           Test Conditional Mediation
+        </button>
+        <button class="test-button" onclick="testCredentialCreation()">
+          Test Credential Creation
         </button>
         <button class="test-button" onclick="clearLog()">Clear Log</button>
       </div>
@@ -173,6 +184,7 @@
       document.addEventListener("DOMContentLoaded", function () {
         detectPlatform();
         checkWebAuthnSupport();
+        checkDomainAndProtocol();
         log("Debug page loaded");
       });
 
@@ -197,6 +209,23 @@
 
         log(`Platform detected: ${platform}`);
         return platform;
+      }
+
+      function checkDomainAndProtocol() {
+        const domain = window.location.hostname;
+        const protocol = window.location.protocol;
+        const isHttps = protocol === 'https:';
+        
+        document.getElementById("currentDomain").textContent = domain;
+        document.getElementById("httpsStatus").textContent = isHttps ? "✅ HTTPS" : "❌ HTTP";
+        
+        log(`Current domain: ${domain}`);
+        log(`Protocol: ${protocol}`);
+        log(`HTTPS enabled: ${isHttps}`);
+        
+        if (!isHttps && domain !== 'localhost' && !domain.startsWith('127.')) {
+          log("⚠️ WebAuthn requires HTTPS in production environments");
+        }
       }
 
       function checkWebAuthnSupport() {
@@ -235,6 +264,25 @@
         }
       }
 
+      function getRpId() {
+        const hostname = window.location.hostname;
+        
+        // Handle localhost and IP addresses
+        if (hostname === 'localhost' || hostname.startsWith('127.') || hostname.startsWith('192.168.')) {
+          return hostname;
+        }
+        
+        // For emptybox.me and subdomains, use the appropriate RP ID
+        if (hostname.endsWith('.emptybox.me')) {
+          return 'emptybox.me'; // Parent domain for subdomains
+        } else if (hostname === 'emptybox.me') {
+          return 'emptybox.me'; // Exact match
+        }
+        
+        // Default to current hostname
+        return hostname;
+      }
+
       async function testPasskeySupport() {
         log("Testing passkey support...");
 
@@ -246,43 +294,15 @@
 
           log("✅ PublicKeyCredential available");
 
-          // Test if we can create a credential (this will fail but shows the API is working)
-          const challenge = new Uint8Array(32);
-          crypto.getRandomValues(challenge);
-
-          const options = {
-            challenge: challenge,
-            rp: {
-              name: "Test RP",
-              id: "localhost",
-            },
-            user: {
-              id: new Uint8Array(16),
-              name: "test@example.com",
-              displayName: "Test User",
-            },
-            pubKeyCredParams: [{ type: "public-key", alg: -7 }],
-            timeout: 60000,
-            attestation: "none",
-          };
-
-          log("Attempting to create test credential...");
-
+          // Check if platform authenticator is available
           try {
-            await navigator.credentials.create({ publicKey: options });
+            const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            log(`Platform authenticator available: ${available}`);
           } catch (error) {
-            if (error.name === "NotSupportedError") {
-              log(
-                "✅ WebAuthn API working - NotSupportedError expected (no authenticator)"
-              );
-            } else if (error.name === "NotAllowedError") {
-              log(
-                "✅ WebAuthn API working - NotAllowedError expected (user cancelled)"
-              );
-            } else {
-              log(`✅ WebAuthn API working - ${error.name}: ${error.message}`);
-            }
+            log(`Could not check platform authenticator: ${error.message}`);
           }
+
+          log("✅ Basic passkey support test completed");
         } catch (error) {
           log(`❌ Error testing passkey support: ${error.message}`);
         }
@@ -313,6 +333,77 @@
         }
       }
 
+      async function testCredentialCreation() {
+        log("Testing credential creation...");
+
+        try {
+          if (!window.PublicKeyCredential) {
+            log("❌ PublicKeyCredential not available");
+            return;
+          }
+
+          const rpId = getRpId();
+          log(`Using RP ID: ${rpId}`);
+
+          // Generate random challenge
+          const challenge = new Uint8Array(32);
+          crypto.getRandomValues(challenge);
+
+          // Generate random user ID
+          const userId = new Uint8Array(16);
+          crypto.getRandomValues(userId);
+
+          const options = {
+            challenge: challenge,
+            rp: {
+              name: "EmptyBox Passkey Test",
+              id: rpId,
+            },
+            user: {
+              id: userId,
+              name: "test@emptybox.me",
+              displayName: "Test User",
+            },
+            pubKeyCredParams: [
+              { type: "public-key", alg: -7 }, // ES256
+              { type: "public-key", alg: -257 }, // RS256
+            ],
+            timeout: 60000,
+            attestation: "none",
+            authenticatorSelection: {
+              authenticatorAttachment: "platform",
+              userVerification: "preferred",
+              residentKey: "preferred"
+            }
+          };
+
+          log("Attempting to create test credential...");
+          log("Note: This will prompt for authentication if successful");
+
+          try {
+            const credential = await navigator.credentials.create({ publicKey: options });
+            log("✅ Credential created successfully!");
+            log(`Credential ID length: ${credential.id.length}`);
+            log(`Credential type: ${credential.type}`);
+          } catch (error) {
+            if (error.name === "NotSupportedError") {
+              log("❌ Not supported - No compatible authenticator found");
+            } else if (error.name === "NotAllowedError") {
+              log("⚠️ Not allowed - User cancelled or timeout");
+            } else if (error.name === "SecurityError") {
+              log(`❌ Security error: ${error.message}`);
+              log("This usually indicates a domain configuration issue");
+            } else if (error.name === "InvalidStateError") {
+              log("⚠️ Invalid state - Credential may already exist");
+            } else {
+              log(`⚠️ ${error.name}: ${error.message}`);
+            }
+          }
+        } catch (error) {
+          log(`❌ Error in credential creation test: ${error.message}`);
+        }
+      }
+
       function log(message) {
         const logDiv = document.getElementById("debugLog");
         const timestamp = new Date().toLocaleTimeString();
@@ -328,35 +419,32 @@
       // Additional platform-specific checks
       function checkPlatformSpecificFeatures() {
         const platform = detectPlatform();
+        const domain = window.location.hostname;
 
-        // Log additional system information
-        log(`Current domain: ${window.location.hostname}`);
-        log(`Protocol: ${window.location.protocol}`);
+        log(`Running on domain: ${domain}`);
         log(`Full URL: ${window.location.href}`);
 
         if (platform === "Windows") {
-          log("Windows detected - checking for Windows Hello support...");
-          // Windows Hello is typically available when WebAuthn is supported
+          log("Windows detected - Windows Hello should be available if configured");
         } else if (platform === "Android") {
-          log(
-            "Android detected - checking for Google Password Manager integration..."
-          );
+          log("Android detected - Google Password Manager integration available");
           if (window.PublicKeyCredential?.isConditionalMediationAvailable) {
-            log("Conditional mediation available - GPM should work");
-          } else {
-            log("Conditional mediation not available - GPM may not work");
+            log("Conditional mediation supported - GPM autofill should work");
           }
         } else if (platform === "iOS") {
-          log("iOS detected - checking for iCloud Keychain support...");
-          // iCloud Keychain is typically available when WebAuthn is supported
+          log("iOS detected - iCloud Keychain passkeys should be available");
         } else if (platform === "macOS") {
-          log("macOS detected - checking for Touch ID/Face ID support...");
-          // Touch ID/Face ID is typically available when WebAuthn is supported
+          log("macOS detected - Touch ID/Face ID should be available if configured");
         } else if (platform === "Linux") {
-          log(
-            "Linux detected - checking for platform authenticator support..."
-          );
-          // Linux may have limited platform authenticator support
+          log("Linux detected - Platform authenticator support may be limited");
+          log("Consider using external security keys or browser password managers");
+        }
+
+        // Check if we're on the correct domain
+        if (domain === 'emptybox.me' || domain.endsWith('.emptybox.me')) {
+          log("✅ Running on emptybox.me domain - RP ID should work correctly");
+        } else {
+          log("⚠️ Not running on emptybox.me - this is a test environment");
         }
       }
 
