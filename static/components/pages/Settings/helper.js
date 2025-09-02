@@ -4,20 +4,22 @@ export function updateUserDisplay(userData) {
   // 🔗 Header elements
   const apiKeyDisplay = document.getElementById("api-key-display");
   const billingContainer = document.getElementById("billing-transactions");
+  const usernameBox = document.getElementById("username-box");
+
+  // 👤 Username
+  if (usernameBox) {
+    usernameBox.textContent = `Username: ${userData.username || "Unknown"}`;
+  }
 
   // 🔑 API key
   apiKeyDisplay.textContent = userData.api_key || "Unavailable";
 
   // 🧾 Billing transactions only
-  billingContainer.innerHTML = ""; // Clear previous entries
-
+  billingContainer.innerHTML = "";
   if (userData.payments && userData.payments.length > 0) {
     userData.payments.forEach((payment) => {
       const date = new Date(payment.created_at);
-      const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString(
-        [],
-        { hour: "2-digit", minute: "2-digit" }
-      )}`;
+      const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
       const quota = payment.amount;
       const usdt = quota / QUOTA_PER_USDT;
       const txhash = payment.txhash;
@@ -25,14 +27,10 @@ export function updateUserDisplay(userData) {
 
       const entry = document.createElement("div");
       entry.className = "billing-text";
-      entry.innerHTML = `${formattedDate}   ${quota} quota for ${usdt} USDT via <a href="${txLink}" target="_blank" rel="noopener noreferrer">${txhash.slice(
-        0,
-        24
-      )}...</a>`;
+      entry.innerHTML = `${formattedDate}   ${quota} quota for ${usdt} USDT via <a href="${txLink}" target="_blank" rel="noopener noreferrer">${txhash.slice(0, 24)}...</a>`;
       billingContainer.appendChild(entry);
     });
   } else {
-    billingContainer.innerHTML =
-      '<div class="billing-text">No transactions found</div>';
+    billingContainer.innerHTML = '<div class="billing-text">No transactions found</div>';
   }
 }

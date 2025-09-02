@@ -10,13 +10,19 @@ export async function renderSettingsPage() {
     window.location.href = ROUTES.LOGIN;
     return;
   }
+
   const main = document.createElement("main");
   const container = document.createElement("div");
   container.classList.add("messages-page");
 
+  const usernameBox = document.createElement("div");
+  usernameBox.id = "username-box";
+  usernameBox.classList.add("username-box");
+  usernameBox.textContent = "Loading username..."; // placeholder
+  container.appendChild(usernameBox);
+
   const section = document.createElement("section");
   section.classList.add("messages");
-
   section.appendChild(renderSettingsCards());
 
   container.appendChild(section);
@@ -25,7 +31,7 @@ export async function renderSettingsPage() {
 
   try {
     const userData = await fetchUserData();
-    updateUserDisplay(userData);
+    updateUserDisplay(userData); // will now also update username
     setupSettingsEventListeners();
   } catch (error) {
     console.error("User fetch failed:", error);
