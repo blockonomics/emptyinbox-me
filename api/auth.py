@@ -552,67 +552,64 @@ def passkey_authenticate_complete():
 @auth_required 
 def auth_me(token):
     try:
-        with app.app_context():
-            session = (
-                db.session.query(UserSession)
-                .filter_by(token=token)
-                .filter(UserSession.expires_at > datetime.utcnow())
-                .first()
-            )
+        session = (
+            db.session.query(UserSession)
+            .filter_by(token=token)
+            .filter(UserSession.expires_at > datetime.utcnow())
+            .first()
+        )
 
-            if not session:
-                return error_response('Invalid or expired authentication token', 401)
+        if not session:
+            return error_response('Invalid or expired authentication token', 401)
 
-            user = db.session.query(User).filter_by(user_id=session.user_id).first()
-            if not user:
-                return error_response('User not found', 404)
+        user = db.session.query(User).filter_by(user_id=session.user_id).first()
+        if not user:
+            return error_response('User not found', 404)
 
-            payments = (
-                db.session.query(PaymentIntent)
-                .filter_by(user_id=user.user_id, status=PaymentStatus.CONFIRMED.value)
-                .order_by(PaymentIntent.created_at.desc())
-                .all()
-            )
+        payments = (
+            db.session.query(PaymentIntent)
+            .filter_by(user_id=user.user_id, status=PaymentStatus.CONFIRMED.value)
+            .order_by(PaymentIntent.created_at.desc())
+            .all()
+        )
 
-            payment_data = [
-                {
-                    'txhash': p.txhash,
-                    'amount': p.amount,
-                    'created_at': p.created_at.isoformat()
-                }
-                for p in payments
-            ]
-
-            # Check if user has passkeys to determine auth method
-            has_passkeys = db.session.query(PasskeyCredential).filter_by(user_id=user.user_id).first() is not None
-            auth_method = 'passkey' if has_passkeys else 'wallet'
-
-            response_data = {
-                'user_id': user.user_id,
-                'username': user.username,  # Include username in response
-                'api_key': user.api_key,
-                'inbox_quota': user.inbox_quota,
-                'login_time': session.login_time,
-                'session_expires_at': session.expires_at.isoformat(),
-                'payments': payment_data,
-                'auth_method': auth_method
+        payment_data = [
+            {
+                'txhash': p.txhash,
+                'amount': p.amount,
+                'created_at': p.created_at.isoformat()
             }
+            for p in payments
+        ]
 
-            return jsonify(response_data), 200
+        # Check if user has passkeys to determine auth method
+        has_passkeys = db.session.query(PasskeyCredential).filter_by(user_id=user.user_id).first() is not None
+        auth_method = 'passkey' if has_passkeys else 'wallet'
+
+        response_data = {
+            'user_id': user.user_id,
+            'username': user.username,  # Include username in response
+            'api_key': user.api_key,
+            'inbox_quota': user.inbox_quota,
+            'login_time': session.login_time,
+            'session_expires_at': session.expires_at.isoformat(),
+            'payments': payment_data,
+            'auth_method': auth_method
+        }
+
+        return jsonify(response_data), 200
 
     except Exception as e:
         app.logger.error(f"User info retrieval failed: {e}")
         return error_response('Failed to fetch user information', 500)
 
 @auth_bp.route('/logout', methods=['POST'])
-@auth_required
 def auth_logout(token):
     try:
-        with app.app_context():
-            session = db.session.query(UserSession).filter_by(token=token).first()
-            if session:
-                db.session.delete(session)
-                db.session.commit()
+        session = db.session.query(UserSession).filter_by(token=token).first()
+        if session:
+            db.session.delete(session)
+            db.session.commit()
 
         resp = make_response(jsonify({'success': True}))
         resp.set_cookie(
