@@ -425,44 +425,38 @@ def passkey_register_complete():
 
 @auth_bp.route('/passkey/authenticate/begin', methods=['POST'])
 def passkey_authenticate_begin():
-    """Start usernameless passkey authentication process."""
     try:
         cleanup_expired_auth_records()
         
-        # Generate challenge for usernameless authentication
         challenge = generate_challenge()
         challenge_id = f"passkey_auth:usernameless:{int(time.time())}"
         
         with app.app_context():
-            # Store usernameless challenge
             passkey_challenge = PasskeyChallenge(
                 challenge_id=challenge_id,
-                username=None,  # Always None for sign-in flow
+                username=None,
                 challenge=base64url_encode(challenge),
                 operation_type='authentication'
             )
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Return WebAuthn authentication options optimized for cross-platform
+        # CORRECTED: Proper WebAuthn authentication options structure
         auth_options = {
             'challenge': base64url_encode(challenge),
-            'timeout': 120000,  # 2 minutes
-            'userVerification': 'preferred',  # More flexible than 'required'
+            'timeout': 60000,  # Try shorter timeout first
             'rpId': get_rp_id_from_domain(DOMAIN),
+            'userVerification': 'preferred',
+            'allowCredentials': []  # Must be present, even if empty
         }
         
-        # For usernameless authentication, don't specify allowCredentials
-        # This allows the authenticator to discover any available passkeys
-        
-        app.logger.info(f"Usernameless passkey authentication begun with RP ID: {get_rp_id_from_domain(DOMAIN)}")
+        app.logger.info(f"Auth options: {auth_options}")  # Debug log
         return jsonify(auth_options), 200
         
     except Exception as e:
         app.logger.error(f"Passkey authentication begin failed: {e}")
         db.session.rollback()
         return error_response('Failed to start passkey authentication', 500)
-
 
 @auth_bp.route('/passkey/authenticate/complete', methods=['POST'])
 def passkey_authenticate_complete():
