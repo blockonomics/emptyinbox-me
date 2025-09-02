@@ -5,6 +5,7 @@ import {
   registerCredential,
   getAuthenticationOptions,
   verifyAuthentication,
+  checkPasskeySupport,
 } from "../../../services/apiService.js";
 
 export function renderLoginPage() {
@@ -60,6 +61,12 @@ export function renderLoginPage() {
           <span>Android Biometric</span>
         </div>
       </div>
+      
+      <div id="debug-info" class="debug-info hidden">
+        <p><strong>Debug Info:</strong></p>
+        <p id="platform-info"></p>
+        <p id="passkey-support"></p>
+      </div>
     </section>
   `;
 
@@ -76,12 +83,38 @@ async function initializeLogin() {
   const signInBtn = document.getElementById("sign-in-btn");
   const loading = document.getElementById("loading");
   const errorMessage = document.getElementById("error-message");
+  const debugInfo = document.getElementById("debug-info");
+  const platformInfo = document.getElementById("platform-info");
+  const passkeySupport = document.getElementById("passkey-support");
 
   let isProcessing = false;
 
+  // Check passkey support and show debug info
+  try {
+    const supportInfo = checkPasskeySupport();
+    platformInfo.textContent = `Platform: ${supportInfo.platform}`;
+    passkeySupport.textContent = `Passkey Support: ${
+      supportInfo.isSupported ? "Yes" : "No"
+    } | Conditional Mediation: ${
+      supportInfo.isConditionalMediationSupported ? "Yes" : "No"
+    }`;
+
+    // Show debug info in development or when there are issues
+    if (
+      !supportInfo.isSupported ||
+      !supportInfo.isConditionalMediationSupported
+    ) {
+      debugInfo.classList.remove("hidden");
+    }
+  } catch (error) {
+    console.error("Error checking passkey support:", error);
+  }
+
   // Check if WebAuthn is supported
   if (!window.PublicKeyCredential) {
-    showError("Passkeys are not supported in this browser. Please use a modern browser like Chrome, Safari, or Firefox.");
+    showError(
+      "Passkeys are not supported in this browser. Please use a modern browser like Chrome, Safari, or Firefox."
+    );
     continueBtn.disabled = true;
     signInBtn.disabled = true;
     return;
@@ -105,76 +138,41 @@ async function initializeLogin() {
 
     try {
       isProcessing = true;
-      updateButtonState(continueBtn, true, "Creating Account...");
+      updateButtonState(continueBtn, true, "Checking username...");
       showLoading(true);
       hideError();
 
-      // Check if username already exists
+      // Check if username is available
       const usernameCheck = await checkUsername(username);
+
       if (usernameCheck.exists) {
-        showError("Username already exists. Please choose a different one.");
+        if (usernameCheck.has_passkey) {
+          showError(
+            "This username already has a passkey. Please sign in instead."
+          );
+        } else {
+          showError(
+            "This username is already taken. Please choose a different one."
+          );
+        }
         return;
       }
 
-      // Get registration options from backend
-      const regOptions = await getRegistrationOptions(username);
+      // Username is available, proceed with registration
+      updateButtonState(continueBtn, true, "Creating passkey...");
 
-      // Create WebAuthn credential
-      const credential = await navigator.credentials.create({
-        publicKey: {
-          challenge: base64urlToBuffer(regOptions.challenge),
-          rp: regOptions.rp,
-          user: {
-            id: base64urlToBuffer(regOptions.user.id),
-            name: regOptions.user.name,
-            displayName: regOptions.user.displayName,
-          },
-          pubKeyCredParams: regOptions.pubKeyCredParams,
-          timeout: 60000,
-          attestation: "none",
-          authenticatorSelection: {
-            authenticatorAttachment: "platform",
-            userVerification: "preferred",
-            requireResidentKey: false,
-          },
-        },
-      });
+      const result = await registerCredential(username);
 
-      if (!credential) {
-        throw new Error("No credential created");
-      }
-
-      // Register credential with backend
-      const regResult = await registerCredential({
-        id: credential.id,
-        rawId: bufferToBase64url(credential.rawId),
-        response: {
-          attestationObject: bufferToBase64url(
-            credential.response.attestationObject
-          ),
-          clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
-        },
-        type: credential.type,
-        username: username,
-      });
-
-      if (regResult.success) {
-        // Store auth token and redirect
+      if (result.success) {
+        console.log("Registration successful");
         localStorage.setItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN, true);
         window.location.href = "/messages.html";
       } else {
-        showError("Account creation failed. Please try again.");
+        showError("Registration failed. Please try again.");
       }
     } catch (error) {
-      console.error("Account creation error:", error);
-
-      if (error.name === "NotAllowedError") {
-        showError("Account creation was cancelled. Please try again.");
-      } else if (error.name === "InvalidStateError") {
-        showError("A passkey already exists for this device. Try signing in instead.");
-      } else {
-        showError("Account creation failed: " + error.message);
-      }
+      console.error("Registration error:", error);
+      showError(error.message || "Registration failed. Please try again.");
     } finally {
       isProcessing = false;
       updateButtonState(continueBtn, false, "Continue");
@@ -192,27 +190,37 @@ async function initializeLogin() {
       showLoading(true);
       hideError();
 
+      console.log("Starting usernameless authentication");
+
       // Get authentication options from backend (no username needed for resident key)
       const authOptions = await getAuthenticationOptions();
 
-      // Create WebAuthn request
+      console.log("Creating WebAuthn authentication request");
+
+      // Create WebAuthn request with improved options
       const credential = await navigator.credentials.get({
         publicKey: {
           challenge: base64urlToBuffer(authOptions.challenge),
-          allowCredentials: authOptions.allowCredentials?.length > 0 
-            ? authOptions.allowCredentials.map((cred) => ({
-                id: base64urlToBuffer(cred.id),
-                type: cred.type,
-              }))
-            : [], // Empty array allows any registered passkey
+          allowCredentials:
+            authOptions.allowCredentials?.length > 0
+              ? authOptions.allowCredentials.map((cred) => ({
+                  id: base64urlToBuffer(cred.id),
+                  type: cred.type,
+                }))
+              : [], // Empty array allows any registered passkey
           userVerification: "preferred",
-          timeout: 60000,
+          timeout: 120000, // 2 minute timeout
+          rpId: authOptions.rpId, // Explicitly set RP ID
         },
+        signal: AbortSignal.timeout(120000), // 2 minute timeout
+        mediation: "conditional", // Better for Android GPM
       });
 
       if (!credential) {
         throw new Error("No credential returned");
       }
+
+      console.log("Credential retrieved:", credential);
 
       // Verify authentication with backend
       const credentialData = {
@@ -231,11 +239,13 @@ async function initializeLogin() {
         type: credential.type,
       };
 
+      console.log("Sending credential data for verification");
+
       // For sign-in, the backend should derive username from the credential
       const authResult = await verifyAuthentication(credentialData);
-      
+
       if (authResult.success) {
-        console.log("Logged in");
+        console.log("Logged in successfully");
         localStorage.setItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN, true);
         window.location.href = "/messages.html";
       } else {
@@ -249,7 +259,15 @@ async function initializeLogin() {
       } else if (error.name === "InvalidStateError") {
         showError("No passkey found. Please create an account first.");
       } else if (error.name === "NotSupportedError") {
-        showError("No passkeys found on this device. Please create an account first.");
+        showError(
+          "No passkeys found on this device. Please create an account first."
+        );
+      } else if (error.name === "SecurityError") {
+        showError(
+          "Security error occurred. Please ensure you're using HTTPS or localhost."
+        );
+      } else if (error.name === "AbortError") {
+        showError("Authentication timed out. Please try again.");
       } else {
         showError("Sign in failed: " + error.message);
       }

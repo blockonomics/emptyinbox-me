@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Passkey Debug - EmptyInbox</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+        background: #f8fafc;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #1f2937;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 10px;
+      }
+      .section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #f9fafb;
+      }
+      .section h3 {
+        margin-top: 0;
+        color: #374151;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 15px 0;
+      }
+      .info-item {
+        background: white;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+      }
+      .info-label {
+        font-weight: 600;
+        color: #4b5563;
+        font-size: 0.9rem;
+      }
+      .info-value {
+        color: #1f2937;
+        font-family: monospace;
+        font-size: 0.9rem;
+        word-break: break-all;
+      }
+      .status {
+        padding: 10px;
+        border-radius: 6px;
+        margin: 10px 0;
+        font-weight: 500;
+      }
+      .status.success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+      }
+      .status.error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+      }
+      .status.warning {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fbbf24;
+      }
+      .test-button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 5px;
+      }
+      .test-button:hover {
+        background: #2563eb;
+      }
+      .test-button:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+      }
+      .log {
+        background: #1f2937;
+        color: #f9fafb;
+        padding: 15px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+      }
+      @media (max-width: 600px) {
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+        .container {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔐 Passkey Debug Information</h1>
+
+      <div class="section">
+        <h3>Platform & Browser Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Platform</div>
+            <div class="info-value" id="platform">Detecting...</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">User Agent</div>
+            <div class="info-value" id="userAgent">Detecting...</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">WebAuthn Support</div>
+            <div class="info-value" id="webauthnSupport">Checking...</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Conditional Mediation</div>
+            <div class="info-value" id="conditionalMediation">Checking...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Passkey Support Status</h3>
+        <div id="supportStatus">Checking...</div>
+      </div>
+
+      <div class="section">
+        <h3>Test Functions</h3>
+        <button class="test-button" onclick="testPasskeySupport()">
+          Test Passkey Support
+        </button>
+        <button class="test-button" onclick="testConditionalMediation()">
+          Test Conditional Mediation
+        </button>
+        <button class="test-button" onclick="clearLog()">Clear Log</button>
+      </div>
+
+      <div class="section">
+        <h3>Debug Log</h3>
+        <div class="log" id="debugLog">
+          Passkey debug information will appear here...
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Initialize debug information
+      document.addEventListener("DOMContentLoaded", function () {
+        detectPlatform();
+        checkWebAuthnSupport();
+        log("Debug page loaded");
+      });
+
+      function detectPlatform() {
+        const userAgent = navigator.userAgent;
+        let platform = "Unknown";
+
+        if (/Windows/.test(userAgent)) {
+          platform = "Windows";
+        } else if (/Mac/.test(userAgent)) {
+          platform = "macOS";
+        } else if (/Linux/.test(userAgent)) {
+          platform = "Linux";
+        } else if (/Android/.test(userAgent)) {
+          platform = "Android";
+        } else if (/iPhone|iPad|iPod/.test(userAgent)) {
+          platform = "iOS";
+        }
+
+        document.getElementById("platform").textContent = platform;
+        document.getElementById("userAgent").textContent = userAgent;
+
+        log(`Platform detected: ${platform}`);
+        return platform;
+      }
+
+      function checkWebAuthnSupport() {
+        const isSupported = window.PublicKeyCredential !== undefined;
+        const conditionalMediation =
+          window.PublicKeyCredential?.isConditionalMediationAvailable?.() ||
+          false;
+
+        document.getElementById("webauthnSupport").textContent = isSupported
+          ? "Yes"
+          : "No";
+        document.getElementById("conditionalMediation").textContent =
+          conditionalMediation ? "Yes" : "No";
+
+        updateSupportStatus(isSupported, conditionalMediation);
+
+        log(`WebAuthn support: ${isSupported}`);
+        log(`Conditional mediation: ${conditionalMediation}`);
+      }
+
+      function updateSupportStatus(
+        webauthnSupported,
+        conditionalMediationSupported
+      ) {
+        const statusDiv = document.getElementById("supportStatus");
+
+        if (!webauthnSupported) {
+          statusDiv.innerHTML =
+            '<div class="status error">❌ WebAuthn is not supported in this browser</div>';
+        } else if (!conditionalMediationSupported) {
+          statusDiv.innerHTML =
+            '<div class="status warning">⚠️ WebAuthn supported but conditional mediation not available</div>';
+        } else {
+          statusDiv.innerHTML =
+            '<div class="status success">✅ Full passkey support available</div>';
+        }
+      }
+
+      async function testPasskeySupport() {
+        log("Testing passkey support...");
+
+        try {
+          if (!window.PublicKeyCredential) {
+            log("❌ PublicKeyCredential not available");
+            return;
+          }
+
+          log("✅ PublicKeyCredential available");
+
+          // Test if we can create a credential (this will fail but shows the API is working)
+          const challenge = new Uint8Array(32);
+          crypto.getRandomValues(challenge);
+
+          const options = {
+            challenge: challenge,
+            rp: {
+              name: "Test RP",
+              id: "localhost",
+            },
+            user: {
+              id: new Uint8Array(16),
+              name: "test@example.com",
+              displayName: "Test User",
+            },
+            pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+            timeout: 60000,
+            attestation: "none",
+          };
+
+          log("Attempting to create test credential...");
+
+          try {
+            await navigator.credentials.create({ publicKey: options });
+          } catch (error) {
+            if (error.name === "NotSupportedError") {
+              log(
+                "✅ WebAuthn API working - NotSupportedError expected (no authenticator)"
+              );
+            } else if (error.name === "NotAllowedError") {
+              log(
+                "✅ WebAuthn API working - NotAllowedError expected (user cancelled)"
+              );
+            } else {
+              log(`✅ WebAuthn API working - ${error.name}: ${error.message}`);
+            }
+          }
+        } catch (error) {
+          log(`❌ Error testing passkey support: ${error.message}`);
+        }
+      }
+
+      async function testConditionalMediation() {
+        log("Testing conditional mediation...");
+
+        try {
+          if (!window.PublicKeyCredential?.isConditionalMediationAvailable) {
+            log("❌ Conditional mediation not available");
+            return;
+          }
+
+          const isAvailable =
+            await window.PublicKeyCredential.isConditionalMediationAvailable();
+          log(`Conditional mediation available: ${isAvailable}`);
+
+          if (isAvailable) {
+            log("✅ Conditional mediation supported - Android GPM should work");
+          } else {
+            log(
+              "⚠️ Conditional mediation not available - Android GPM may not work"
+            );
+          }
+        } catch (error) {
+          log(`❌ Error testing conditional mediation: ${error.message}`);
+        }
+      }
+
+      function log(message) {
+        const logDiv = document.getElementById("debugLog");
+        const timestamp = new Date().toLocaleTimeString();
+        logDiv.textContent += `[${timestamp}] ${message}\n`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+        console.log(`[Passkey Debug] ${message}`);
+      }
+
+      function clearLog() {
+        document.getElementById("debugLog").textContent = "Log cleared...\n";
+      }
+
+      // Additional platform-specific checks
+      function checkPlatformSpecificFeatures() {
+        const platform = detectPlatform();
+
+        if (platform === "Windows") {
+          log("Windows detected - checking for Windows Hello support...");
+          // Windows Hello is typically available when WebAuthn is supported
+        } else if (platform === "Android") {
+          log(
+            "Android detected - checking for Google Password Manager integration..."
+          );
+          if (window.PublicKeyCredential?.isConditionalMediationAvailable) {
+            log("Conditional mediation available - GPM should work");
+          } else {
+            log("Conditional mediation not available - GPM may not work");
+          }
+        } else if (platform === "iOS") {
+          log("iOS detected - checking for iCloud Keychain support...");
+          // iCloud Keychain is typically available when WebAuthn is supported
+        } else if (platform === "macOS") {
+          log("macOS detected - checking for Touch ID/Face ID support...");
+          // Touch ID/Face ID is typically available when WebAuthn is supported
+        }
+      }
+
+      // Run platform-specific checks after initial load
+      setTimeout(checkPlatformSpecificFeatures, 1000);
+    </script>
+  </body>
+</html>

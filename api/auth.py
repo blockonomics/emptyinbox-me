@@ -248,29 +248,22 @@ def check_username():
     """Check if username exists and has passkey."""
     try:
         username = request.json.get('username')
-        
         if not username:
             return error_response('Username is required')
         
-        if len(username) < 3:
-            return error_response('Username must be at least 3 characters long')
-        
         with app.app_context():
             user = db.session.query(User).filter_by(username=username).first()
-            
             if user:
-                # Check if user has any passkey credentials
                 has_passkey = db.session.query(PasskeyCredential).filter_by(user_id=user.user_id).first() is not None
-                
                 return jsonify({
                     'exists': True,
-                    'hasPasskey': has_passkey
-                }), 200
+                    'has_passkey': has_passkey
+                })
             else:
                 return jsonify({
                     'exists': False,
-                    'hasPasskey': False
-                }), 200
+                    'has_passkey': False
+                })
                 
     except Exception as e:
         app.logger.error(f"Username check failed: {e}")
@@ -278,7 +271,7 @@ def check_username():
 
 @auth_bp.route('/passkey/register/begin', methods=['POST'])
 def passkey_register_begin():
-    """Start passkey registration process."""
+    """Start passkey registration process with improved platform support."""
     try:
         cleanup_expired_auth_records()
         
@@ -314,7 +307,7 @@ def passkey_register_begin():
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Return WebAuthn registration options
+        # Return WebAuthn registration options with improved platform support
         registration_options = {
             'challenge': base64url_encode(challenge),
             'rp': {
@@ -327,18 +320,32 @@ def passkey_register_begin():
                 'displayName': username
             },
             'pubKeyCredParams': [
-                {'type': 'public-key', 'alg': -7},   # ES256
-                {'type': 'public-key', 'alg': -257}  # RS256
+                {'type': 'public-key', 'alg': -7},   # ES256 (Elliptic Curve)
+                {'type': 'public-key', 'alg': -257}, # RS256 (RSA)
+                {'type': 'public-key', 'alg': -8},   # EdDSA (Ed25519)
+                {'type': 'public-key', 'alg': -35},  # ES384 (Elliptic Curve)
+                {'type': 'public-key', 'alg': -36},  # ES512 (Elliptic Curve)
+                {'type': 'public-key', 'alg': -37},  # PS256 (RSA PSS)
+                {'type': 'public-key', 'alg': -38},  # PS384 (RSA PSS)
+                {'type': 'public-key', 'alg': -39},  # PS512 (RSA PSS)
+                {'type': 'public-key', 'alg': -257}, # RS256 (RSA)
+                {'type': 'public-key', 'alg': -258}, # RS384 (RSA)
+                {'type': 'public-key', 'alg': -259}, # RS512 (RSA)
             ],
-            'timeout': 60000,
+            'timeout': 120000,  # Increased timeout for better compatibility
             'attestation': 'none',
-           'authenticatorSelection': {
-                'authenticatorAttachment': 'cross-platform',  # Allow cross-platform
-                'residentKey': 'preferred',  # ← Changed from 'required'
-                'userVerification': 'preferred'  # Also consider 'preferred'
+            'authenticatorSelection': {
+                'authenticatorAttachment': 'platform',  # Changed to platform for better Windows/Android support
+                'residentKey': 'required',  # Required for usernameless authentication
+                'userVerification': 'preferred',  # Preferred for better UX
+                'requireResidentKey': True  # Explicitly require resident key
+            },
+            'extensions': {
+                'credProps': True  # Enable credential properties for better debugging
             }
         }
         
+        app.logger.info(f"Registration options generated for {username}: {registration_options}")
         return jsonify(registration_options), 200
         
     except Exception as e:
@@ -356,6 +363,8 @@ def passkey_register_complete():
         
         if not credential_id or not username:
             return error_response('Missing credential ID or username')
+        
+        app.logger.info(f"Completing registration for {username} with credential {credential_id}")
         
         # Get the challenge from client data
         client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
@@ -442,7 +451,7 @@ def passkey_register_complete():
 
 @auth_bp.route('/passkey/authenticate/begin', methods=['POST'])
 def passkey_authenticate_begin():
-    """Start usernameless passkey authentication process."""
+    """Start usernameless passkey authentication process with improved platform support."""
     try:
         cleanup_expired_auth_records()
         
@@ -461,25 +470,24 @@ def passkey_authenticate_begin():
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Return WebAuthn authentication options
-        # Empty allowCredentials allows any registered passkey
+        # Return WebAuthn authentication options with improved platform support
         auth_options = {
             'challenge': base64url_encode(challenge),
-            'timeout': 60000,
-            'userVerification': 'required',
+            'timeout': 120000,  # Increased timeout
+            'userVerification': 'preferred',  # Changed to preferred for better compatibility
+            'rpId': get_rp_id_from_domain(DOMAIN),  # Explicitly set RP ID
+            'extensions': {
+                'appid': None,  # Disable appid extension
+                'txAuthSimple': None,  # Disable transaction authorization
+                'txAuthGeneric': None,  # Disable generic transaction authorization
+                'authnSel': None,  # Disable authenticator selection
+                'exts': None,  # Disable other extensions
+            }
         }
-        challenge_record = PasskeyChallenge.query.filter_by(challenge_id=challenge_id).first()
-
-        if challenge_record and challenge_record.credential_id:
-            auth_options['allowCredentials'] = [
-                {
-                    'type': 'public-key',
-                    'id': base64url_encode(challenge_record.credential_id),
-                    'transports': ['internal']
-                }
-            ]
-        else:
-            auth_options['allowCredentials'] = []  # fallback to discoverable credentials
+        
+        # For usernameless authentication, we don't specify allowCredentials
+        # This allows the authenticator to discover any available passkeys
+        auth_options['allowCredentials'] = []
         
         app.logger.info("Usernameless passkey authentication begun")
         return jsonify(auth_options), 200
@@ -499,6 +507,8 @@ def passkey_authenticate_complete():
         if not credential_id:
             return error_response('Missing credential ID')
 
+        app.logger.info(f"Completing authentication for credential {credential_id}")
+
         # Get the challenge from client data
         client_data_json = base64url_decode(credential_data['response']['clientDataJSON'])
         client_data = json.loads(client_data_json.decode())
@@ -512,10 +522,12 @@ def passkey_authenticate_complete():
             ).first()
             
             if not credential:
+                app.logger.error(f"Credential not found: {credential_id}")
                 return error_response('Credential not found')
             
             user = db.session.query(User).filter_by(user_id=credential.user_id).first()
             if not user:
+                app.logger.error(f"User not found for credential: {credential_id}")
                 return error_response('User not found for credential')
 
             # Find matching usernameless challenge
@@ -526,11 +538,13 @@ def passkey_authenticate_complete():
             ).filter(PasskeyChallenge.expires_at > datetime.utcnow()).first()
 
             if not stored_challenge:
+                app.logger.error("Challenge expired or not found")
                 return error_response('Challenge expired or not found')
 
             # Verify signature
             is_valid, parsed_data = verify_passkey_signature(credential_data, challenge)
             if not is_valid:
+                app.logger.error("Invalid passkey authentication")
                 return error_response('Invalid passkey authentication')
 
             # Update credential last used
@@ -547,6 +561,8 @@ def passkey_authenticate_complete():
             session_obj = UserSession(session_token, user.user_id, int(time.time()))
             db.session.add(session_obj)
             db.session.commit()
+        
+        app.logger.info(f"Authentication successful for user: {user.username}")
         
         resp = make_response(jsonify({"success": True, "message": "Login successful"}))
         resp.set_cookie(

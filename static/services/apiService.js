@@ -2,12 +2,17 @@ import { API_BASE_URL } from "../utils/constants.js";
 
 // 🔧 Helpers for base64url encoding/decoding
 function bufferDecode(value) {
-  return Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+  return Uint8Array.from(
+    atob(value.replace(/-/g, "+").replace(/_/g, "/")),
+    (c) => c.charCodeAt(0)
+  );
 }
 
 function bufferEncode(value) {
   return btoa(String.fromCharCode(...new Uint8Array(value)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 // 🧑‍💻 Fetch user data
@@ -60,102 +65,270 @@ export async function checkUsername(username) {
   return response.json();
 }
 
-// 🛠️ Passkey Registration
+// 🛠️ Passkey Registration with improved platform support
 export async function getRegistrationOptions(username) {
-  const response = await fetch(`${API_BASE_URL}/api/auth/passkey/register/begin`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username }),
-  });
+  const response = await fetch(
+    `${API_BASE_URL}/api/auth/passkey/register/begin`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    }
+  );
   if (!response.ok) throw new Error("Failed to get registration options");
   return response.json();
 }
 
 export async function registerCredential(username) {
-  const options = await getRegistrationOptions(username);
+  try {
+    console.log("Starting passkey registration for:", username);
 
-  const publicKey = {
-    ...options,
-    challenge: bufferDecode(options.challenge),
-    user: {
-      ...options.user,
-      id: bufferDecode(options.user.id),
-    },
-  };
+    const options = await getRegistrationOptions(username);
+    console.log("Registration options received:", options);
 
-  const credential = await navigator.credentials.create({ publicKey });
+    const publicKey = {
+      ...options,
+      challenge: bufferDecode(options.challenge),
+      user: {
+        ...options.user,
+        id: bufferDecode(options.user.id),
+      },
+    };
 
-  const credentialData = {
-    id: credential.id,
-    rawId: bufferEncode(credential.rawId),
-    type: credential.type,
-    response: {
-      clientDataJSON: bufferEncode(credential.response.clientDataJSON),
-      attestationObject: bufferEncode(credential.response.attestationObject),
-    },
-    username,
-  };
+    console.log("Creating credential with options:", publicKey);
 
-  const response = await fetch(`${API_BASE_URL}/api/auth/passkey/register/complete`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(credentialData),
-    credentials: "include",
-  });
+    // Add platform-specific options for better compatibility
+    const createOptions = {
+      publicKey,
+      signal: AbortSignal.timeout(120000), // 2 minute timeout
+    };
 
-  if (!response.ok) throw new Error("Failed to register credential");
-  return response.json();
+    const credential = await navigator.credentials.create(createOptions);
+
+    if (!credential) {
+      throw new Error("No credential returned from authenticator");
+    }
+
+    console.log("Credential created successfully:", credential);
+
+    const credentialData = {
+      id: credential.id,
+      rawId: bufferEncode(credential.rawId),
+      type: credential.type,
+      response: {
+        clientDataJSON: bufferEncode(credential.response.clientDataJSON),
+        attestationObject: bufferEncode(credential.response.attestationObject),
+      },
+      username,
+    };
+
+    console.log("Sending credential data to server");
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/auth/passkey/register/complete`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentialData),
+        credentials: "include",
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Registration failed:", errorText);
+      throw new Error(`Failed to register credential: ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log("Registration completed successfully:", result);
+    return result;
+  } catch (error) {
+    console.error("Registration error:", error);
+
+    // Provide more specific error messages for common issues
+    if (error.name === "NotAllowedError") {
+      throw new Error(
+        "Registration was cancelled or failed. Please try again."
+      );
+    } else if (error.name === "InvalidStateError") {
+      throw new Error(
+        "A passkey already exists for this account. Please sign in instead."
+      );
+    } else if (error.name === "NotSupportedError") {
+      throw new Error(
+        "Your device doesn't support passkeys. Please use a modern device with biometric authentication."
+      );
+    } else if (error.name === "SecurityError") {
+      throw new Error(
+        "Security error occurred. Please ensure you're using HTTPS or localhost."
+      );
+    } else if (error.name === "AbortError") {
+      throw new Error("Registration timed out. Please try again.");
+    } else {
+      throw new Error(`Registration failed: ${error.message}`);
+    }
+  }
 }
 
-// 🔐 Passkey Authentication
+// 🔐 Passkey Authentication with improved platform support
 export async function getAuthenticationOptions() {
-  const response = await fetch(`${API_BASE_URL}/api/auth/passkey/authenticate/begin`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!response.ok) throw new Error("Failed to get authentication options");
-  return response.json();
+  try {
+    console.log("Getting authentication options");
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/auth/passkey/authenticate/begin`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to get auth options:", errorText);
+      throw new Error("Failed to get authentication options");
+    }
+
+    const options = await response.json();
+    console.log("Authentication options received:", options);
+    return options;
+  } catch (error) {
+    console.error("Error getting auth options:", error);
+    throw error;
+  }
 }
 
 export async function verifyAuthentication() {
-  const options = await getAuthenticationOptions();
+  try {
+    console.log("Starting passkey authentication");
 
-  const publicKey = {
-    ...options,
-    challenge: bufferDecode(options.challenge),
-    allowCredentials: options.allowCredentials?.map(cred => ({
-      ...cred,
-      id: bufferDecode(cred.id),
-    })),
-  };
+    const options = await getAuthenticationOptions();
 
-  const credential = await navigator.credentials.get({ publicKey, mediation: "conditional" });
+    const publicKey = {
+      ...options,
+      challenge: bufferDecode(options.challenge),
+      allowCredentials:
+        options.allowCredentials?.map((cred) => ({
+          ...cred,
+          id: bufferDecode(cred.id),
+        })) || [],
+    };
 
-  const credentialData = {
-    id: credential.id,
-    rawId: bufferEncode(credential.rawId),
-    type: credential.type,
-    response: {
-      clientDataJSON: bufferEncode(credential.response.clientDataJSON),
-      authenticatorData: bufferEncode(credential.response.authenticatorData),
-      signature: bufferEncode(credential.response.signature),
-      userHandle: credential.response.userHandle
-        ? bufferEncode(credential.response.userHandle)
-        : null,
-    },
-  };
+    console.log("Authentication options prepared:", publicKey);
 
-  const response = await fetch(`${API_BASE_URL}/api/auth/passkey/authenticate/complete`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(credentialData),
-    credentials: "include",
+    // Add platform-specific options for better compatibility
+    const getOptions = {
+      publicKey,
+      signal: AbortSignal.timeout(120000), // 2 minute timeout
+      mediation: "conditional", // Better for Android GPM
+    };
+
+    console.log("Requesting credential with options:", getOptions);
+
+    const credential = await navigator.credentials.get(getOptions);
+
+    if (!credential) {
+      throw new Error("No credential returned from authenticator");
+    }
+
+    console.log("Credential retrieved successfully:", credential);
+
+    const credentialData = {
+      id: credential.id,
+      rawId: bufferEncode(credential.rawId),
+      type: credential.type,
+      response: {
+        clientDataJSON: bufferEncode(credential.response.clientDataJSON),
+        authenticatorData: bufferEncode(credential.response.authenticatorData),
+        signature: bufferEncode(credential.response.signature),
+        userHandle: credential.response.userHandle
+          ? bufferEncode(credential.response.userHandle)
+          : null,
+      },
+    };
+
+    console.log("Sending authentication data to server");
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/auth/passkey/authenticate/complete`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentialData),
+        credentials: "include",
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("Authentication verification failed:", errorData);
+      throw new Error(`Failed to verify authentication: ${errorData}`);
+    }
+
+    const result = await response.json();
+    console.log("Authentication completed successfully:", result);
+    return result;
+  } catch (error) {
+    console.error("Authentication error:", error);
+
+    // Provide more specific error messages for common issues
+    if (error.name === "NotAllowedError") {
+      throw new Error(
+        "Authentication was cancelled or failed. Please try again."
+      );
+    } else if (error.name === "InvalidStateError") {
+      throw new Error("No passkey found. Please create an account first.");
+    } else if (error.name === "NotSupportedError") {
+      throw new Error(
+        "No passkeys found on this device. Please create an account first."
+      );
+    } else if (error.name === "SecurityError") {
+      throw new Error(
+        "Security error occurred. Please ensure you're using HTTPS or localhost."
+      );
+    } else if (error.name === "AbortError") {
+      throw new Error("Authentication timed out. Please try again.");
+    } else {
+      throw new Error(`Authentication failed: ${error.message}`);
+    }
+  }
+}
+
+// 🔧 Utility function to check passkey support
+export function checkPasskeySupport() {
+  const isSupported = window.PublicKeyCredential !== undefined;
+  const isConditionalMediationSupported =
+    window.PublicKeyCredential?.isConditionalMediationAvailable?.() || false;
+
+  console.log("Passkey support check:", {
+    isSupported,
+    isConditionalMediationSupported,
+    userAgent: navigator.userAgent,
   });
 
-  if (!response.ok) {
-    const errorData = await response.text();
-    throw new Error(`Failed to verify authentication: ${errorData}`);
-  }
+  return {
+    isSupported,
+    isConditionalMediationSupported,
+    platform: getPlatform(),
+  };
+}
 
-  return response.json();
+// 🔍 Platform detection for better debugging
+function getPlatform() {
+  const userAgent = navigator.userAgent;
+
+  if (/Windows/.test(userAgent)) {
+    return "Windows";
+  } else if (/Mac/.test(userAgent)) {
+    return "macOS";
+  } else if (/Linux/.test(userAgent)) {
+    return "Linux";
+  } else if (/Android/.test(userAgent)) {
+    return "Android";
+  } else if (/iPhone|iPad|iPod/.test(userAgent)) {
+    return "iOS";
+  } else {
+    return "Unknown";
+  }
 }
