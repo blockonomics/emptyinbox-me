@@ -38,7 +38,7 @@ export function renderApiDocsPage() {
       <!-- Create Inbox -->
       <div class="endpoint">
         <div class="endpoint-header">
-          <span class="endpoint-method method-post">POST</span>
+          <span class="endpoint-method method-post">GET</span>
           <span class="endpoint-path">/inbox</span>
         </div>
         <div class="endpoint-body">
@@ -47,7 +47,7 @@ export function renderApiDocsPage() {
           <div class="response-example">
             <h4>Example Request</h4>
             <div class="code-block" data-lang="curl">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>curl -X POST "https://emptyinbox.me/api/inbox" \\
+              <button class="copy-button" onclick="copyCode(this)">Copy</button>curl -X GET "https://emptyinbox.me/api/inbox" \\
   -H "Authorization: Bearer YOUR_API_KEY"</div>
           </div>
 
