@@ -66,35 +66,71 @@ export async function checkUsername(username) {
 }
 
 // 🛠️ Passkey Registration
-export async function getRegistrationOptions(username) {
-  const response = await fetch(
-    `${API_BASE_URL}/api/auth/passkey/register/begin`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
-    }
-  );
-  if (!response.ok) throw new Error("Failed to get registration options");
-  return response.json();
+// Frontend-heavy approach - mimics the HTML file more closely
+
+function getRpId() {
+  const hostname = window.location.hostname;
+  
+  if (hostname === "localhost" || hostname.startsWith("127.") || hostname.startsWith("192.168.")) {
+    return hostname;
+  }
+  
+  if (hostname.endsWith(".emptyinbox.me")) {
+    return "emptyinbox.me";
+  } else if (hostname === "emptyinbox.me") {
+    return "emptyinbox.me";
+  }
+  
+  return hostname;
+}
+
+// Simplified server call - only gets challenge
+async function getChallenge(username) {
+  const response = await fetch(`${API_BASE_URL}/api/auth/passkey/challenge`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, operation: 'registration' }),
+  });
+  if (!response.ok) throw new Error("Failed to get challenge");
+  return response.json(); // Returns { challenge: "base64url", challengeId: "id" }
 }
 
 export async function registerCredential(username) {
   try {
-    const options = await getRegistrationOptions(username);
-
+    // Get only the challenge from server
+    const { challenge, challengeId } = await getChallenge(username);
+    
+    // Generate the rest in frontend (like your HTML file)
+    const userId = new Uint8Array(16);
+    crypto.getRandomValues(userId);
+    
+    const rpId = getRpId();
+    
     const publicKey = {
-      ...options,
-      challenge: bufferDecode(options.challenge),
+      challenge: bufferDecode(challenge),
+      rp: {
+        name: "EmptyBox", // or get from constants
+        id: rpId,
+      },
       user: {
-        ...options.user,
-        id: bufferDecode(options.user.id),
+        id: userId,
+        name: username,
+        displayName: username,
+      },
+      pubKeyCredParams: [
+        { type: "public-key", alg: -7 },   // ES256
+        { type: "public-key", alg: -257 }, // RS256
+      ],
+      timeout: 120000,
+      attestation: "none",
+      authenticatorSelection: {
+        authenticatorAttachment: "platform", // or omit for cross-platform
+        userVerification: "preferred",
+        residentKey: "preferred",
       },
     };
 
-    const credential = await navigator.credentials.create({
-      publicKey
-    });
+    const credential = await navigator.credentials.create({ publicKey });
 
     if (!credential) {
       throw new Error("No credential returned from authenticator");
@@ -109,17 +145,19 @@ export async function registerCredential(username) {
         attestationObject: bufferEncode(credential.response.attestationObject),
       },
       username,
+      challengeId, // Include this for server verification
+      userId: bufferEncode(userId), // Send the generated user ID
     };
 
-    // const response = await fetch(
-    //   `${API_BASE_URL}/api/auth/passkey/register/complete`,
-    //   {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(credentialData),
-    //     credentials: "include",
-    //   }
-    // );
+    const response = await fetch(
+      `${API_BASE_URL}/api/auth/passkey/register/complete`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentialData),
+        credentials: "include",
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -129,7 +167,6 @@ export async function registerCredential(username) {
     return await response.json();
     
   } catch (error) {
-    // Simplified error handling
     if (error.name === "NotAllowedError") {
       throw new Error("Registration was cancelled. Please try again.");
     } else if (error.name === "InvalidStateError") {

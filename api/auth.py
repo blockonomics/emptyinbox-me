@@ -302,78 +302,30 @@ def check_username():
         app.logger.error(f"Username check failed: {e}")
         return error_response('Failed to check username', 500)
 
-@auth_bp.route('/passkey/register/begin', methods=['POST'])
-def passkey_register_begin():
-    """Start passkey registration process with improved platform support."""
-    try:
-        cleanup_expired_auth_records()
-        
-        username = request.json.get('username')
-        if not username:
-            return error_response('Username is required')
-        
-        if len(username) < 3:
-            return error_response('Username must be at least 3 characters long')
-        
-        # Check if username already exists
-        with app.app_context():
-            existing_user = db.session.query(User).filter_by(username=username).first()
-            if existing_user:
-                return error_response('Username already exists')
-        
-        # Generate challenge
-        challenge = generate_challenge()
-        challenge_id = f"passkey_reg:{username}:{int(time.time())}"
-        
-        # Get proper RP ID
-        rp_id = get_rp_id_from_domain(DOMAIN)
-        
-        # Store challenge in PasskeyChallenge table
-        passkey_challenge = PasskeyChallenge(
-            challenge_id=challenge_id,
-            username=username,
-            challenge=base64url_encode(challenge),
-            operation_type='registration'
-        )
-        
-        with app.app_context():
-            db.session.add(passkey_challenge)
-            db.session.commit()
-        
-        # Return WebAuthn registration options with better Linux/cross-platform support
-        registration_options = {
-            'challenge': base64url_encode(challenge),
-            'rp': {
-                'name': RP_NAME,
-                'id': rp_id
-            },
-            'user': {
-                'id': base64url_encode(username.encode()),
-                'name': username,
-                'displayName': username
-            },
-            'pubKeyCredParams': [
-                {'type': 'public-key', 'alg': -7},   # ES256 (most widely supported)
-                {'type': 'public-key', 'alg': -257}, # RS256 (RSA fallback)
-            ],
-            'timeout': 120000,  # 2 minutes
-            'attestation': 'none',
-            'authenticatorSelection': {
-                # Don't specify authenticatorAttachment to allow both platform and cross-platform
-                'residentKey': 'required',
-                'userVerification': 'preferred',  # More flexible than 'required'
-                'requireResidentKey': True
-            },
-            'excludeCredentials': []  # Could add existing credentials here if needed
-        }
-        
-        app.logger.info(f"Registration options generated for {username} with RP ID: {rp_id}")
-        return jsonify(registration_options), 200
-        
-    except Exception as e:
-        app.logger.error(f"Passkey registration begin failed: {e}")
-        db.session.rollback()
-        return error_response('Failed to start passkey registration', 500)
+@auth_bp.route('/passkey/challenge', methods=['POST'])
+def get_passkey_challenge():
+    """Generate and return just the challenge"""
+    username = request.json.get('username')
+    operation = request.json.get('operation')  # 'registration' or 'authentication'
+    
+    challenge = generate_challenge()
+    challenge_id = f"passkey_{operation}:{username}:{int(time.time())}"
+    
+    # Store challenge
+    passkey_challenge = PasskeyChallenge(
+        challenge_id=challenge_id,
+        username=username,
+        challenge=base64url_encode(challenge),
+        operation_type=operation
+    )
+    
+    db.session.add(passkey_challenge)
+    db.session.commit()
+    
+    return jsonify({
+        'challenge': base64url_encode(challenge),
+        'challengeId': challenge_id
+    })
 
 @auth_bp.route('/passkey/register/complete', methods=['POST'])
 def passkey_register_complete():
