@@ -1,4 +1,3 @@
 {
-  "enroll": "https://emptyinbox.me/passkey-enroll",
-  "manage": "https://emptyinbox.me/passkey-manage"
+  "enroll": "https://emptyinbox.me/api/auth/passkey/register/complete"
 }
