@@ -294,6 +294,7 @@ def passkey_register_begin():
             'timeout': 60000,
             'attestation': 'none',
             'authenticatorSelection': {
+                'authenticatorAttachment': 'cross-platform',
                 'residentKey': 'required',
                 'userVerification': 'preferred'
             }
