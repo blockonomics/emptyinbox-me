@@ -1,7 +1,6 @@
 import { LOCAL_STORAGE_KEYS } from "../../../utils/constants.js";
 import {
   checkUsername,
-  getRegistrationOptions,
   registerCredential,
   getAuthenticationOptions,
   verifyAuthentication,
