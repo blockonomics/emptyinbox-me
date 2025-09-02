@@ -129,7 +129,7 @@ export async function verifyAuthentication() {
     })),
   };
 
-  const credential = await navigator.credentials.get({ publicKey });
+  const credential = await navigator.credentials.get({ publicKey, mediation: "conditional" });
 
   const credentialData = {
     id: credential.id,
