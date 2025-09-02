@@ -332,10 +332,10 @@ def passkey_register_begin():
             ],
             'timeout': 60000,
             'attestation': 'none',
-            'authenticatorSelection': {
-                # REMOVED: authenticatorAttachment to allow system choice
-                'residentKey': 'required',
-                'userVerification': 'required'
+           'authenticatorSelection': {
+                'authenticatorAttachment': 'cross-platform',  # Allow cross-platform
+                'residentKey': 'preferred',  # ← Changed from 'required'
+                'userVerification': 'preferred'  # Also consider 'preferred'
             }
         }
         
