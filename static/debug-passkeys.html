@@ -214,16 +214,18 @@
       function checkDomainAndProtocol() {
         const domain = window.location.hostname;
         const protocol = window.location.protocol;
-        const isHttps = protocol === 'https:';
-        
+        const isHttps = protocol === "https:";
+
         document.getElementById("currentDomain").textContent = domain;
-        document.getElementById("httpsStatus").textContent = isHttps ? "✅ HTTPS" : "❌ HTTP";
-        
+        document.getElementById("httpsStatus").textContent = isHttps
+          ? "✅ HTTPS"
+          : "❌ HTTP";
+
         log(`Current domain: ${domain}`);
         log(`Protocol: ${protocol}`);
         log(`HTTPS enabled: ${isHttps}`);
-        
-        if (!isHttps && domain !== 'localhost' && !domain.startsWith('127.')) {
+
+        if (!isHttps && domain !== "localhost" && !domain.startsWith("127.")) {
           log("⚠️ WebAuthn requires HTTPS in production environments");
         }
       }
@@ -266,19 +268,23 @@
 
       function getRpId() {
         const hostname = window.location.hostname;
-        
+
         // Handle localhost and IP addresses
-        if (hostname === 'localhost' || hostname.startsWith('127.') || hostname.startsWith('192.168.')) {
+        if (
+          hostname === "localhost" ||
+          hostname.startsWith("127.") ||
+          hostname.startsWith("192.168.")
+        ) {
           return hostname;
         }
-        
-        // For emptybox.me and subdomains, use the appropriate RP ID
-        if (hostname.endsWith('.emptybox.me')) {
-          return 'emptybox.me'; // Parent domain for subdomains
-        } else if (hostname === 'emptybox.me') {
-          return 'emptybox.me'; // Exact match
+
+        // For emptyinbox.me and subdomains, use the appropriate RP ID
+        if (hostname.endsWith(".emptyinbox.me")) {
+          return "emptyinbox.me"; // Parent domain for subdomains
+        } else if (hostname === "emptyinbox.me") {
+          return "emptyinbox.me"; // Exact match
         }
-        
+
         // Default to current hostname
         return hostname;
       }
@@ -296,7 +302,8 @@
 
           // Check if platform authenticator is available
           try {
-            const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            const available =
+              await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
             log(`Platform authenticator available: ${available}`);
           } catch (error) {
             log(`Could not check platform authenticator: ${error.message}`);
@@ -373,15 +380,17 @@
             authenticatorSelection: {
               authenticatorAttachment: "platform",
               userVerification: "preferred",
-              residentKey: "preferred"
-            }
+              residentKey: "preferred",
+            },
           };
 
           log("Attempting to create test credential...");
           log("Note: This will prompt for authentication if successful");
 
           try {
-            const credential = await navigator.credentials.create({ publicKey: options });
+            const credential = await navigator.credentials.create({
+              publicKey: options,
+            });
             log("✅ Credential created successfully!");
             log(`Credential ID length: ${credential.id.length}`);
             log(`Credential type: ${credential.type}`);
@@ -425,26 +434,36 @@
         log(`Full URL: ${window.location.href}`);
 
         if (platform === "Windows") {
-          log("Windows detected - Windows Hello should be available if configured");
+          log(
+            "Windows detected - Windows Hello should be available if configured"
+          );
         } else if (platform === "Android") {
-          log("Android detected - Google Password Manager integration available");
+          log(
+            "Android detected - Google Password Manager integration available"
+          );
           if (window.PublicKeyCredential?.isConditionalMediationAvailable) {
             log("Conditional mediation supported - GPM autofill should work");
           }
         } else if (platform === "iOS") {
           log("iOS detected - iCloud Keychain passkeys should be available");
         } else if (platform === "macOS") {
-          log("macOS detected - Touch ID/Face ID should be available if configured");
+          log(
+            "macOS detected - Touch ID/Face ID should be available if configured"
+          );
         } else if (platform === "Linux") {
           log("Linux detected - Platform authenticator support may be limited");
-          log("Consider using external security keys or browser password managers");
+          log(
+            "Consider using external security keys or browser password managers"
+          );
         }
 
         // Check if we're on the correct domain
-        if (domain === 'emptybox.me' || domain.endsWith('.emptybox.me')) {
-          log("✅ Running on emptybox.me domain - RP ID should work correctly");
+        if (domain === "emptyinbox.me" || domain.endsWith(".emptyinbox.me")) {
+          log(
+            "✅ Running on emptyinbox.me domain - RP ID should work correctly"
+          );
         } else {
-          log("⚠️ Not running on emptybox.me - this is a test environment");
+          log("⚠️ Not running on emptyinbox.me - this is a test environment");
         }
       }
 
