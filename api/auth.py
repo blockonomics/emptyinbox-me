@@ -149,7 +149,7 @@ def extract_public_key_from_auth_data(auth_data: bytes) -> str:
         return None
 
 def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tuple[bool, dict]:
-    """Verify passkey registration data with proper public key extraction."""
+    """Verify passkey registration data with enhanced error handling."""
     try:
         # Decode the response data
         attestation_object = base64url_decode(credential_data['response']['attestationObject'])
@@ -158,7 +158,7 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
         # Parse client data
         client_data = json.loads(client_data_json.decode())
         
-        app.logger.info(f"Registration client data: {client_data}")
+        app.logger.info(f"Registration verification - Origin: {client_data.get('origin')}, Expected: {URL_SCHEME}{DOMAIN}")
         
         # Verify challenge
         received_challenge = base64url_decode(client_data['challenge'])
@@ -166,10 +166,15 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
             app.logger.error("Challenge mismatch in passkey registration")
             return False, {}
         
-        # Verify origin
+        # Verify origin with more flexible matching
         expected_origin = f"{URL_SCHEME}{DOMAIN}"
-        if client_data['origin'] != expected_origin:
-            app.logger.error(f"Origin mismatch: expected {expected_origin}, got {client_data['origin']}")
+        received_origin = client_data['origin']
+        
+        # Handle port variations in development
+        if IS_DEV and received_origin.startswith('http://localhost'):
+            app.logger.info("Development mode: allowing localhost origin")
+        elif received_origin != expected_origin:
+            app.logger.error(f"Origin mismatch: expected {expected_origin}, got {received_origin}")
             return False, {}
         
         # Verify type
@@ -184,6 +189,10 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
             
             # Extract the actual public key
             public_key = extract_public_key_from_auth_data(auth_data)
+            
+            if not public_key:
+                app.logger.error("Failed to extract public key from attestation")
+                return False, {}
             
             return True, {
                 'credential_id': credential_data['id'],
@@ -200,8 +209,9 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
         app.logger.error(f"Passkey registration verification failed: {e}")
         return False, {}
 
+# 4. Enhanced error handling in verify_passkey_signature():
 def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[bool, dict]:
-    """Verify passkey authentication signature with improved validation."""
+    """Verify passkey authentication signature with enhanced error handling."""
     try:
         # Decode the response data
         authenticator_data = base64url_decode(credential_data['response']['authenticatorData'])
@@ -211,7 +221,7 @@ def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[b
         # Parse client data
         client_data = json.loads(client_data_json.decode())
         
-        app.logger.info(f"Authentication client data: {client_data}")
+        app.logger.info(f"Authentication verification - Origin: {client_data.get('origin')}, Expected: {URL_SCHEME}{DOMAIN}")
         
         # Verify challenge
         received_challenge = base64url_decode(client_data['challenge'])
@@ -219,10 +229,15 @@ def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[b
             app.logger.error("Challenge mismatch in passkey verification")
             return False, {}
         
-        # Verify origin
+        # Verify origin with more flexible matching
         expected_origin = f"{URL_SCHEME}{DOMAIN}"
-        if client_data['origin'] != expected_origin:
-            app.logger.error(f"Origin mismatch: expected {expected_origin}, got {client_data['origin']}")
+        received_origin = client_data['origin']
+        
+        # Handle port variations in development
+        if IS_DEV and received_origin.startswith('http://localhost'):
+            app.logger.info("Development mode: allowing localhost origin")
+        elif received_origin != expected_origin:
+            app.logger.error(f"Origin mismatch: expected {expected_origin}, got {received_origin}")
             return False, {}
         
         # Verify type
@@ -240,6 +255,24 @@ def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[b
     except Exception as e:
         app.logger.error(f"Passkey signature verification failed: {e}")
         return False, {}
+
+# 5. Add debugging endpoint (optional, for development):
+@auth_bp.route('/passkey/debug', methods=['GET'])
+def passkey_debug():
+    """Debug endpoint to check passkey configuration."""
+    try:
+        rp_id = get_rp_id_from_domain(DOMAIN)
+        return jsonify({
+            'domain': DOMAIN,
+            'rp_name': RP_NAME,
+            'rp_id': rp_id,
+            'url_scheme': URL_SCHEME,
+            'is_dev': IS_DEV,
+            'expected_origin': f"{URL_SCHEME}{DOMAIN}"
+        }), 200
+    except Exception as e:
+        app.logger.error(f"Debug endpoint failed: {e}")
+        return error_response('Debug failed', 500)
 
 # --- Username and Passkey Routes ---
 
@@ -307,7 +340,7 @@ def passkey_register_begin():
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Return WebAuthn registration options with improved platform support
+        # Return WebAuthn registration options with better Linux/cross-platform support
         registration_options = {
             'challenge': base64url_encode(challenge),
             'rp': {
@@ -320,32 +353,21 @@ def passkey_register_begin():
                 'displayName': username
             },
             'pubKeyCredParams': [
-                {'type': 'public-key', 'alg': -7},   # ES256 (Elliptic Curve)
-                {'type': 'public-key', 'alg': -257}, # RS256 (RSA)
-                {'type': 'public-key', 'alg': -8},   # EdDSA (Ed25519)
-                {'type': 'public-key', 'alg': -35},  # ES384 (Elliptic Curve)
-                {'type': 'public-key', 'alg': -36},  # ES512 (Elliptic Curve)
-                {'type': 'public-key', 'alg': -37},  # PS256 (RSA PSS)
-                {'type': 'public-key', 'alg': -38},  # PS384 (RSA PSS)
-                {'type': 'public-key', 'alg': -39},  # PS512 (RSA PSS)
-                {'type': 'public-key', 'alg': -257}, # RS256 (RSA)
-                {'type': 'public-key', 'alg': -258}, # RS384 (RSA)
-                {'type': 'public-key', 'alg': -259}, # RS512 (RSA)
+                {'type': 'public-key', 'alg': -7},   # ES256 (most widely supported)
+                {'type': 'public-key', 'alg': -257}, # RS256 (RSA fallback)
             ],
-            'timeout': 120000,  # Increased timeout for better compatibility
+            'timeout': 120000,  # 2 minutes
             'attestation': 'none',
             'authenticatorSelection': {
-                'authenticatorAttachment': 'platform',  # Changed to platform for better Windows/Android support
-                'residentKey': 'required',  # Required for usernameless authentication
-                'userVerification': 'preferred',  # Preferred for better UX
-                'requireResidentKey': True  # Explicitly require resident key
+                # Don't specify authenticatorAttachment to allow both platform and cross-platform
+                'residentKey': 'required',
+                'userVerification': 'preferred',  # More flexible than 'required'
+                'requireResidentKey': True
             },
-            'extensions': {
-                'credProps': True  # Enable credential properties for better debugging
-            }
+            'excludeCredentials': []  # Could add existing credentials here if needed
         }
         
-        app.logger.info(f"Registration options generated for {username}: {registration_options}")
+        app.logger.info(f"Registration options generated for {username} with RP ID: {rp_id}")
         return jsonify(registration_options), 200
         
     except Exception as e:
@@ -451,7 +473,7 @@ def passkey_register_complete():
 
 @auth_bp.route('/passkey/authenticate/begin', methods=['POST'])
 def passkey_authenticate_begin():
-    """Start usernameless passkey authentication process with improved platform support."""
+    """Start usernameless passkey authentication process."""
     try:
         cleanup_expired_auth_records()
         
@@ -470,32 +492,25 @@ def passkey_authenticate_begin():
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Return WebAuthn authentication options with improved platform support
+        # Return WebAuthn authentication options optimized for cross-platform
         auth_options = {
             'challenge': base64url_encode(challenge),
-            'timeout': 120000,  # Increased timeout
-            'userVerification': 'preferred',  # Changed to preferred for better compatibility
-            'rpId': get_rp_id_from_domain(DOMAIN),  # Explicitly set RP ID
-            'extensions': {
-                'appid': None,  # Disable appid extension
-                'txAuthSimple': None,  # Disable transaction authorization
-                'txAuthGeneric': None,  # Disable generic transaction authorization
-                'authnSel': None,  # Disable authenticator selection
-                'exts': None,  # Disable other extensions
-            }
+            'timeout': 120000,  # 2 minutes
+            'userVerification': 'preferred',  # More flexible than 'required'
+            'rpId': get_rp_id_from_domain(DOMAIN),
         }
         
-        # For usernameless authentication, we don't specify allowCredentials
+        # For usernameless authentication, don't specify allowCredentials
         # This allows the authenticator to discover any available passkeys
-        auth_options['allowCredentials'] = []
         
-        app.logger.info("Usernameless passkey authentication begun")
+        app.logger.info(f"Usernameless passkey authentication begun with RP ID: {get_rp_id_from_domain(DOMAIN)}")
         return jsonify(auth_options), 200
         
     except Exception as e:
         app.logger.error(f"Passkey authentication begin failed: {e}")
         db.session.rollback()
         return error_response('Failed to start passkey authentication', 500)
+
 
 @auth_bp.route('/passkey/authenticate/complete', methods=['POST'])
 def passkey_authenticate_complete():

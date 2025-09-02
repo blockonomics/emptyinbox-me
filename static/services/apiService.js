@@ -65,7 +65,7 @@ export async function checkUsername(username) {
   return response.json();
 }
 
-// 🛠️ Passkey Registration with improved platform support
+// 🛠️ Passkey Registration
 export async function getRegistrationOptions(username) {
   const response = await fetch(
     `${API_BASE_URL}/api/auth/passkey/register/begin`,
@@ -97,13 +97,10 @@ export async function registerCredential(username) {
 
     console.log("Creating credential with options:", publicKey);
 
-    // Add platform-specific options for better compatibility
-    const createOptions = {
-      publicKey,
-      signal: AbortSignal.timeout(120000), // 2 minute timeout
-    };
-
-    const credential = await navigator.credentials.create(createOptions);
+    // Use standard timeout without AbortSignal for better compatibility
+    const credential = await navigator.credentials.create({
+      publicKey
+    });
 
     if (!credential) {
       throw new Error("No credential returned from authenticator");
@@ -161,7 +158,7 @@ export async function registerCredential(username) {
       );
     } else if (error.name === "SecurityError") {
       throw new Error(
-        "Security error occurred. Please ensure you're using HTTPS or localhost."
+        "Security error occurred. Please ensure you're using HTTPS and the correct domain."
       );
     } else if (error.name === "AbortError") {
       throw new Error("Registration timed out. Please try again.");
@@ -171,7 +168,7 @@ export async function registerCredential(username) {
   }
 }
 
-// 🔐 Passkey Authentication with improved platform support
+// 🔐 Passkey Authentication
 export async function getAuthenticationOptions() {
   try {
     console.log("Getting authentication options");
@@ -217,16 +214,12 @@ export async function verifyAuthentication() {
 
     console.log("Authentication options prepared:", publicKey);
 
-    // Add platform-specific options for better compatibility
-    const getOptions = {
-      publicKey,
-      signal: AbortSignal.timeout(120000), // 2 minute timeout
-      mediation: "conditional", // Better for Android GPM
-    };
+    // Remove mediation for better compatibility across platforms
+    console.log("Requesting credential");
 
-    console.log("Requesting credential with options:", getOptions);
-
-    const credential = await navigator.credentials.get(getOptions);
+    const credential = await navigator.credentials.get({
+      publicKey
+    });
 
     if (!credential) {
       throw new Error("No credential returned from authenticator");
@@ -285,7 +278,7 @@ export async function verifyAuthentication() {
       );
     } else if (error.name === "SecurityError") {
       throw new Error(
-        "Security error occurred. Please ensure you're using HTTPS or localhost."
+        "Security error occurred. Please ensure you're using HTTPS and the correct domain."
       );
     } else if (error.name === "AbortError") {
       throw new Error("Authentication timed out. Please try again.");
