@@ -275,7 +275,7 @@ def passkey_register_begin():
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Return WebAuthn registration options - FIXED FOR ANDROID
+        # Return WebAuthn registration options - OPTIMIZED FOR ANDROID/GPM
         registration_options = {
             'challenge': base64url_encode(challenge),
             'rp': {
@@ -291,15 +291,14 @@ def passkey_register_begin():
                 {'type': 'public-key', 'alg': -7},   # ES256
                 {'type': 'public-key', 'alg': -257}  # RS256
             ],
-            'timeout': 300000,  # Increased timeout for Android
+            'timeout': 300000,
             'attestation': 'none',
             'authenticatorSelection': {
-                'authenticatorAttachment': 'platform',
-                'residentKey': 'preferred',  # CHANGED: preferred instead of required
-                'requireResidentKey': False,  # ADDED: explicit false
-                'userVerification': 'preferred'  # CHANGED: preferred instead of required
+                # REMOVED: authenticatorAttachment to allow cross-platform (GPM)
+                'residentKey': 'required',     # Required for usernameless auth
+                'requireResidentKey': True,    # Explicit true for discoverable credentials
+                'userVerification': 'preferred'
             },
-            # ADDED: Exclude any existing credentials for this user
             'excludeCredentials': []
         }
         
@@ -402,11 +401,10 @@ def passkey_register_complete():
 
 @auth_bp.route('/passkey/authenticate/begin', methods=['POST'])
 def passkey_authenticate_begin():
-    """Start usernameless passkey authentication process with better Android support."""
+    """Start usernameless passkey authentication - optimized for Android/GPM."""
     try:
         cleanup_expired_auth_records()
         
-        # This endpoint is for usernameless authentication only
         # Generate challenge for usernameless authentication
         challenge = generate_challenge()
         challenge_id = f"passkey_auth:usernameless:{int(time.time())}"
@@ -422,18 +420,17 @@ def passkey_authenticate_begin():
             db.session.add(passkey_challenge)
             db.session.commit()
         
-        # Return WebAuthn authentication options for discoverable credentials
-        # This is optimized for Android passkey support
+        # Optimized for Android - let GPM handle the credential selection
         auth_options = {
             'challenge': base64url_encode(challenge),
-            'timeout': 300000,  # Increased timeout for Android
-            'rpId': get_rp_id_from_domain(DOMAIN),  # Explicit rpId
-            'userVerification': 'preferred',  # Preferred instead of required
-            # No allowCredentials - this allows discoverable credentials to work
-            # and prevents Android from defaulting to GPM
+            'timeout': 300000,
+            'rpId': get_rp_id_from_domain(DOMAIN),
+            'userVerification': 'preferred',
+            # No allowCredentials - this is key for discoverable credentials
+            # and allows GPM to present available options to the user
         }
         
-        app.logger.info("Usernameless passkey authentication begun")
+        app.logger.info("Usernameless passkey authentication begun (Android optimized)")
         return jsonify(auth_options), 200
         
     except Exception as e:
