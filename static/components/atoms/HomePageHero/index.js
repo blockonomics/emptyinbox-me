@@ -11,7 +11,7 @@ export function renderHomePageHero() {
   title.textContent = 'POOF... And it\'s Gone!';
 
   const subtitle = document.createElement('p');
-  subtitle.innerHTML = 'Emails vanish in 7 days. Stay private.<br>Login with Web3 wallet.';
+  subtitle.innerHTML = 'Emails vanish in 7 days. Stay private.<br>Login with Passkey.';
 
   const ctaButton = document.createElement('a');
   ctaButton.href = ROUTES.LOGIN;
