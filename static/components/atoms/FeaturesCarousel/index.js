@@ -60,10 +60,12 @@ function getFeatureIcon(index) {
     </svg>`,
 
     // Privacy & Passkey Icon
-    `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/>
-      <path d="M8 12v-2a4 4 0 0 1 8 0v2"/>
-      <rect x="9" y="12" width="6" height="6" rx="1" ry="1"/>
+    `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="6" y="11" width="12" height="9" rx="2" ry="2"/>
+      <path d="M9 11V7a3 3 0 0 1 6 0v4"/>
+      <circle cx="12" cy="15" r="1" fill="currentColor"/>
+      <path d="M12 16v2"/>
+      <path d="M14 17h-4"/>
     </svg>`,
 
     // Smart Integrations
