@@ -92,8 +92,8 @@ export const FEATURES = [
       "Emails are automatically deleted after 7 days. No storage, no clutter.",
   },
   {
-    title: "Privacy-First Payments",
-    description: "Use Web 3 Wallet (USDT) for login and payment.",
+    title: "Privacy-First",
+    description: "Use anynomous passkeys for login.",
   },
   {
     title: "Intelligent",
