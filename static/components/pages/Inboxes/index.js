@@ -43,10 +43,8 @@ export async function renderInboxesPage() {
         )
       : USER_STARTING_QUOTA;
 
-    const inboxQuota =
+    const currentQuota =
       typeof userData.inbox_quota === "number" ? userData.inbox_quota : 0;
-
-    const currentQuota = maxQuota - inboxQuota;
 
     // Clear loading message
     section.innerHTML = "";
