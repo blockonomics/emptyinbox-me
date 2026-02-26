@@ -1,0 +1,29 @@
+# EmptyInbox
+
+> Privacy-friendly disposable email inbox service. Emails vanish in 7 days. Create temporary or permanent inboxes, access them with a Passkey — no tracking, no ads.
+
+## Pages
+
+- [Home](https://emptyinbox.me/): Overview of the service, key features, and getting started
+- [Pricing](https://emptyinbox.me/pricing.html): Free tier (5 inboxes) and paid tier (1 USDT per 10 additional inboxes)
+- [About](https://emptyinbox.me/about.html): Why EmptyInbox was built, how to use it, GitHub repository, and credits
+- [API Docs](https://emptyinbox.me/docs.html): REST API documentation for developers and automation workflows
+- [Login](https://emptyinbox.me/login.html): Passkey-based (WebAuthn) login — passwordless authentication
+
+## How It Works
+
+EmptyInbox provides temporary and permanent email inboxes. Each inbox gets a unique email address. Messages are automatically deleted after 7 days. Users authenticate via Passkeys (WebAuthn) so no password is needed.
+
+## Key Features
+
+- Free tier: 5 inboxes per account
+- Paid tier: 1 USDT per 10 additional inboxes (crypto payment via Blockonomics)
+- Emails auto-delete after 7 days
+- Passkey / WebAuthn authentication — no password required
+- REST API and Bash extension for developer automation and testing
+- No tracking, no ads, open source
+
+## Contact & Source
+
+- GitHub: https://github.com/blockonomics/emptyinbox-me/
+- Maintained by [Blockonomics](https://www.blockonomics.co/merchants) — crypto payment infrastructure

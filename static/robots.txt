@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /inboxes.html
+Disallow: /messages.html
+Disallow: /settings.html
+Disallow: /debug-passkeys.html
+
+Sitemap: https://emptyinbox.me/sitemap.xml
