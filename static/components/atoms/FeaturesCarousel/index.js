@@ -43,63 +43,60 @@ export function renderFeaturesCarousel() {
   return section;
 }
 
+// Lucide icons (MIT licensed — lucide.dev)
 function getFeatureIcon(index) {
   const icons = [
-    // Multiple Aliases
-    `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 7l3 3-3 3"/>
-      <path d="M21 7l-3 3 3 3"/>
-      <path d="M9 6h6"/>
-      <path d="M9 18h6"/>
-    </svg>`,
+    // MCP Server — plug-2
+    `<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 2v6"/><path d="M15 2v6"/><path d="M12 17v5"/><path d="M5 8h14"/><path d="M6 11V8h12v3a6 6 0 1 1-12 0Z"/></svg>`,
 
-    // Auto-Delete in 7 Days
-    `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/>
-      <path d="M12 6v6l4 2"/>
-    </svg>`,
+    // OpenAPI / GPT Actions — braces {}
+    `<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>`,
 
-    // Privacy & Passkey Icon
-    `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <rect x="6" y="11" width="12" height="9" rx="2" ry="2"/>
-      <path d="M9 11V7a3 3 0 0 1 6 0v4"/>
-      <circle cx="12" cy="15" r="1" fill="currentColor"/>
-      <path d="M12 16v2"/>
-      <path d="M14 17h-4"/>
-    </svg>`,
+    // Email Polling — mail-search
+    `<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 12.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h7.5"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="M18 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="m22 22-1.5-1.5"/></svg>`,
 
-    // Smart Integrations
-    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="6" cy="6" r="2"/>
-      <circle cx="18" cy="6" r="2"/>
-      <circle cx="6" cy="18" r="2"/>
-      <circle cx="18" cy="18" r="2"/>
-      <path d="M6 6 C12 6, 12 18, 18 18"/>
-      <path d="M18 6 C12 6, 12 18, 6 18"/>
-    </svg>`,
+    // API Key Auth — key-round
+    `<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>`,
+
+    // Crypto Payments — coins
+    `<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>`,
+
+    // Auto-Delete — timer
+    `<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg>`,
   ];
 
-  return icons[index % icons.length];
+  return icons[index] ?? icons[0];
 }
 
 export const FEATURES = [
   {
-    title: "Multiple Inboxes",
+    title: "MCP Server",
     description:
-      "Create new inbox to sign up to each new website. Inboxes are permanent and never deleted.",
+      "Install in Claude, Claude Code, or any MCP-compatible agent with one line: npx emptyinbox-mcp.",
+  },
+  {
+    title: "OpenAPI / GPT Actions",
+    description:
+      "Import the OpenAPI spec directly into OpenAI GPTs, LangChain, CrewAI, or any OpenAPI-compatible framework.",
+  },
+  {
+    title: "Email Polling",
+    description:
+      "Block until a verification email arrives. The primitive every agent needs for signup and OTP flows — via the wait_for_message MCP tool.",
+  },
+  {
+    title: "API Key Auth",
+    description:
+      "No passkeys, no browser sessions. Authenticate with a static API key — works headlessly from any environment.",
+  },
+  {
+    title: "Crypto Payments",
+    description:
+      "Top up inbox quota with USDT via Blockonomics. No credit card, no KYC.",
   },
   {
     title: "Auto-Delete in 7 Days",
     description:
-      "Emails are automatically deleted after 7 days. No storage, no clutter.",
-  },
-  {
-    title: "Privacy-First",
-    description: "Use anynomous passkeys for login.",
-  },
-  {
-    title: "Intelligent",
-    description:
-      "Common emails having activation code and reset password links are automatically detected",
+      "Messages are automatically purged. No cleanup needed after your agent finishes a task.",
   },
 ];

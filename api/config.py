@@ -6,7 +6,7 @@ import logging
 import os
 
 app = Flask(__name__, instance_relative_config=True)
-app.debug = True
+app.debug = os.getenv('FLASK_ENV') == 'development'
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 instance_dir = os.path.join(basedir, 'instance')

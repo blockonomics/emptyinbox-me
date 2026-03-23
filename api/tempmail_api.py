@@ -104,7 +104,7 @@ def get_messages(token):
         
     return messages
 
-@app.route('/message/<msgid>', methods=['GET'])
+@app.route(f'{url_prefix}/message/<msgid>', methods=['GET'])
 @auth_required
 def get_message(token, msgid):
     '''Returns message content for the given message id'''
@@ -180,3 +180,6 @@ def create_email():
             db.session.commit()
 
     return '', 201
+
+if __name__ == '__main__':
+    app.run(port=5000, use_reloader=True)

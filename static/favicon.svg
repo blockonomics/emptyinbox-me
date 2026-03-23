@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Rounded square background -->
+  <rect width="32" height="32" rx="7" fill="#0f2d4a"/>
+  <!-- Envelope body -->
+  <rect x="5" y="9" width="22" height="15" rx="2" stroke="white" stroke-width="1.8" fill="none"/>
+  <!-- Envelope flap lines (V shape) -->
+  <polyline points="5,11 16,19 27,11" stroke="white" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+  <!-- Checkmark (green, bottom-right) -->
+  <circle cx="22.5" cy="22.5" r="5" fill="#0f2d4a"/>
+  <circle cx="22.5" cy="22.5" r="5" fill="#10b981"/>
+  <polyline points="19.5,22.5 21.5,24.5 25.5,20.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

@@ -207,6 +207,58 @@
   }
 }
 
+/* Hero CTA group */
+.hero-cta-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+/* Terminal-style npx snippet */
+.npm-snippet {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #0f172a;
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.npm-prompt {
+  color: #10b981;
+  font-family: monospace;
+  font-weight: 700;
+  user-select: none;
+}
+
+.npm-snippet code {
+  font-family: monospace;
+  color: #e2e8f0;
+  background: none;
+  padding: 0;
+  letter-spacing: 0.01em;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  margin-left: 0.25rem;
+  transition: color 0.15s;
+}
+
+.copy-btn:hover {
+  color: #10b981;
+}
+
 /* Section layout */
 .integrations-section {
   padding: 4rem 2rem;

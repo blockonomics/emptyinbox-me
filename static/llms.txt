@@ -1,29 +1,62 @@
 # EmptyInbox
 
-> Privacy-friendly disposable email inbox service. Emails vanish in 7 days. Create temporary or permanent inboxes, access them with a Passkey — no tracking, no ads.
+> Disposable email inbox API for AI agents and developers. Create temporary email addresses, receive messages, and read content — no browser required.
+
+## API Access
+
+- Base URL: https://emptyinbox.me/api
+- Auth: `Authorization: Bearer <api_key>`
+- Get your API key: https://emptyinbox.me/settings.html
+- OpenAPI spec: https://emptyinbox.me/openapi.yaml
+
+## MCP Server
+
+Install for Claude, Claude Code, or any MCP-compatible agent:
+
+```json
+{
+  "mcpServers": {
+    "emptyinbox": {
+      "command": "npx",
+      "args": ["emptyinbox-mcp"],
+      "env": { "EMPTYINBOX_API_KEY": "your_api_key_here" }
+    }
+  }
+}
+```
+
+npm package: `emptyinbox-mcp`
+
+## REST API Endpoints
+
+- `POST /api/inbox` — create a new disposable inbox, returns email address as plain text
+- `GET /api/inboxes` — list all inboxes `[{inbox, created_at}]`
+- `GET /api/messages` — list all messages `[{id, inbox, subject, text_body, html_body, sender, timestamp}]`
+- `GET /api/message/{id}` — get full message content
+
+## Typical Agent Workflow
+
+1. `POST /api/inbox` → get a disposable address
+2. Use that address in an external signup or verification flow
+3. `GET /api/messages` → poll until the verification email appears
+4. Read the code or link from `text_body` or `html_body`
+
+The MCP `wait_for_message` tool handles the polling loop automatically.
+
+## Pricing
+
+- Free: 5 inboxes per account
+- Paid: 1 USDT or equivalent BTC per 10 additional inboxes
+- Payments via Blockonomics (USDT) — no credit card, no KYC
 
 ## Pages
 
-- [Home](https://emptyinbox.me/): Overview of the service, key features, and getting started
-- [Pricing](https://emptyinbox.me/pricing.html): Free tier (5 inboxes) and paid tier (1 USDT per 10 additional inboxes)
-- [About](https://emptyinbox.me/about.html): Why EmptyInbox was built, how to use it, GitHub repository, and credits
-- [API Docs](https://emptyinbox.me/docs.html): REST API documentation for developers and automation workflows
-- [Login](https://emptyinbox.me/login.html): Passkey-based (WebAuthn) login — passwordless authentication
+- [Home](https://emptyinbox.me/): Overview and quickstart
+- [API Docs](https://emptyinbox.me/docs.html): REST API documentation
+- [Pricing](https://emptyinbox.me/pricing.html): Free and paid tiers
+- [Login](https://emptyinbox.me/login.html): Get your API key
 
-## How It Works
+## Source & Contact
 
-EmptyInbox provides temporary and permanent email inboxes. Each inbox gets a unique email address. Messages are automatically deleted after 7 days. Users authenticate via Passkeys (WebAuthn) so no password is needed.
-
-## Key Features
-
-- Free tier: 5 inboxes per account
-- Paid tier: 1 USDT per 10 additional inboxes (crypto payment via Blockonomics)
-- Emails auto-delete after 7 days
-- Passkey / WebAuthn authentication — no password required
-- REST API and Bash extension for developer automation and testing
-- No tracking, no ads, open source
-
-## Contact & Source
-
-- GitHub: https://github.com/blockonomics/emptyinbox-me/
-- Maintained by [Blockonomics](https://www.blockonomics.co/merchants) — crypto payment infrastructure
+- GitHub: https://github.com/blockonomics/emptyinbox-me
+- Maintained by [Blockonomics](https://www.blockonomics.co/merchants)

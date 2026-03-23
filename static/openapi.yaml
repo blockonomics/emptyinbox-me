@@ -1,0 +1,178 @@
+openapi: 3.1.0
+info:
+  title: EmptyInbox API
+  description: |
+    Disposable email inbox API for AI agents and developers.
+
+    Create temporary email addresses, receive messages, and read content — all via REST.
+    No browser required. Authenticate with a static API key.
+
+    **Typical agent workflow:**
+    1. `POST /inbox` — create a disposable address
+    2. Trigger an external signup/verification using that address
+    3. `GET /messages` — poll until the email arrives
+    4. Read the verification code or link from the message body
+
+    Get your API key at https://emptyinbox.me/settings.html
+  version: 1.0.0
+  contact:
+    url: https://emptyinbox.me
+
+servers:
+  - url: https://emptyinbox.me/api
+    description: Production
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Your API key from https://emptyinbox.me/settings.html
+        Usage: `Authorization: Bearer <your_api_key>`
+
+  schemas:
+    MessageSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "a1b2c3d4"
+        inbox:
+          type: string
+          example: "clever.sunny.butterfly@emptyinbox.me"
+        subject:
+          type: string
+          example: "Confirm your email address"
+        text_body:
+          type: string
+          example: "Your verification code is 482910"
+        html_body:
+          type: string
+          example: "<p>Your verification code is <strong>482910</strong></p>"
+        sender:
+          type: string
+          example: "noreply@example.com"
+        timestamp:
+          type: integer
+          description: Unix timestamp
+          example: 1711234567
+
+    MessageFull:
+      type: object
+      properties:
+        recipients:
+          type: array
+          items:
+            type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        text_body:
+          type: string
+        html_body:
+          type: string
+        sender:
+          type: string
+
+    Inbox:
+      type: object
+      properties:
+        inbox:
+          type: string
+          example: "clever.sunny.butterfly@emptyinbox.me"
+        created_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+paths:
+  /inbox:
+    post:
+      operationId: createInbox
+      summary: Create a new disposable email inbox
+      description: |
+        Creates a new inbox and returns its email address as plain text.
+        Each inbox consumes 1 from your quota. Free accounts include 5 inboxes.
+      responses:
+        "201":
+          description: Inbox created — returns the email address
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: clever.sunny.butterfly@emptyinbox.me
+        "401":
+          description: Missing or invalid API key
+        "403":
+          description: Insufficient inbox quota
+
+  /inboxes:
+    get:
+      operationId: listInboxes
+      summary: List all inboxes for this account
+      description: Returns all inboxes belonging to the authenticated account, newest first.
+      responses:
+        "200":
+          description: Array of inbox objects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Inbox"
+        "401":
+          description: Missing or invalid API key
+
+  /messages:
+    get:
+      operationId: listMessages
+      summary: List all received messages
+      description: |
+        Returns all messages across all inboxes, newest first.
+        Poll this endpoint after triggering a signup or verification flow to wait for the email.
+        Messages are automatically deleted after 7 days.
+      responses:
+        "200":
+          description: Array of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MessageSummary"
+        "401":
+          description: Missing or invalid API key
+
+  /message/{msgid}:
+    get:
+      operationId: getMessage
+      summary: Get full content of a specific message
+      description: Returns the raw parsed email content including all headers and body parts.
+      parameters:
+        - name: msgid
+          in: path
+          required: true
+          schema:
+            type: string
+          example: a1b2c3d4
+      responses:
+        "200":
+          description: Full message content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageFull"
+        "401":
+          description: Missing or invalid API key
+        "404":
+          description: Message not found

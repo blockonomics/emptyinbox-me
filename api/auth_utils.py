@@ -29,25 +29,11 @@ def auth_required(f):
                 app.logger.info("Authenticated via session token")
                 return f(token, *args, **kwargs)
             
-            # If not found as session token, try as API key
+            # If not found as session token, try as API key directly
             user = db.session.query(User).filter_by(api_key=token).first()
             if user:
-                # Find the user's most recent active session
-                session = (
-                    db.session.query(UserSession)
-                    .filter_by(user_id=user.user_id)
-                    .filter(UserSession.expires_at > datetime.utcnow())
-                    .order_by(UserSession.login_time.desc())
-                    .first()
-                )
-                
-                if session:
-                    app.logger.info("Authenticated via API key, found active session")
-                    # Pass the session token, not the API key
-                    return f(session.token, *args, **kwargs)
-                else:
-                    app.logger.error("API key valid but no active session found")
-                    abort(401)
+                app.logger.info("Authenticated via API key")
+                return f(token, *args, **kwargs)
             
             app.logger.error("Invalid token/API key")
             abort(401)
@@ -55,6 +41,11 @@ def auth_required(f):
     return decorator
 
 def get_api_key_from_token(token):
+    # If the token is itself an API key, return it directly
+    direct = db.session.query(User.api_key).filter_by(api_key=token).scalar()
+    if direct:
+        return direct
+    # Otherwise look it up via session
     return (
         db.session.query(User.api_key)
         .join(UserSession, User.user_id == UserSession.user_id)
