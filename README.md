@@ -1,56 +1,103 @@
-## Setup nginx
-Install nginx on ubuntu if not already and enable site using nginx/emptyinbox_nginx.conf (Make sure to change root)
+# EmptyInbox
 
-## Setup postfix
-- sudo apt install postfix  
-- It will give selection select *No configuration*
-- `sudo cp /usr/share/postfix/main.cf.debian /etc/postfix/main.cf`
-- `sudo postfix/setup_postfix.sh [POSTFIX_HOSTNAME] [YOUR_DOMAIN] [YOUR_SECRET]`
-- You should get the following message  
-*postfix configured. Starting up*
+Disposable email inbox API for AI agents and developers. Create temporary email addresses, receive messages, and read content — via REST API or MCP server.
 
-## Run gunicorn
-Inside API directory create .env file with following entry    
-`
-DOMAIN=<YOUR_DOMAIN>
-SECRET=<YOUR_SECRET>
-FLASK_ENV=<development|production>
-BLOCKONOMICS_API_KEY=<YOUR_BLOCKONOMICS_API_KEY>
-USDT_RECEIVING_ADDRESS=<YOUR_USDT_RECEIVING_ADDRESS>
-MATCH_CALLBACK=<YOUR_MATCH_CALLBACK>
-`
-- First setup python packages using `pipenv install`
-- Setup db_model `pipenv run create_db` 
-- Run server using `pipenv run start`
+**Live at [emptyinbox.me](https://emptyinbox.me)**
 
-## Sample Run
-`
-curl -d'{}' -H "Authorization:Bearer btc" http://emptyinbox.me/api/inbox
-creepy.tiny.advice@emptyinbox.me
-`
-  
-`
-curl  -H "Authorization:Bearer btc" http://emptyinbox.me/api/inboxes
-[
-  "creepy.tiny.advice@emptyinbox.me"
-]
-`
-  
-`
-curl  -H "Authorization:Bearer btc" http://emptyinbox.me/api/messages
-[
-  {
-    "id": "f3d6dfd6",
-    "inbox": "creepy.tiny.advice@emptyinbox.me"
-  },
-  {
-    "id": "0e3ffc23",
-    "inbox": "creepy.tiny.advice@emptyinbox.me"
+## MCP Server (Claude / Claude Code / any MCP agent)
+
+```json
+{
+  "mcpServers": {
+    "emptyinbox": {
+      "command": "npx",
+      "args": ["emptyinbox-mcp"],
+      "env": {
+        "EMPTYINBOX_API_KEY": "your_api_key_here"
+      }
+    }
   }
-]
-`
-  
-`
-curl  -H "Authorization:Bearer btc" http://emptyinbox.me/api/message/0e3ffc23
-{"sender": "ubuntu@emptyinbox.me", "recipients": ["creepy.tiny.advice@emptyinbox.me"], "headers": {"Received": "by emptyinbox.me (Postfix, from userid 1000)\tid 9687540509; Mon,  4 Aug 2025 04:44:35 +0000 (UTC)", "Subject": "hello", "Message-Id": "<20250804044435.9687540509@emptyinbox.me>", "Date": "Mon, 04 Aug 2025 04:44:35 +0000", "From": "Ubuntu <ubuntu@emptyinbox.me>"}, "body": "Received: by emptyinbox.me (Postfix, from userid 1000)\r\n\tid 9687540509; Mon,  4 Aug 2025 04:44:35 +0000 (UTC)\r\nSubject: hello\r\nMessage-Id: <20250804044435.9687540509@emptyinbox.me>\r\nDate: Mon,  4 Aug 2025 04:44:35 +0000 (UTC)\r\nFrom: Ubuntu <ubuntu@emptyinbox.me>\r\n\r\n"}
-`
+}
+```
+
+Get your API key at https://emptyinbox.me/settings.html
+
+## REST API
+
+Base URL: `https://emptyinbox.me/api`
+Auth: `Authorization: Bearer <api_key>`
+OpenAPI spec: `https://emptyinbox.me/openapi.yaml`
+
+```bash
+# Create an inbox
+curl -X POST -H "Authorization: Bearer YOUR_KEY" https://emptyinbox.me/api/inbox
+
+# List messages
+curl -H "Authorization: Bearer YOUR_KEY" https://emptyinbox.me/api/messages
+
+# Read a message
+curl -H "Authorization: Bearer YOUR_KEY" https://emptyinbox.me/api/message/MSG_ID
+```
+
+## Typical agent workflow
+
+1. `POST /api/inbox` → get a disposable address
+2. Use that address in an external signup or verification flow
+3. `GET /api/messages` → poll until the verification email appears
+4. Read the code or link from `text_body`
+
+## Self-hosting
+
+### Requirements
+- Ubuntu server
+- Python 3 + pipenv
+- Nginx
+- Postfix
+
+### Setup
+
+**1. Clone and configure**
+```bash
+git clone https://github.com/blockonomics/emptyinbox-me
+cd emptyinbox-me/api
+cp .env.example .env   # fill in your values
+```
+
+**.env variables:**
+```
+DOMAIN=yourdomain.com
+SECRET=your_postfix_webhook_secret
+FLASK_ENV=production
+BLOCKONOMICS_API_KEY=your_blockonomics_api_key
+USDT_RECEIVING_ADDRESS=your_usdt_address
+MATCH_CALLBACK=https://yourdomain.com/api/payments/callback
+```
+
+**2. Database**
+```bash
+pipenv install
+pipenv run create_db
+```
+
+**3. Gunicorn**
+```bash
+pipenv run start
+```
+
+**4. Nginx**
+```bash
+sudo cp nginx/emptyinbox_nginx.conf /etc/nginx/sites-available/emptyinbox_nginx.conf
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+**5. Postfix**
+```bash
+sudo apt install postfix   # select "No configuration"
+sudo cp /usr/share/postfix/main.cf.debian /etc/postfix/main.cf
+sudo postfix/setup_postfix.sh YOUR_HOSTNAME YOUR_DOMAIN YOUR_SECRET
+```
+
+## Pricing
+
+- Free: 5 inboxes per account
+- Paid: 1 USDT per 10 additional inboxes (via Blockonomics — no credit card, no KYC)
