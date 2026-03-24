@@ -4,16 +4,28 @@ MCP server for [EmptyInbox](https://emptyinbox.me) — create disposable email i
 
 ## Setup
 
-1. Get your API key at https://emptyinbox.me/settings.html
-2. Add to your MCP config:
+**Zero config — just add to your MCP config and it works:**
 
-**Claude Desktop / Claude Code** (`~/.claude/claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
     "emptyinbox": {
       "command": "npx",
-      "args": ["emptyinbox-mcp"],
+      "args": ["-y", "emptyinbox-mcp"]
+    }
+  }
+}
+```
+
+On first use, the agent calls `register_account` to create a free account automatically. The API key is saved to `~/.emptyinbox.json` for future sessions.
+
+**Bring your own account** (optional — for more than 1 inbox quota):
+```json
+{
+  "mcpServers": {
+    "emptyinbox": {
+      "command": "npx",
+      "args": ["-y", "emptyinbox-mcp"],
       "env": {
         "EMPTYINBOX_API_KEY": "your_api_key_here"
       }
@@ -21,6 +33,8 @@ MCP server for [EmptyInbox](https://emptyinbox.me) — create disposable email i
   }
 }
 ```
+
+Get an API key at https://emptyinbox.me/settings.html
 
 ## Tools
 
