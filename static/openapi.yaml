@@ -7,14 +7,17 @@ info:
     Create temporary email addresses, receive messages, and read content — all via REST.
     No browser required. Authenticate with a static API key.
 
-    **Typical agent workflow:**
-    1. `POST /inbox` — create a disposable address
-    2. Trigger an external signup/verification using that address
-    3. `GET /messages` — poll until the email arrives
-    4. Read the verification code or link from the message body
+    **Zero-config agent workflow:**
+    1. `POST /auth/register` — create a free account and get an API key (no passkey needed)
+    2. `POST /inbox` — create a disposable address
+    3. Trigger an external signup/verification using that address
+    4. `GET /messages` — poll until the email arrives
+    5. Read the verification code or link from the message body
 
-    Get your API key at https://emptyinbox.me/settings.html
-  version: 1.0.0
+    Or use the [emptyinbox-mcp](https://www.npmjs.com/package/emptyinbox-mcp) package — auto-registers on first run, no setup needed.
+
+    Human accounts: get your API key at https://emptyinbox.me/settings.html
+  version: 1.1.0
   contact:
     url: https://emptyinbox.me
 
@@ -31,7 +34,7 @@ components:
       type: http
       scheme: bearer
       description: |
-        Your API key from https://emptyinbox.me/settings.html
+        Your API key. Obtain one by calling `POST /auth/register` (agents) or from https://emptyinbox.me/settings.html (humans).
         Usage: `Authorization: Bearer <your_api_key>`
 
   schemas:
@@ -89,6 +92,29 @@ components:
           type: string
           format: date-time
 
+    RegisterResult:
+      type: object
+      properties:
+        api_key:
+          type: string
+          example: "eiXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        username:
+          type: string
+          example: "agent-k3j9f2ab"
+        inbox_quota:
+          type: integer
+          example: 1
+
+    QuotaResult:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "agent-k3j9f2ab"
+        inbox_quota:
+          type: integer
+          example: 1
+
     Error:
       type: object
       properties:
@@ -96,13 +122,72 @@ components:
           type: string
 
 paths:
+  /auth/register:
+    post:
+      operationId: registerAccount
+      summary: Register a new agent account
+      description: |
+        Creates a new account and returns an API key. No passkey or browser required.
+        Agent accounts start with 1 inbox quota. Rate limited to 3 registrations per IP per 24 hours.
+        Save the returned `api_key` for all subsequent requests.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username]
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 32
+                  description: Letters, numbers, hyphens, and underscores only
+                  example: "agent-k3j9f2ab"
+      responses:
+        "200":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResult"
+        "400":
+          description: Invalid or taken username
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded (3 registrations per IP per 24 hours)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/me:
+    get:
+      operationId: getQuota
+      summary: Get account info and remaining inbox quota
+      description: Returns the authenticated account's username and remaining inbox quota.
+      responses:
+        "200":
+          description: Account info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuotaResult"
+        "401":
+          description: Missing or invalid API key
+
   /inbox:
     post:
       operationId: createInbox
       summary: Create a new disposable email inbox
       description: |
         Creates a new inbox and returns its email address as plain text.
-        Each inbox consumes 1 from your quota. Free accounts include 5 inboxes.
+        Each inbox consumes 1 from your quota. Agent accounts start with 1 inbox; human accounts start with 5.
+        Buy more quota at https://emptyinbox.me/inboxes.html
       responses:
         "201":
           description: Inbox created — returns the email address
