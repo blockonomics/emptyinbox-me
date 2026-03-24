@@ -1,6 +1,6 @@
 {
   "name": "emptyinbox-mcp",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "MCP server for EmptyInbox — create disposable email inboxes and read messages for AI agents",
   "keywords": ["mcp", "email", "disposable", "temporary", "ai-agent", "claude", "openai", "langchain"],
   "license": "MIT",

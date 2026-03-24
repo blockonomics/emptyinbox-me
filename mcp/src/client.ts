@@ -23,7 +23,7 @@ export interface Inbox {
   created_at: string;
 }
 
-export async function registerAgent(username: string): Promise<{ api_key: string; inbox_quota: number }> {
+export async function registerAgent(username: string): Promise<{ api_key: string; username: string; inbox_quota: number }> {
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

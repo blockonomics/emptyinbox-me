@@ -2,7 +2,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 import { EmptyInboxClient, registerAgent } from "./client.js";
@@ -46,6 +46,32 @@ const client = new EmptyInboxClient(apiKey);
 const server = new McpServer({
   name: "emptyinbox",
   version: "1.0.0",
+});
+
+server.registerTool("register_account", {
+  description: "Register a new EmptyInbox account and get an API key. Use this if there is no account configured yet, or if authentication is failing. Saves the key locally for future sessions.",
+  inputSchema: {
+    username: z.string().min(3).max(32).describe("Desired username (3-32 chars, letters/numbers/hyphens/underscores)"),
+  },
+}, async ({ username }) => {
+  try {
+    const result = await registerAgent(username);
+    storeKey(result.api_key, username);
+    // Update the running client with the new key
+    (client as any).headers["Authorization"] = `Bearer ${result.api_key}`;
+    return { content: [{ type: "text" as const, text: JSON.stringify({
+      success: true,
+      username: result.username,
+      api_key: result.api_key,
+      inbox_quota: result.inbox_quota,
+      message: `Account created. API key saved to ${CONFIG_PATH}`,
+    }, null, 2) }] };
+  } catch (err: any) {
+    return { content: [{ type: "text" as const, text: JSON.stringify({
+      success: false,
+      error: err.message,
+    }, null, 2) }] };
+  }
 });
 
 server.registerTool("get_quota", {

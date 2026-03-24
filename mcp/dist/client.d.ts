@@ -21,6 +21,7 @@ export interface Inbox {
 }
 export declare function registerAgent(username: string): Promise<{
     api_key: string;
+    username: string;
     inbox_quota: number;
 }>;
 export declare class EmptyInboxClient {
