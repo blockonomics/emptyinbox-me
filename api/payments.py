@@ -38,6 +38,13 @@ def get_current_user():
 def error_response(message: str, code: int = 400):
     return jsonify({'error': message}), code
 
+@payments_bp.route('/config', methods=['GET'])
+def get_payment_config():
+    return jsonify({
+        'receive_address': USDT_ADDRESS,
+        'quota_per_usdt': 10,
+    })
+
 @payments_bp.route('/monitor', methods=['POST'])
 def monitor_transaction():
     current_user_id = get_current_user()

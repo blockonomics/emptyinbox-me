@@ -59,4 +59,10 @@ export class EmptyInboxClient {
     if (!res.ok) throw new Error(`getMessage failed: ${res.status} ${await res.text()}`);
     return res.json();
   }
+
+  async getQuota(): Promise<{ inbox_quota: number; username: string }> {
+    const res = await fetch(`${BASE_URL}/auth/me`, { headers: this.headers });
+    if (!res.ok) throw new Error(`getQuota failed: ${res.status} ${await res.text()}`);
+    return res.json();
+  }
 }

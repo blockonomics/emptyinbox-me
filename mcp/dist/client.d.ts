@@ -25,4 +25,8 @@ export declare class EmptyInboxClient {
     listInboxes(): Promise<Inbox[]>;
     listMessages(): Promise<MessageSummary[]>;
     getMessage(msgid: string): Promise<MessageFull>;
+    getQuota(): Promise<{
+        inbox_quota: number;
+        username: string;
+    }>;
 }

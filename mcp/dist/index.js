@@ -14,6 +14,18 @@ const server = new McpServer({
     name: "emptyinbox",
     version: "1.0.0",
 });
+server.registerTool("get_quota", {
+    description: "Check remaining inbox quota. If quota is low, returns a payment URL the user can visit to top up with USDT.",
+}, async () => {
+    const { inbox_quota, username } = await client.getQuota();
+    const purchaseUrl = `https://emptyinbox.me/purchase.html?api_key=${apiKey}`;
+    const result = { username, inbox_quota };
+    if (inbox_quota <= 2) {
+        result.warning = "Quota is low.";
+        result.top_up_url = purchaseUrl;
+    }
+    return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+});
 server.registerTool("create_inbox", {
     description: "Create a new disposable email inbox. Returns the email address. Use this before triggering any signup or email verification flow.",
 }, async () => {

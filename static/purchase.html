@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buy Quota — EmptyInbox</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      color: #1f2937;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+    }
+
+    .logo {
+      height: 36px;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .amount-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .amount-row label {
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+
+    .amount-input {
+      width: 100px;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      text-align: center;
+    }
+
+    .rate {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 1.5rem;
+    }
+
+    #widget-container {
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .status {
+      margin-top: 1.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .status.success {
+      background: #ecfdf5;
+      color: #065f46;
+      display: block;
+    }
+
+    .status.error {
+      background: #fef2f2;
+      color: #991b1b;
+      display: block;
+    }
+
+    .status.pending {
+      background: #fffbeb;
+      color: #92400e;
+      display: block;
+    }
+
+    .back {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: #6b7280;
+      text-decoration: none;
+    }
+
+    .back:hover { color: #10b981; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox" class="logo" />
+    <h1>Buy Inbox Quota</h1>
+    <p class="subtitle" id="subtitle">Loading payment details...</p>
+
+    <div class="amount-row">
+      <label for="amount-input">USDT amount</label>
+      <input type="number" id="amount-input" class="amount-input" min="1" step="1" value="10" />
+    </div>
+    <div class="rate">1 USDT = 10 inboxes</div>
+
+    <div id="widget-container">
+      <script src="https://blockonomics.co/js/web3-payment.js"></script>
+      <web3-payment
+        id="web3-payment-widget"
+        order_amount="10"
+        receive_address=""
+        testnet="0"
+      ></web3-payment>
+    </div>
+
+    <div id="status" class="status"></div>
+    <a href="/inboxes.html" class="back">← Back to inboxes</a>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const apiKey = params.get('api_key');
+    const defaultAmount = parseInt(params.get('amount') || '10');
+
+    const widget = document.getElementById('web3-payment-widget');
+    const amountInput = document.getElementById('amount-input');
+    const statusEl = document.getElementById('status');
+    const subtitleEl = document.getElementById('subtitle');
+
+    amountInput.value = defaultAmount;
+    widget.setAttribute('order_amount', defaultAmount);
+
+    if (!apiKey) {
+      subtitleEl.textContent = 'Missing API key. Please use the link provided by your agent.';
+      showStatus('error', 'No API key found in URL. Expected: /purchase.html?api_key=YOUR_KEY');
+    } else {
+      subtitleEl.textContent = `Paying for API key: ${apiKey.slice(0, 8)}...`;
+
+      // Load USDT receiving address from backend
+      fetch('/api/payments/config')
+        .then(r => r.json())
+        .then(config => {
+          widget.setAttribute('receive_address', config.receive_address);
+        })
+        .catch(() => showStatus('error', 'Failed to load payment config. Please try again.'));
+    }
+
+    // Update widget amount when input changes
+    amountInput.addEventListener('input', () => {
+      const val = parseInt(amountInput.value) || 1;
+      widget.setAttribute('order_amount', val);
+    });
+
+    // Handle payment submission
+    widget.onTxnSubmitted = function(result) {
+      const { txhash, crypto } = result;
+      const quotaAmount = parseInt(amountInput.value) * 10;
+
+      showStatus('pending', 'Payment submitted. Waiting for confirmation...');
+
+      fetch('/api/payments/monitor', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ txhash, quotaAmount }),
+      })
+        .then(r => r.json())
+        .then(() => {
+          showStatus('success', `Payment received! ${quotaAmount} inboxes will be credited once the transaction confirms on-chain (usually 1-2 minutes).`);
+        })
+        .catch(() => {
+          showStatus('error', 'Payment was sent but we could not reach the server. Contact support with txhash: ' + txhash);
+        });
+    };
+
+    function showStatus(type, message) {
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = message;
+    }
+  </script>
+</body>
+</html>
