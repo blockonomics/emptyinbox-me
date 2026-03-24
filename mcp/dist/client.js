@@ -1,4 +1,16 @@
-const BASE_URL = process.env.EMPTYINBOX_BASE_URL ?? "https://emptyinbox.me/api";
+export const BASE_URL = process.env.EMPTYINBOX_BASE_URL ?? "https://emptyinbox.me/api";
+export async function registerAgent(username) {
+    const res = await fetch(`${BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Registration failed: ${res.status} ${text}`);
+    }
+    return res.json();
+}
 export class EmptyInboxClient {
     headers;
     constructor(apiKey) {

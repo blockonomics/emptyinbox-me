@@ -1,3 +1,4 @@
+export declare const BASE_URL: string;
 export interface MessageSummary {
     id: string;
     inbox: string;
@@ -18,6 +19,10 @@ export interface Inbox {
     inbox: string;
     created_at: string;
 }
+export declare function registerAgent(username: string): Promise<{
+    api_key: string;
+    inbox_quota: number;
+}>;
 export declare class EmptyInboxClient {
     private headers;
     constructor(apiKey: string);

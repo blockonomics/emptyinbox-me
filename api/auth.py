@@ -627,3 +627,59 @@ def auth_logout(token):
         app.logger.error(f"Logout error: {e}")
         db.session.rollback()
         return error_response('Logout failed', 500)
+
+# In-memory rate limit store: {ip: [timestamp, ...]}
+_register_attempts: dict = {}
+AGENT_STARTING_QUOTA = 1
+REGISTER_LIMIT = 3       # max registrations
+REGISTER_WINDOW = 86400  # per 24 hours
+
+@auth_bp.route('/register', methods=['POST'])
+def agent_register():
+    """Programmatic registration for agents. Returns api_key directly."""
+    try:
+        # Rate limit by IP
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
+        now = time.time()
+        attempts = [t for t in _register_attempts.get(ip, []) if now - t < REGISTER_WINDOW]
+        if len(attempts) >= REGISTER_LIMIT:
+            return error_response('Rate limit exceeded. Max 3 registrations per IP per day.', 429)
+        _register_attempts[ip] = attempts + [now]
+
+        data = request.get_json() or {}
+        username = data.get('username', '').strip()
+
+        if not username:
+            return error_response('username is required', 400)
+        if len(username) < 3 or len(username) > 32:
+            return error_response('username must be 3-32 characters', 400)
+        if not username.replace('-', '').replace('_', '').isalnum():
+            return error_response('username may only contain letters, numbers, hyphens and underscores', 400)
+
+        # Check uniqueness
+        if db.session.query(User).filter_by(username=username).first():
+            return error_response('username already taken', 409)
+
+        api_key = create_user_token(username)[:32]
+        user_id = generate_user_id()
+        user = User(
+            user_id=user_id,
+            username=username,
+            api_key=api_key,
+            inbox_quota=AGENT_STARTING_QUOTA,
+        )
+        db.session.add(user)
+        db.session.commit()
+
+        app.logger.info(f"Agent registration: {username} from {ip}")
+
+        return jsonify({
+            'api_key': api_key,
+            'username': username,
+            'inbox_quota': AGENT_STARTING_QUOTA,
+        }), 201
+
+    except Exception as e:
+        app.logger.error(f"Agent registration failed: {e}")
+        db.session.rollback()
+        return error_response('Registration failed', 500)

@@ -2,12 +2,40 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { EmptyInboxClient } from "./client.js";
-const apiKey = process.env.EMPTYINBOX_API_KEY;
+import { readFileSync, writeFileSync } from "fs";
+import { homedir } from "os";
+import { join } from "path";
+import { EmptyInboxClient, registerAgent } from "./client.js";
+const CONFIG_PATH = join(homedir(), ".emptyinbox.json");
+function loadStoredKey() {
+    try {
+        const data = JSON.parse(readFileSync(CONFIG_PATH, "utf8"));
+        return data.api_key ?? null;
+    }
+    catch {
+        return null;
+    }
+}
+function storeKey(api_key, username) {
+    writeFileSync(CONFIG_PATH, JSON.stringify({ api_key, username }, null, 2));
+}
+let apiKey = process.env.EMPTYINBOX_API_KEY ?? loadStoredKey();
 if (!apiKey) {
-    console.error("Error: EMPTYINBOX_API_KEY environment variable is required.");
-    console.error("Get your API key at https://emptyinbox.me/settings.html");
-    process.exit(1);
+    // Auto-register with a generated username
+    const username = `agent-${Math.random().toString(36).slice(2, 10)}`;
+    try {
+        process.stderr.write(`[emptyinbox] No API key found. Registering as "${username}"...\n`);
+        const result = await registerAgent(username);
+        apiKey = result.api_key;
+        storeKey(apiKey, username);
+        process.stderr.write(`[emptyinbox] Registered! API key saved to ${CONFIG_PATH}\n`);
+        process.stderr.write(`[emptyinbox] Starting quota: ${result.inbox_quota} inbox\n`);
+    }
+    catch (err) {
+        process.stderr.write(`[emptyinbox] Registration failed: ${err}\n`);
+        process.stderr.write(`[emptyinbox] Set EMPTYINBOX_API_KEY or visit https://emptyinbox.me/login.html\n`);
+        process.exit(1);
+    }
 }
 const client = new EmptyInboxClient(apiKey);
 const server = new McpServer({
