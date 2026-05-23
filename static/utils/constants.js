@@ -8,6 +8,9 @@ export const ROUTES = {
   PRICING: "/pricing.html",
   MESSAGES: "/messages.html",
   API_DOCS: "/docs.html",
+  BLOG: "/blog/",
+  PRIVACY: "/privacy.html",
+  TERMS: "/terms.html",
 };
 
 export const TEXT = {
@@ -22,16 +25,23 @@ export const NAV_LINKS = [
   { label: "Inboxes", href: ROUTES.INBOXES },
   { label: "Settings", href: ROUTES.SETTINGS },
   { label: "Pricing", href: ROUTES.PRICING },
-  { label: "About", href: ROUTES.ABOUT },
-  { label: "API Docs", href: ROUTES.API_DOCS },
-  {
-    label: "Fork on GitHub",
-    href: "https://github.com/blockonomics/emptyinbox-me",
-    external: true,
-    icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg",
-    className: "fork-button",
-  },
 ];
+
+export const FOOTER_LINKS = {
+  product: [
+    { label: "Pricing", href: ROUTES.PRICING },
+    { label: "API Docs", href: ROUTES.API_DOCS },
+  ],
+  company: [
+    { label: "About", href: ROUTES.ABOUT },
+    { label: "Blog", href: ROUTES.BLOG },
+    { label: "GitHub", href: "https://github.com/blockonomics/emptyinbox-me", external: true },
+  ],
+  legal: [
+    { label: "Privacy", href: ROUTES.PRIVACY },
+    { label: "Terms", href: ROUTES.TERMS },
+  ],
+};
 
 export const LOGO = {
   src: "../assets/emptyinboxlogo.png",
@@ -39,7 +49,7 @@ export const LOGO = {
 };
 
 export const API_BASE_URL =
-  window.location.hostname === "localhost"
+  window.location.hostname === "localhost" || window.location.hostname === ""
     ? "http://localhost:5000"
     : "https://emptyinbox.me";
 

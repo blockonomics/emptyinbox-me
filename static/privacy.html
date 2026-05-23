@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — EmptyInbox.me</title>
+  <meta name="description" content="Privacy Policy for EmptyInbox.me — how we collect, use, and protect your data." />
+  <link rel="canonical" href="https://emptyinbox.me/privacy.html" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/navbar.css" />
+  <link rel="stylesheet" href="css/footer.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    .legal-page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: var(--space-12) var(--space-6) var(--space-16);
+    }
+    .legal-page h1 {
+      font-size: var(--text-3xl);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-2);
+    }
+    .legal-updated {
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-10);
+    }
+    .legal-page h2 {
+      font-size: var(--text-xl);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin-top: var(--space-10);
+      margin-bottom: var(--space-3);
+    }
+    .legal-page p, .legal-page li {
+      color: var(--color-text-secondary);
+      line-height: 1.75;
+      font-size: var(--text-base);
+    }
+    .legal-page ul {
+      padding-left: var(--space-6);
+      margin-bottom: var(--space-4);
+    }
+    .legal-page li { margin-bottom: var(--space-2); }
+    .legal-page a { color: var(--color-primary); }
+  </style>
+</head>
+<body>
+
+  <!-- Static navbar — JS replaces after auth check -->
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="legal-page">
+      <h1>Privacy Policy</h1>
+      <p class="legal-updated">Last updated: May 23, 2026</p>
+
+      <h2>What we collect</h2>
+      <p>EmptyInbox.me collects only what is necessary to operate the service:</p>
+      <ul>
+        <li><strong>Account data:</strong> A passkey credential and a derived user identifier. No email address or password is stored.</li>
+        <li><strong>Inbox and message data:</strong> Emails delivered to your disposable inboxes are stored temporarily and automatically deleted after 7 days.</li>
+        <li><strong>Usage data:</strong> Inbox quota usage and API key activity for billing and abuse prevention.</li>
+        <li><strong>Payment data:</strong> Cryptocurrency transaction hashes processed via Blockonomics. No credit card or personal financial data is stored by us.</li>
+      </ul>
+
+      <h2>How we use it</h2>
+      <ul>
+        <li>To deliver and display email messages to authenticated users.</li>
+        <li>To enforce quota limits and prevent abuse.</li>
+        <li>To process payments and credit inbox quota.</li>
+      </ul>
+
+      <h2>Data retention</h2>
+      <p>Inbox messages are deleted automatically after 7 days. You can delete individual inboxes at any time. Deleting all inboxes does not delete your account; contact us via <a href="https://github.com/blockonomics/emptyinbox-me" target="_blank" rel="noopener noreferrer">GitHub</a> to request full account deletion.</p>
+
+      <h2>Third parties</h2>
+      <ul>
+        <li><strong>Blockonomics</strong> — payment processing. Subject to <a href="https://www.blockonomics.co/views/privacy.html" target="_blank" rel="noopener noreferrer">Blockonomics Privacy Policy</a>.</li>
+      </ul>
+      <p>Fonts are self-hosted — no third-party font CDN requests are made. We do not sell or share your data with third parties for advertising purposes.</p>
+
+      <h2>Cookies and storage</h2>
+      <p>We use <code>localStorage</code> in your browser to store your login state. No tracking cookies are set.</p>
+
+      <h2>Contact</h2>
+      <p>Questions or deletion requests: open an issue on <a href="https://github.com/blockonomics/emptyinbox-me" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+    </div>
+  </main>
+
+  <!-- Static footer — JS replaces after load -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">A clutter-free space to help you reset, refocus, and stay in control.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

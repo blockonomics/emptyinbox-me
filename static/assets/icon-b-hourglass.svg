@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="EmptyInbox.me icon — Hourglass">
+  <!--
+    HOURGLASS: Geometric bowtie. Top triangle = emails received (light teal fill).
+    Bottom triangle = empty (expired). Teal neck = the moment of transition.
+    Metaphor: temporary by design. Time runs out. Inbox stays empty.
+  -->
+
+  <!-- Top half: received emails — subtle teal fill -->
+  <path d="M5,3 L27,3 L16,14 Z"
+        style="fill: var(--color-primary-alpha, rgba(16,185,129,0.13))"
+        stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Bottom half: empty — no fill -->
+  <path d="M16,18 L5,29 L27,29 Z"
+        fill="none"
+        stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Neck: teal — the active flow / transition point -->
+  <line x1="16" y1="14" x2="16" y2="18"
+        stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+</svg>

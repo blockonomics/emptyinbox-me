@@ -3,15 +3,642 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API Documentation - EmptyInbox.me</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <title>API Documentation — Disposable Email REST API | EmptyInbox</title>
+  <meta name="description" content="Full REST API reference for EmptyInbox. Create disposable inboxes, poll for messages, and read email programmatically. Includes MCP server setup, curl examples, and OpenAPI spec." />
+  <link rel="canonical" href="https://emptyinbox.me/docs.html" />
+  <meta property="og:title" content="API Documentation — Disposable Email REST API | EmptyInbox" />
+  <meta property="og:description" content="Full REST API reference for EmptyInbox. Create disposable inboxes, poll for messages, and read email programmatically." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <meta property="og:url" content="https://emptyinbox.me/docs.html" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="API Documentation — Disposable Email REST API | EmptyInbox" />
+  <meta name="twitter:description" content="Full REST API reference for EmptyInbox. Create disposable inboxes, poll for messages, and read email programmatically." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "EmptyInbox REST API Documentation",
+    "description": "Full REST API reference for EmptyInbox. Create disposable inboxes, poll for messages, and read email programmatically. Includes MCP server setup, curl examples, and OpenAPI spec.",
+    "url": "https://emptyinbox.me/docs.html",
+    "publisher": {
+      "@type": "Organization",
+      "name": "EmptyInbox",
+      "url": "https://emptyinbox.me"
+    },
+    "about": {
+      "@type": "SoftwareApplication",
+      "name": "EmptyInbox API",
+      "applicationCategory": "DeveloperApplication"
+    }
+  }
+  </script>
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/api-docs.css" />
   <link rel="stylesheet" href="css/navbar.css" />
   <link rel="stylesheet" href="css/footer.css" />
-  <script type="module" src="main.js" defer></script>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body>
+
+  <!-- Static navbar — JS replaces after auth check -->
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="docs-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="docs-sidebar" id="docs-sidebar" aria-label="API navigation">
+      <div class="sidebar-inner">
+        <div class="sidebar-base-url">
+          <span class="sidebar-base-label">Base URL</span>
+          <code class="sidebar-base-code">emptyinbox.me/api</code>
+        </div>
+
+        <nav class="sidebar-nav">
+          <div class="nav-group">
+            <span class="nav-group-label">Getting Started</span>
+            <a href="#quick-start" class="nav-link">Quick Start</a>
+            <a href="#authentication" class="nav-link">Authentication</a>
+          </div>
+          <div class="nav-group">
+            <span class="nav-group-label">Account</span>
+            <a href="#register" class="nav-link">
+              <span class="nav-method nav-post">POST</span>/auth/register
+            </a>
+            <a href="#auth-me" class="nav-link">
+              <span class="nav-method nav-get">GET</span>/auth/me
+            </a>
+          </div>
+          <div class="nav-group">
+            <span class="nav-group-label">Inboxes</span>
+            <a href="#inbox-create" class="nav-link">
+              <span class="nav-method nav-post">POST</span>/inbox
+            </a>
+            <a href="#inbox-list" class="nav-link">
+              <span class="nav-method nav-get">GET</span>/inboxes
+            </a>
+          </div>
+          <div class="nav-group">
+            <span class="nav-group-label">Messages</span>
+            <a href="#messages-list" class="nav-link">
+              <span class="nav-method nav-get">GET</span>/messages
+            </a>
+            <a href="#message-single" class="nav-link">
+              <span class="nav-method nav-get">GET</span>/message/{msgid}
+            </a>
+          </div>
+          <div class="nav-group">
+            <span class="nav-group-label">Reference</span>
+            <a href="#error-codes" class="nav-link">Error Codes</a>
+            <a href="#limits" class="nav-link">Limits &amp; Notes</a>
+          </div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <a href="/openapi.yaml" class="sidebar-spec-link">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4"/>
+            </svg>
+            OpenAPI 3.1 Spec
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Mobile toggle -->
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open navigation">
+      <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M3 5h14M3 10h14M3 15h14"/>
+      </svg>
+    </button>
+
+    <!-- Main content -->
+    <main class="docs-content">
+
+      <!-- Hero -->
+      <header class="docs-hero" id="top">
+        <h1>API Reference</h1>
+        <p>Disposable email inboxes for AI agents and developers. Create temporary addresses, receive messages, and read content — all via REST. No browser required.</p>
+        <div class="hero-base-url">
+          <span class="hero-base-label">Base URL</span>
+          <code>https://emptyinbox.me/api</code>
+        </div>
+      </header>
+
+      <!-- Quick Start -->
+      <section class="docs-section" id="quick-start">
+        <h2>Quick Start</h2>
+
+        <div class="info-block">
+          <h3>Zero-config with MCP</h3>
+          <p>Add to your MCP config and the server auto-registers on first run — no setup needed:</p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code>{
+  "mcpServers": {
+    "emptyinbox": {
+      "command": "npx",
+      "args": ["-y", "emptyinbox-mcp"]
+    }
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="info-block">
+          <h3>REST API workflow</h3>
+          <ol class="workflow-list">
+            <li><span class="workflow-step">1</span>Call <code>POST /auth/register</code> to get an API key (one-time setup)</li>
+            <li><span class="workflow-step">2</span>Call <code>POST /inbox</code> to create a disposable address</li>
+            <li><span class="workflow-step">3</span>Trigger signup or verification using that address</li>
+            <li><span class="workflow-step">4</span>Poll <code>GET /messages</code> until the email arrives</li>
+            <li><span class="workflow-step">5</span>Read the code or link from <code>text_body</code></li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Authentication -->
+      <section class="docs-section" id="authentication">
+        <h2>Authentication</h2>
+
+        <div class="info-block">
+          <h3>API Key</h3>
+          <p>All endpoints except <code>POST /auth/register</code> require an API key in the Authorization header:</p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">http</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code>Authorization: Bearer YOUR_API_KEY</code></pre>
+          </div>
+          <p><strong>Agents:</strong> call <code>POST /auth/register</code> below to get a key programmatically.<br>
+          <strong>Humans:</strong> get your key at <a href="/settings.html">Settings</a>.</p>
+        </div>
+      </section>
+
+      <!-- Account -->
+      <section class="docs-section" id="account">
+        <h2>Account</h2>
+
+        <div class="endpoint" id="register">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-post">POST</span>
+            <code class="endpoint-path">/auth/register</code>
+            <span class="endpoint-tag">No auth required</span>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description">Create a new account and get an API key. Agent accounts start with 1 inbox quota. Rate limited to 3 registrations per IP per 24 hours.</p>
+
+            <h4>Request Body</h4>
+            <table class="parameter-table">
+              <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><code>username</code></td>
+                  <td>string</td>
+                  <td><span class="param-required">Required</span></td>
+                  <td>3–32 chars, letters/numbers/hyphens/underscores</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl -X POST "https://emptyinbox.me/api/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "my-agent"}'</code></pre>
+              </div>
+            </div>
+
+            <div class="response-example">
+              <h4>Response</h4>
+              <p><span class="status-code status-200">200 OK</span></p>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">json</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>{
+  "api_key": "eiXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "username": "my-agent",
+  "inbox_quota": 1
+}</code></pre>
+              </div>
+              <p><span class="status-code status-400">400 Bad Request</span> — Invalid or taken username</p>
+              <p><span class="status-code status-429">429 Too Many Requests</span> — Rate limit exceeded</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" id="auth-me">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <code class="endpoint-path">/auth/me</code>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description">Returns the authenticated account's username and remaining inbox quota.</p>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl "https://emptyinbox.me/api/auth/me" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+              </div>
+            </div>
+
+            <div class="response-example">
+              <h4>Response</h4>
+              <p><span class="status-code status-200">200 OK</span></p>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">json</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>{
+  "username": "my-agent",
+  "inbox_quota": 1
+}</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Inbox Management -->
+      <section class="docs-section" id="inboxes">
+        <h2>Inbox Management</h2>
+
+        <div class="endpoint" id="inbox-create">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-post">POST</span>
+            <code class="endpoint-path">/inbox</code>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description">Creates a new disposable email inbox. Returns the email address as plain text. Each inbox consumes 1 from your quota. Agent accounts start with 1 inbox; human accounts start with 5. Buy more at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a>.</p>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl -X POST "https://emptyinbox.me/api/inbox" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+              </div>
+            </div>
+
+            <div class="response-example">
+              <h4>Response</h4>
+              <p><span class="status-code status-201">201 Created</span> — Returns the email address as plain text</p>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">text</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>clever.sunny.butterfly@emptyinbox.me</code></pre>
+              </div>
+              <p><span class="status-code status-403">403 Forbidden</span> — Insufficient inbox quota</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" id="inbox-list">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <code class="endpoint-path">/inboxes</code>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description">Returns all inboxes on this account, newest first.</p>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl "https://emptyinbox.me/api/inboxes" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+              </div>
+            </div>
+
+            <div class="response-example">
+              <h4>Response</h4>
+              <p><span class="status-code status-200">200 OK</span></p>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">json</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>[
+  {
+    "inbox": "clever.sunny.butterfly@emptyinbox.me",
+    "created_at": "2024-01-01T10:00:00"
+  },
+  {
+    "inbox": "quick.blue.elephant@emptyinbox.me",
+    "created_at": "2024-01-01T09:00:00"
+  }
+]</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Message Management -->
+      <section class="docs-section" id="messages">
+        <h2>Message Management</h2>
+
+        <div class="endpoint" id="messages-list">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <code class="endpoint-path">/messages</code>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description">Returns all messages across all inboxes, newest first. Messages are automatically deleted after 7 days. Poll this endpoint after triggering a signup or verification flow.</p>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl "https://emptyinbox.me/api/messages" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+              </div>
+            </div>
+
+            <h4>Response Fields (per message)</h4>
+            <table class="parameter-table">
+              <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>id</code></td><td>string</td><td>Unique message identifier</td></tr>
+                <tr><td><code>inbox</code></td><td>string</td><td>Email address that received the message</td></tr>
+                <tr><td><code>subject</code></td><td>string</td><td>Email subject line</td></tr>
+                <tr><td><code>sender</code></td><td>string</td><td>Sender email address</td></tr>
+                <tr><td><code>timestamp</code></td><td>integer</td><td>Unix timestamp</td></tr>
+                <tr><td><code>text_body</code></td><td>string</td><td>Plain text body</td></tr>
+                <tr><td><code>html_body</code></td><td>string</td><td>HTML body</td></tr>
+              </tbody>
+            </table>
+
+            <div class="response-example">
+              <h4>Example Response</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">json</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>[
+  {
+    "id": "a1b2c3d4",
+    "inbox": "clever.sunny.butterfly@emptyinbox.me",
+    "subject": "Confirm your email address",
+    "sender": "noreply@example.com",
+    "timestamp": 1711234567,
+    "text_body": "Your verification code is 482910",
+    "html_body": "&lt;p&gt;Your verification code is &lt;strong&gt;482910&lt;/strong&gt;&lt;/p&gt;"
+  }
+]</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" id="message-single">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <code class="endpoint-path">/message/{msgid}</code>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description">Returns the full content of a specific message including all headers.</p>
+
+            <h4>Path Parameters</h4>
+            <table class="parameter-table">
+              <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><code>msgid</code></td>
+                  <td>string</td>
+                  <td><span class="param-required">Required</span></td>
+                  <td>Message ID from <code>GET /messages</code></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl "https://emptyinbox.me/api/message/a1b2c3d4" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+              </div>
+            </div>
+
+            <h4>Response Fields</h4>
+            <table class="parameter-table">
+              <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>recipients</code></td><td>array</td><td>Recipient email addresses</td></tr>
+                <tr><td><code>headers</code></td><td>object</td><td>Raw email headers (Subject, From, Date, etc.)</td></tr>
+                <tr><td><code>text_body</code></td><td>string</td><td>Plain text body</td></tr>
+                <tr><td><code>html_body</code></td><td>string</td><td>HTML body</td></tr>
+                <tr><td><code>sender</code></td><td>string</td><td>Sender email address</td></tr>
+              </tbody>
+            </table>
+
+            <div class="response-example">
+              <h4>Example Response</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">json</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>{
+  "recipients": ["clever.sunny.butterfly@emptyinbox.me"],
+  "headers": {
+    "Subject": "Confirm your email address",
+    "From": "noreply@example.com",
+    "Date": "Mon, 1 Jan 2024 10:00:00 +0000"
+  },
+  "text_body": "Your verification code is 482910",
+  "html_body": "&lt;p&gt;Your verification code is &lt;strong&gt;482910&lt;/strong&gt;&lt;/p&gt;",
+  "sender": "noreply@example.com"
+}</code></pre>
+              </div>
+              <p><span class="status-code status-404">404 Not Found</span> — Message not found</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Error Codes -->
+      <section class="docs-section" id="error-codes">
+        <h2>Error Codes</h2>
+        <table class="parameter-table">
+          <thead><tr><th>Status</th><th>Description</th><th>Common Causes</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="status-code status-401">401</span></td>
+              <td>Unauthorized</td>
+              <td>Missing or invalid API key</td>
+            </tr>
+            <tr>
+              <td><span class="status-code status-403">403</span></td>
+              <td>Forbidden</td>
+              <td>Insufficient inbox quota</td>
+            </tr>
+            <tr>
+              <td><span class="status-code status-404">404</span></td>
+              <td>Not Found</td>
+              <td>Message ID doesn't exist</td>
+            </tr>
+            <tr>
+              <td><span class="status-code status-429">429</span></td>
+              <td>Too Many Requests</td>
+              <td>Registration rate limit exceeded (3 per IP per 24 hours)</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Limits & Notes -->
+      <section class="docs-section" id="limits">
+        <h2>Limits &amp; Notes</h2>
+        <div class="info-block">
+          <ul class="limits-list">
+            <li>Agent accounts start with <strong>1 inbox quota</strong>; human accounts start with <strong>5</strong></li>
+            <li>Creating an inbox consumes 1 quota unit — buy more at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a></li>
+            <li>Messages are automatically deleted after <strong>7 days</strong></li>
+            <li>Registration is limited to <strong>3 new accounts per IP per 24 hours</strong></li>
+            <li>Full OpenAPI 3.1 spec available at <a href="/openapi.yaml">/openapi.yaml</a></li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Static footer — JS replaces after load -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">A clutter-free space to help you reset, refocus, and stay in control.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="main.js"></script>
+  <script>
+    function copyCode(btn) {
+      const code = btn.closest('.code-block').querySelector('code');
+      const text = code ? code.innerText.trim() : '';
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
+
+    // Active sidebar link tracking
+    const navLinks = document.querySelectorAll('.sidebar-nav .nav-link[href^="#"]');
+
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(l => l.classList.remove('active'));
+          const active = document.querySelector(`.sidebar-nav [href="#${entry.target.id}"]`);
+          if (active) active.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+
+    document.querySelectorAll('.docs-section[id], .endpoint[id]').forEach(el => sectionObserver.observe(el));
+
+    // Mobile sidebar
+    const toggle  = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('docs-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('active');    document.body.style.overflow = 'hidden'; }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+    toggle?.addEventListener('click', openSidebar);
+    overlay?.addEventListener('click', closeSidebar);
+    navLinks.forEach(l => l.addEventListener('click', () => { if (window.innerWidth < 768) closeSidebar(); }));
+  </script>
 </body>
 </html>

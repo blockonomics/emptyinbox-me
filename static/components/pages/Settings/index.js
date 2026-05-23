@@ -29,7 +29,9 @@ export async function renderSettingsPage() {
     setupSettingsEventListeners();
   } catch (error) {
     console.error("User fetch failed:", error);
-    localStorage.removeItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN);
-    window.location.href = ROUTES.LOGIN;
+    if (error.status === 401) {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN);
+      window.location.href = ROUTES.LOGIN;
+    }
   }
 }

@@ -9,11 +9,31 @@
   <link rel="stylesheet" href="css/footer.css" />
   <link rel="stylesheet" href="css/messages.css" />
   <link rel="stylesheet" href="css/inboxes.css" />
-  <script type="module" src="main.js" defer></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <script src="https://blockonomics.co/js/web3-payment.js"></script>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/messages.html" class="nav-link"><span>Messages</span></a>
+        <a href="/inboxes.html" class="nav-link"><span>Inboxes</span></a>
+        <a href="/settings.html" class="nav-link"><span>Settings</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>API Docs</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <script type="module" src="main.js"></script>
 </body>
 </html>

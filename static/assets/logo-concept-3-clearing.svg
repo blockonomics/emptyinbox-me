@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 38" role="img" aria-labelledby="ei-logo-3-title">
+  <title id="ei-logo-3-title">EmptyInbox.me</title>
+
+  <!-- Concept 3: Clearing — inbox with progressively fading email rows -->
+  <!-- Visually communicates "being emptied". Rounded inbox container + 3 clearing lines. -->
+
+  <!-- Inbox container -->
+  <rect x="3" y="4" width="26" height="30" rx="4"
+        fill="none"
+        style="stroke: var(--color-text-primary, #1e2533)"
+        stroke-width="2"/>
+
+  <!-- Email rows: full → partial → ghost (clearing state) -->
+  <line x1="8" y1="13" x2="22" y2="13"
+        style="stroke: var(--color-primary, #10b981)"
+        stroke-width="2" stroke-linecap="round"/>
+  <line x1="8" y1="20" x2="18" y2="20"
+        style="stroke: var(--color-primary, #10b981)"
+        stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="8" y1="27" x2="12" y2="27"
+        style="stroke: var(--color-primary, #10b981)"
+        stroke-width="2" stroke-linecap="round" opacity="0.2"/>
+
+  <!-- Wordmark -->
+  <text x="38" y="26"
+        font-family="'Poppins', system-ui, -apple-system, sans-serif"
+        font-size="20" font-weight="600" letter-spacing="-0.4"
+        style="fill: var(--color-text-primary, #1e2533)">EmptyInbox<tspan style="fill: var(--color-primary, #10b981)">.me</tspan></text>
+</svg>

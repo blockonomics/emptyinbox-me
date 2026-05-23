@@ -86,7 +86,7 @@
 
 .quota-fill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -94,7 +94,7 @@
 .billing-text {
   font-size: 0.875rem;
   font-weight: 500;      
-  color: #6b7280;
+  color: var(--color-text-secondary);
   min-width: 80px;
   white-space: normal;   
   word-break: break-word;
@@ -104,18 +104,18 @@
 .billing-section {
   margin-top: 2rem;
   padding: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border);
 }
 
 .billing-header {
   font-size: 1rem;
   font-weight: 700;
-  color: #374151;
+  color: var(--color-text-primary);
   margin-bottom: 0.5rem;
 }
 
 .billing-text a {
-  color: #2563eb;
+  color: var(--color-secondary-dark);
   text-decoration: underline;
   font-weight: 500;
 }

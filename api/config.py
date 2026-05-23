@@ -33,11 +33,16 @@ if not app.debug:
 # --- Cleanup job ---
 def delete_old_messages():
     from db_models import Message
-    cutoff = int((datetime.utcnow() - timedelta(days=7)).timestamp())
-    deleted = db.session.query(Message).filter(Message.timestamp < cutoff).delete()
-    db.session.commit()
-    if deleted:
-        app.logger.info(f"Deleted {deleted} old messages")
+    try:
+        with app.app_context():
+            cutoff = int((datetime.utcnow() - timedelta(days=7)).timestamp())
+            deleted = db.session.query(Message).filter(Message.timestamp < cutoff).delete()
+            db.session.commit()
+            if deleted:
+                app.logger.info(f"Deleted {deleted} old messages")
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"delete_old_messages failed: {e}")
 
 # --- APScheduler config ---
 class Config:

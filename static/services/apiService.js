@@ -20,14 +20,17 @@ export async function fetchUserData() {
   const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
     credentials: "include",
   });
-  if (!response.ok) throw new Error("User fetch failed");
+  if (!response.ok) {
+    const err = new Error("User fetch failed");
+    err.status = response.status;
+    throw err;
+  }
   return await response.json();
 }
 
 // 📬 Fetch messages
 export async function fetchMessages() {
   const response = await fetch(`${API_BASE_URL}/api/messages`, {
-    headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
   if (!response.ok) throw new Error("Failed to fetch messages");
@@ -37,7 +40,6 @@ export async function fetchMessages() {
 // 📥 Fetch inboxes
 export async function fetchInboxes() {
   const response = await fetch(`${API_BASE_URL}/api/inboxes`, {
-    headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
   if (!response.ok) throw new Error("Failed to fetch inboxes");

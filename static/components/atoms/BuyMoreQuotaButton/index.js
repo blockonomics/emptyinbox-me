@@ -1,20 +1,17 @@
 import { QUOTA_PER_USDT } from "../../../utils/constants.js";
 
-export function renderBuyQuotaButton() {
-  const header = document.createElement("div");
-  header.innerHTML = `
-    <button id="buy-quota-btn" class="buy-quota-btn">Buy More Quota</button>
-  `;
+export function renderBuyQuotaButton(currentQuota, maxQuota) {
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = `<button id="buy-quota-btn" class="buy-quota-btn">Buy Inboxes</button>`;
 
-  // Add event listeners
   setTimeout(() => {
-    setupPaymentModal();
+    setupPaymentModal(currentQuota, maxQuota);
   }, 0);
 
-  return header;
+  return wrapper;
 }
 
-function setupPaymentModal() {
+function setupPaymentModal(currentQuota, maxQuota) {
   const buyBtn = document.getElementById("buy-quota-btn");
 
   function createModal() {
@@ -22,68 +19,109 @@ function setupPaymentModal() {
     modal.id = "payment-modal";
     modal.className = "payment-modal";
     modal.style.display = "none";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-labelledby", "qm-title");
+
     modal.innerHTML = `
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>💳 Buy Quota</h2>
-          <button class="close-modal">&times;</button>
-        </div>
-        
-        <div class="quota-selection">
-          <div class="amount-section">
-            <label class="amount-label">How much quota do you need?</label>
-            <div class="amount-input-wrapper">
-              <input type="number" id="quota-amount" min="10" step="10" value="100" class="amount-input">
-              <span class="unit-label">quota</span>
+      <div class="qm-shell">
+
+        <!-- Step 1: Select -->
+        <div class="modal-step" id="step-select">
+          <div class="qm-header">
+            <div>
+              <h2 id="qm-title" class="qm-title">Purchase Inboxes</h2>
+              <p class="qm-subtitle">${currentQuota} of ${maxQuota} used</p>
             </div>
+            <button class="close-modal" aria-label="Close">&times;</button>
           </div>
 
-          <div class="cost-display">
-            <div class="cost-breakdown">
-              <span class="cost-label">Total Cost</span>
-              <span class="cost-value"><span id="usdt-cost">10.00</span> USDT</span>
+          <div class="qm-body">
+            <div class="qm-field">
+              <label class="qm-label" for="quota-amount">Quantity</label>
+              <div class="qm-input-row">
+                <input type="number" id="quota-amount" class="qm-input" min="10" step="10" value="100">
+                <span class="qm-unit">inboxes</span>
+              </div>
             </div>
-            <div class="rate-hint">10 quota = 1 USDT</div>
-          </div>
 
-          <div class="preset-grid">
-            <button class="preset-card" data-quota="10">
-              <div class="preset-amount">10</div>
-              <div class="preset-cost">$1</div>
-            </button>
-            <button class="preset-card" data-quota="50">
-              <div class="preset-amount">50</div>
-              <div class="preset-cost">$5</div>
-            </button>
-            <button class="preset-card active" data-quota="100">
-              <div class="preset-amount">100</div>
-              <div class="preset-cost">$10</div>
-            </button>
-            <button class="preset-card" data-quota="500">
-              <div class="preset-amount">500</div>
-              <div class="preset-cost">$50</div>
-            </button>
+            <div class="qm-chips">
+              <button class="qm-chip" data-quota="10">10</button>
+              <button class="qm-chip" data-quota="50">50</button>
+              <button class="qm-chip" data-quota="100">100</button>
+              <button class="qm-chip" data-quota="500">500</button>
+            </div>
+
+            <div class="qm-total-row">
+              <span class="qm-total-label">Total</span>
+              <span class="qm-total-value"><span id="usdt-cost">10.00</span> USDT</span>
+            </div>
+
+            <p class="qm-hint">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              10 inboxes = 1 USDT &nbsp;&middot;&nbsp; requires a Web3 wallet
+            </p>
+
+            <div id="select-error" class="qm-error hidden"></div>
+
+            <button id="proceed-payment-btn" class="btn btn-primary btn-full">Continue</button>
           </div>
         </div>
 
-        <div class="payment-section">
-          <button id="proceed-payment-btn" class="proceed-btn">
-            <span class="btn-icon">🚀</span>
-            Continue to Payment
-          </button>
-          <div id="payment-widget-container" style="display:none;">
-            <script src="https://blockonomics.co/js/web3-payment.js"></script>
+        <!-- Step 2: Confirm -->
+        <div class="modal-step hidden" id="step-confirm">
+          <div class="qm-header">
+            <button id="back-to-select" class="modal-back-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+              Back
+            </button>
+            <button class="close-modal" aria-label="Close">&times;</button>
+          </div>
+
+          <div class="qm-body">
+            <h2 class="qm-title">Order summary</h2>
+
+            <div class="qm-receipt">
+              <div class="qm-receipt-row">
+                <span id="confirm-slots">100 inboxes</span>
+                <span id="confirm-unit-cost" class="qm-receipt-muted">10 × 0.10 USDT</span>
+              </div>
+              <div class="qm-receipt-divider"></div>
+              <div class="qm-receipt-row qm-receipt-total">
+                <span>Total due</span>
+                <span id="confirm-cost">10.00 USDT</span>
+              </div>
+            </div>
+
+            <p class="qm-hint">Inboxes are available once your transaction confirms on-chain — usually within 1–2 minutes.</p>
+
+            <button id="pay-now-btn" class="btn btn-primary btn-full">Pay with USDT</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Pay -->
+        <div class="modal-step hidden" id="step-pay">
+          <div class="qm-header">
+            <button id="back-to-confirm" class="modal-back-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+              Back
+            </button>
+            <button class="close-modal" aria-label="Close">&times;</button>
+          </div>
+
+          <div class="qm-body">
             <web3-payment
               id="web3-payment-widget"
               order_amount="10"
               receive_address="0x5C0ed91604E92D7f488d62058293ce603BCC68eF"
               redirect_url="/inboxes.html?payment=success"
-            >
-            </web3-payment>
+            ></web3-payment>
           </div>
         </div>
+
       </div>
     `;
+
     document.body.appendChild(modal);
     return modal;
   }
@@ -95,94 +133,131 @@ function setupPaymentModal() {
       setupModalEvents(modal);
     }
     modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
   });
 
   function setupModalEvents(modal) {
-    const closeBtn = modal.querySelector(".close-modal");
     const quotaInput = modal.querySelector("#quota-amount");
     const usdtCost = modal.querySelector("#usdt-cost");
-    const presetBtns = modal.querySelectorAll(".preset-card");
+    const chips = modal.querySelectorAll(".qm-chip");
     const proceedBtn = modal.querySelector("#proceed-payment-btn");
-    const paymentContainer = modal.querySelector("#payment-widget-container");
+    const selectError = modal.querySelector("#select-error");
+    const stepSelect = modal.querySelector("#step-select");
+    const stepConfirm = modal.querySelector("#step-confirm");
+    const stepPay = modal.querySelector("#step-pay");
+    const confirmSlots = modal.querySelector("#confirm-slots");
+    const confirmUnitCost = modal.querySelector("#confirm-unit-cost");
+    const confirmCost = modal.querySelector("#confirm-cost");
+    const paymentWidget = modal.querySelector("#web3-payment-widget");
 
-    // Close modal events
-    closeBtn?.addEventListener("click", () => {
+    function closeModal() {
       modal.style.display = "none";
+      document.body.style.overflow = "";
       resetModal();
-    });
-
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        modal.style.display = "none";
-        resetModal();
-      }
-    });
-
-    // Calculate cost function
-    function updateCost() {
-      const quotaAmount = parseInt(quotaInput.value) || 0;
-      const cost = quotaAmount / QUOTA_PER_USDT;
-      usdtCost.textContent = cost.toFixed(2);
-
-      // Update the web3-payment widget amount
-      const paymentWidget = modal.querySelector("web3-payment");
-      if (paymentWidget) {
-        paymentWidget.setAttribute("order_amount", cost.toString());
-      }
     }
 
-    // Input change event
-    quotaInput?.addEventListener("input", updateCost);
+    modal.querySelectorAll(".close-modal").forEach(btn =>
+      btn.addEventListener("click", closeModal)
+    );
+    modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.style.display !== "none") closeModal();
+    });
 
-    // Preset button events
-    presetBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const quotaAmount = btn.dataset.quota;
-        quotaInput.value = quotaAmount;
+    function snapToMultiple(val) {
+      return Math.max(10, Math.round(Math.max(0, val) / 10) * 10);
+    }
+
+    function getQty() { return parseInt(quotaInput.value) || 0; }
+
+    function updateCost() {
+      const cost = getQty() / QUOTA_PER_USDT;
+      usdtCost.textContent = cost.toFixed(2);
+      paymentWidget?.setAttribute("order_amount", cost.toString());
+    }
+
+    quotaInput.addEventListener("input", () => {
+      selectError.classList.add("hidden");
+      updateCost();
+      const qty = getQty();
+      chips.forEach(c => c.classList.toggle("active", parseInt(c.dataset.quota) === qty));
+    });
+
+    quotaInput.addEventListener("blur", () => {
+      quotaInput.value = snapToMultiple(getQty());
+      updateCost();
+    });
+
+    chips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        quotaInput.value = chip.dataset.quota;
         updateCost();
-
-        // Remove active class from all buttons
-        presetBtns.forEach((b) => b.classList.remove("active"));
-        // Add active class to clicked button
-        btn.classList.add("active");
+        selectError.classList.add("hidden");
+        chips.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
       });
     });
 
-    // Proceed to payment
-    proceedBtn?.addEventListener("click", () => {
-      const quotaAmount = parseInt(quotaInput.value);
+    // Step 1 → Step 2
+    proceedBtn.addEventListener("click", () => {
+      const qty = snapToMultiple(getQty());
+      quotaInput.value = qty;
+      updateCost();
 
-      if (!quotaAmount || quotaAmount < 10) {
-        alert("Please enter a valid quota amount (minimum 10)");
+      if (qty < 10) {
+        selectError.textContent = "Minimum purchase is 10 inboxes.";
+        selectError.classList.remove("hidden");
         return;
       }
 
-      // Hide the selection section and show payment widget
-      modal.querySelector(".quota-selection").style.display = "none";
-      proceedBtn.style.display = "none";
-      paymentContainer.style.display = "block";
+      const cost = qty / QUOTA_PER_USDT;
+      confirmSlots.textContent = `${qty} inboxes`;
+      confirmUnitCost.textContent = `${qty} × 0.10 USDT`;
+      confirmCost.textContent = `${cost.toFixed(2)} USDT`;
+      stepSelect.classList.add("hidden");
+      stepConfirm.classList.remove("hidden");
+    });
 
-      // Update the redirect URL to include the quota amount
-      const paymentWidget = modal.querySelector("web3-payment");
-      const currentRedirect = paymentWidget.getAttribute("redirect_url");
-      const newRedirect = `${currentRedirect}&quota=${quotaAmount}`;
-      paymentWidget.setAttribute("redirect_url", newRedirect);
+    // Step 2 → Step 1
+    modal.querySelector("#back-to-select").addEventListener("click", () => {
+      stepConfirm.classList.add("hidden");
+      stepSelect.classList.remove("hidden");
+    });
+
+    // Step 2 → Step 3
+    modal.querySelector("#pay-now-btn").addEventListener("click", () => {
+      const qty = getQty();
+      const cost = qty / QUOTA_PER_USDT;
+      paymentWidget.setAttribute("order_amount", cost.toString());
+      const redirect = paymentWidget.getAttribute("redirect_url");
+      if (!redirect.includes("&quota=")) {
+        paymentWidget.setAttribute("redirect_url", `${redirect}&quota=${qty}`);
+      }
+      stepConfirm.classList.add("hidden");
+      stepPay.classList.remove("hidden");
+    });
+
+    // Step 3 → Step 2
+    modal.querySelector("#back-to-confirm").addEventListener("click", () => {
+      stepPay.classList.add("hidden");
+      stepConfirm.classList.remove("hidden");
     });
 
     function resetModal() {
-      // Reset the modal to initial state
-      modal.querySelector(".quota-selection").style.display = "block";
-      proceedBtn.style.display = "block";
-      paymentContainer.style.display = "none";
-      quotaInput.value = "10";
+      stepSelect.classList.remove("hidden");
+      stepConfirm.classList.add("hidden");
+      stepPay.classList.add("hidden");
+      quotaInput.value = "100";
       updateCost();
-      presetBtns.forEach((b) => b.classList.remove("active"));
+      selectError.classList.add("hidden");
+      chips.forEach(c => c.classList.remove("active"));
+      modal.querySelector('[data-quota="100"]')?.classList.add("active");
+      paymentWidget.setAttribute("redirect_url", "/inboxes.html?payment=success");
     }
 
-    // Initialize with default selection
+    // Init
     quotaInput.value = "100";
     updateCost();
-    const defaultPreset = modal.querySelector('[data-quota="100"]');
-    if (defaultPreset) defaultPreset.classList.add("active");
+    modal.querySelector('[data-quota="100"]')?.classList.add("active");
   }
 }

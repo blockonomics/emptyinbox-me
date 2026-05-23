@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Give Your Claude Agent an Email Inbox | EmptyInbox</title>
+  <meta name="description" content="Your Claude agent needs to verify emails but can't open a browser. Here's how to give it a disposable inbox in 60 seconds — MCP or REST, your choice." />
+  <link rel="canonical" href="https://emptyinbox.me/blog/how-to-give-your-claude-agent-an-email-inbox.html" />
+  <meta property="og:title" content="How to Give Your Claude Agent an Email Inbox" />
+  <meta property="og:description" content="Your Claude agent needs to verify emails but can't open a browser. Here's how to give it a disposable inbox in 60 seconds." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <meta property="og:url" content="https://emptyinbox.me/blog/how-to-give-your-claude-agent-an-email-inbox.html" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="How to Give Your Claude Agent an Email Inbox" />
+  <meta name="twitter:description" content="Your Claude agent needs to verify emails but can't open a browser. Here's how to give it a disposable inbox in 60 seconds." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "How to Give Your Claude Agent an Email Inbox",
+    "description": "Your Claude agent needs to verify emails but can't open a browser. Here's how to give it a disposable inbox in 60 seconds — MCP or REST, your choice.",
+    "url": "https://emptyinbox.me/blog/how-to-give-your-claude-agent-an-email-inbox.html",
+    "datePublished": "2026-05-23",
+    "dateModified": "2026-05-23",
+    "image": "https://emptyinbox.me/assets/opengraph-image.png",
+    "author": {
+      "@type": "Organization",
+      "name": "EmptyInbox",
+      "url": "https://emptyinbox.me"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "EmptyInbox",
+      "url": "https://emptyinbox.me",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://emptyinbox.me/assets/emptyinboxlogo.png"
+      }
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-article-page">
+
+    <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>›</span>
+      <a href="/blog/">Blog</a>
+      <span>›</span>
+      <span>How to Give Your Claude Agent an Email Inbox</span>
+    </nav>
+
+    <header>
+      <span class="blog-case-tag">Case #001</span>
+      <h1>How to Give Your Claude Agent an Email Inbox</h1>
+      <p class="post-meta">May 23, 2026 · 4 min read</p>
+    </header>
+
+    <div class="blog-tldr">
+      <strong>TL;DR</strong>
+      <ul>
+        <li>AI agents can't open browser tabs to verify email — they need an API</li>
+        <li>EmptyInbox gives agents a disposable inbox via MCP or REST</li>
+        <li>One config line to install: <code>npx emptyinbox-mcp</code></li>
+        <li>Works with Claude Desktop, Claude Code, LangChain, GPT Actions</li>
+      </ul>
+    </div>
+
+    <div class="blog-verdict">
+      <strong>Verdict</strong>
+      EmptyInbox MCP is the fastest way to give Claude email access — zero browser setup, one config line, works in any MCP-compatible agent.
+    </div>
+
+    <div class="blog-body">
+
+      <h2>The Problem</h2>
+      <p>Your AI agent is running a signup automation flow. It creates an account on some service. The service sends a verification email. Your agent... stops cold. It can't open Gmail. It has no inbox. The flow is dead.</p>
+      <p>Agents don't have browsers. They need email as a primitive — an inbox they can create programmatically, wait on, and read from an API. That's what EmptyInbox is.</p>
+
+      <h2>Option 1: MCP (One Config Line)</h2>
+      <p>If you're using Claude Desktop or Claude Code, this is the fastest path. Add to your MCP config file:</p>
+
+      <pre><code>{
+  "mcpServers": {
+    "emptyinbox": {
+      "command": "npx",
+      "args": ["-y", "emptyinbox-mcp"]
+    }
+  }
+}</code></pre>
+
+      <p>On first run, the server auto-registers and creates an account. No API key to copy, no dashboard to visit. Claude gets three tools immediately:</p>
+      <ul>
+        <li><code>create_inbox</code> — generates a fresh <code>@emptyinbox.me</code> address</li>
+        <li><code>wait_for_message</code> — blocks until an email arrives (configurable timeout)</li>
+        <li><code>list_messages</code> — poll for messages across all inboxes</li>
+      </ul>
+
+      <p>A full verification flow then looks like this:</p>
+      <pre><code>You: Sign up for the Hacker News API with a throwaway address
+
+Claude: Creating inbox...
+→ address: "swift.copper.owl@emptyinbox.me"
+
+Signing up at news.ycombinator.com with that address...
+Waiting for verification email...
+→ subject: "Please verify your email"
+→ code: "847291"
+
+Submitting verification code...
+Done. Account active.</code></pre>
+
+      <p>Claude handles the entire flow — no human in the loop, no browser tab, no copy-paste.</p>
+
+      <h2>Option 2: REST API (Any Agent Framework)</h2>
+      <p>For LangChain, CrewAI, GPT Actions, or custom Python/Node agents, use the REST API directly.</p>
+
+      <h3>Step 1: Register (one-time)</h3>
+      <pre><code>curl -X POST https://emptyinbox.me/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "my-agent"}'
+
+# Response:
+# {"api_key": "eiXXXXXXXXXXXXXXXX", "inbox_quota": 1}</code></pre>
+
+      <h3>Step 2: Create an inbox</h3>
+      <pre><code>curl -X POST https://emptyinbox.me/api/inbox \
+  -H "Authorization: Bearer YOUR_API_KEY"
+
+# Response (plain text):
+# clever.sunny.butterfly@emptyinbox.me</code></pre>
+
+      <h3>Step 3: Trigger the signup, then poll for messages</h3>
+      <pre><code>curl https://emptyinbox.me/api/messages \
+  -H "Authorization: Bearer YOUR_API_KEY"
+
+# Response:
+# [{"subject": "Confirm your email", "text_body": "Code: 482910", ...}]</code></pre>
+
+      <p>If you're using GPT Actions or LangChain's OpenAPI tool loader, import the spec at <a href="/openapi.yaml">/openapi.yaml</a> and skip the manual curl setup entirely.</p>
+
+      <h2>Free Tier</h2>
+      <p>Human accounts start with 5 inboxes free. Agent accounts (registered via the API) start with 1 inbox — enough to test the full flow before scaling. When you need more, top up in batches of 10 for $1 USDT. No KYC, no credit card, no subscription.</p>
+
+      <p>Messages are auto-deleted after 7 days. No cleanup code needed.</p>
+
+    </div>
+
+    <div class="blog-internal-link">
+      Full endpoint reference with request/response examples: <a href="/docs.html">API Documentation →</a>
+    </div>
+
+    <div class="blog-cta">
+      <h3>Ready to give your agent an inbox?</h3>
+      <p>Free tier includes 5 inboxes. No credit card required.</p>
+      <a href="/login.html" class="btn">Get API Key</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">A clutter-free space to help you reset, refocus, and stay in control.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelector('.nav-toggle')?.addEventListener('click', function() {
+      const nav = document.querySelector('.site-nav');
+      nav?.classList.toggle('nav-open');
+      this.classList.toggle('nav-toggle-active');
+      document.body.classList.toggle('nav-open-body');
+    });
+    document.addEventListener('click', function(e) {
+      const navbar = document.querySelector('.site-navbar');
+      const nav = document.querySelector('.site-nav');
+      if (navbar && nav && !navbar.contains(e.target) && nav.classList.contains('nav-open')) {
+        nav.classList.remove('nav-open');
+        document.querySelector('.nav-toggle')?.classList.remove('nav-toggle-active');
+        document.body.classList.remove('nav-open-body');
+      }
+    });
+    window.addEventListener('scroll', function() {
+      document.querySelector('.site-navbar')?.classList.toggle('scrolled', window.scrollY > 50);
+    });
+  </script>
+</body>
+</html>

@@ -1,15 +1,197 @@
-.about-section {
-  background: #fff;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0.2rem 1rem;
+/* === About Page === */
+
+/* --- Page Header --- */
+.about-header {
+  padding: clamp(3rem, 8vw, 5rem) var(--space-6) clamp(2rem, 5vw, 3.5rem);
+  background: var(--color-bg-subtle);
 }
 
-@media (min-width: 769px) {
-  .about-section {
-    padding: 0.1rem 1.5rem;
+.about-header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.about-page-label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--space-4);
+}
+
+.about-headline {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+/* --- Shared Section Styles --- */
+.about-section {
+  padding: clamp(2.5rem, 6vw, 4rem) var(--space-6);
+}
+
+.about-section-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.about-section + .about-section {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.about-section-title {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-6) 0;
+}
+
+/* --- Why Section --- */
+.about-why {
+  background: var(--color-surface);
+}
+
+.about-stat-block {
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+  padding-bottom: clamp(2rem, 5vw, 3rem);
+  border-bottom: 1px solid var(--color-border-subtle);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-6);
+  align-items: center;
+}
+
+.about-stat-number {
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 6vw, 4.75rem);
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.about-stat-label {
+  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  max-width: 30ch;
+  font-weight: 400;
+}
+
+.about-why-text p {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: 1.75;
+  max-width: 65ch;
+  margin: 0 0 var(--space-5) 0;
+}
+
+.about-why-text p:last-child {
+  margin-bottom: 0;
+}
+
+/* --- How to Use Section --- */
+.about-how {
+  background: var(--color-bg);
+}
+
+.about-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.about-step {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.step-num {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.05em;
+  opacity: 0.55;
+  padding-top: 0.25em;
+}
+
+.about-step p {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  max-width: 60ch;
+  margin: 0;
+}
+
+/* --- Meta Section (Contact + Credits) --- */
+.about-meta {
+  background: var(--color-bg-subtle);
+}
+
+.about-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+}
+
+@media (min-width: 640px) {
+  .about-meta-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-12);
   }
-  .about-main {
-    padding: 60px 0;
+}
+
+.about-meta-item p {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin: 0;
+  max-width: 45ch;
+}
+
+.about-meta-item a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--duration-fast) ease;
+}
+
+.about-meta-item a:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+  .about-header {
+    padding: var(--space-10) var(--space-4) var(--space-8);
+  }
+
+  .about-section {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .about-stat-block {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .about-step {
+    grid-template-columns: 2.5rem 1fr;
+    gap: var(--space-3);
   }
 }

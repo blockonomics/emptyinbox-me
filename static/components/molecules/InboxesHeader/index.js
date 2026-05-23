@@ -22,7 +22,7 @@ export function renderInboxesHeader(currentQuota, maxQuota) {
   const rightGroup = document.createElement("div");
   rightGroup.classList.add("quota-right");
   rightGroup.appendChild(quotaText);
-  rightGroup.appendChild(renderBuyQuotaButton());
+  rightGroup.appendChild(renderBuyQuotaButton(currentQuota, maxQuota));
 
   quotaHeader.appendChild(leftGroup);
   quotaHeader.appendChild(rightGroup);

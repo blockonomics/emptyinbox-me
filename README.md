@@ -46,6 +46,38 @@ curl -H "Authorization: Bearer YOUR_KEY" https://emptyinbox.me/api/message/MSG_I
 3. `GET /api/messages` → poll until the verification email appears
 4. Read the code or link from `text_body`
 
+## Local Development
+
+### Backend (Flask, port 5000)
+
+```powershell
+cd api
+pipenv install
+pipenv run create_db   # first run only — creates SQLite DB
+pipenv run dev         # starts python tempmail_api.py with CORS + /api prefix
+```
+
+**`api/.env` for local dev:**
+```env
+DOMAIN=localhost:8000
+SECRET=any_random_string
+FLASK_ENV=development
+BLOCKONOMICS_API_KEY=<key>
+USDT_RECEIVING_ADDRESS=<address>
+MATCH_CALLBACK=ngrok
+```
+
+### Frontend (static, port 8000)
+
+```powershell
+cd static
+python -m http.server 8000
+```
+
+Open http://localhost:8000. The JS auto-detects localhost and hits `http://localhost:5000` for the API (`static/utils/constants.js`).
+
+---
+
 ## Self-hosting
 
 ### Requirements

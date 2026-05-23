@@ -121,7 +121,7 @@ export function extractActivationCode(htmlBody, textBody, subject) {
   if (!allText.trim()) return null;
 
   // Extract title content first (often contains the code clearly)
-  const titleMatch = htmlBody.match(/<title>(.*?)<\/title>/i);
+  const titleMatch = htmlBody && htmlBody.match(/<title>(.*?)<\/title>/i);
   if (titleMatch && titleMatch[1]) {
     const titleCodeMatch = titleMatch[1].match(/\b\d{6}\b/);
     if (titleCodeMatch) return titleCodeMatch[0];

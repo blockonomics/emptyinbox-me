@@ -73,7 +73,7 @@ def monitor_transaction():
                 "txhash": txhash,
                 "crypto": "USDT",
                 "match_callback": match_callback,
-                "testnet": 1,
+                "testnet": 0,
             }
         )
 

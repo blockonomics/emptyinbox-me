@@ -55,6 +55,8 @@ The MCP `wait_for_message` tool handles the polling loop automatically.
 - [API Docs](https://emptyinbox.me/docs.html): REST API documentation
 - [Pricing](https://emptyinbox.me/pricing.html): Free and paid tiers
 - [Login](https://emptyinbox.me/login.html): Get your API key
+- [Blog](https://emptyinbox.me/blog/): Tutorials and guides
+- [How to Give Your Claude Agent an Email Inbox](https://emptyinbox.me/blog/how-to-give-your-claude-agent-an-email-inbox.html): MCP and REST setup walkthrough
 
 ## Source & Contact
 

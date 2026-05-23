@@ -1,4 +1,7 @@
 export function renderApiDocsPage() {
+  initializeCopyButtons(); // Always needed — sets window.copyCode for onclick handlers
+  if (document.querySelector('main')) return;
+
   const main = document.createElement('main');
 
   const container = document.createElement('div');

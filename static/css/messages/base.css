@@ -1,3 +1,38 @@
+/* ===== Compatibility aliases → new OKLCH tokens ===== */
+:root {
+  /* Colors */
+  --primary-color:    var(--color-primary);
+  --primary-dark:     var(--color-primary-dark);
+  --primary-darker:   var(--color-primary-darker);
+  --secondary-color:  var(--color-secondary);
+  --secondary-dark:   var(--color-secondary-dark);
+  --danger-color:     var(--color-danger);
+  --danger-dark:      var(--color-danger-dark);
+  --text-primary:     var(--color-text-primary);
+  --text-secondary:   var(--color-text-secondary);
+  --text-muted:       var(--color-text-muted);
+  --bg-primary:       var(--color-surface);
+  --bg-secondary:     var(--color-bg);
+  --bg-tertiary:      var(--color-bg-subtle);
+  --border-color:     var(--color-border);
+  --border-light:     var(--color-border);
+
+  /* Spacing */
+  --spacing-xs:  var(--space-1);
+  --spacing-sm:  var(--space-2);
+  --spacing-md:  var(--space-3);
+  --spacing-lg:  var(--space-4);
+  --spacing-xl:  var(--space-5);
+  --spacing-2xl: var(--space-6);
+  --spacing-3xl: var(--space-8);
+  --spacing-4xl: var(--space-10);
+
+  /* Transitions */
+  --transition-fast:   var(--duration-fast) ease;
+  --transition-normal: var(--duration-normal) ease;
+  --transition-slow:   var(--duration-slow) var(--ease-out);
+}
+
 /* ===== Layout & Structure ===== */
 .messages-page {
   min-height: calc(100vh - 140px);

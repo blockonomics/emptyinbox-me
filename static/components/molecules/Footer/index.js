@@ -1,4 +1,4 @@
-import { LOGO, ROUTES } from "../../../utils/constants.js";
+import { LOGO, ROUTES, FOOTER_LINKS } from "../../../utils/constants.js";
 import { getIsLoggedIn } from "../../../utils/storage.js";
 
 export function createFooter() {
@@ -10,11 +10,10 @@ export function createFooter() {
   const container = document.createElement("div");
   container.className = "footer-container";
 
-  // Footer content wrapper
   const footerContent = document.createElement("div");
   footerContent.className = "footer-content";
 
-  // Brand section
+  // Brand
   const brandSection = document.createElement("div");
   brandSection.className = "footer-brand";
 
@@ -29,17 +28,50 @@ export function createFooter() {
 
   const brandText = document.createElement("p");
   brandText.className = "footer-brand-text";
-  brandText.textContent =
-    "A clutter-free space to help you reset, refocus, and stay in control.";
+  brandText.textContent = "A clutter-free space to help you reset, refocus, and stay in control.";
 
   logoLink.appendChild(logo);
   brandSection.appendChild(logoLink);
   brandSection.appendChild(brandText);
 
-  // Assemble footer content (no quick links section)
-  footerContent.appendChild(brandSection);
+  // Link columns
+  const columns = [
+    { title: "Product", links: FOOTER_LINKS.product, className: "footer-links" },
+    { title: "Company", links: FOOTER_LINKS.company, className: "footer-connect" },
+  ];
 
-  // Footer bottom
+  const colEls = columns.map(({ title, links, className }) => {
+    const col = document.createElement("div");
+    col.className = className;
+
+    const heading = document.createElement("h3");
+    heading.className = "footer-section-title";
+    heading.textContent = title;
+
+    const nav = document.createElement("nav");
+    nav.className = "footer-nav";
+
+    links.forEach(({ label, href, external }) => {
+      const a = document.createElement("a");
+      a.href = href;
+      a.className = "footer-link";
+      a.textContent = label;
+      if (external) {
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener noreferrer");
+      }
+      nav.appendChild(a);
+    });
+
+    col.appendChild(heading);
+    col.appendChild(nav);
+    return col;
+  });
+
+  footerContent.appendChild(brandSection);
+  colEls.forEach((el) => footerContent.appendChild(el));
+
+  // Bottom bar
   const footerBottom = document.createElement("div");
   footerBottom.className = "footer-bottom";
 
@@ -50,23 +82,17 @@ export function createFooter() {
   const footerMeta = document.createElement("div");
   footerMeta.className = "footer-meta";
 
-  // const privacyLink = document.createElement("a");
-  // privacyLink.href = "#privacy";
-  // privacyLink.className = "footer-meta-link";
-  // privacyLink.textContent = "Privacy";
-
-  // const termsLink = document.createElement("a");
-  // termsLink.href = "#terms";
-  // termsLink.className = "footer-meta-link";
-  // termsLink.textContent = "Terms";
-
-  // footerMeta.appendChild(privacyLink);
-  // footerMeta.appendChild(termsLink);
+  FOOTER_LINKS.legal.forEach(({ label, href }) => {
+    const a = document.createElement("a");
+    a.href = href;
+    a.className = "footer-meta-link";
+    a.textContent = label;
+    footerMeta.appendChild(a);
+  });
 
   footerBottom.appendChild(copyright);
   footerBottom.appendChild(footerMeta);
 
-  // Assemble complete footer
   container.appendChild(footerContent);
   container.appendChild(footerBottom);
   footer.appendChild(container);

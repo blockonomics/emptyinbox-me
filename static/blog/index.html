@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — Disposable Email API for AI Agents | EmptyInbox</title>
+  <meta name="description" content="Tutorials and guides on using disposable email APIs for AI agents, automation testing, and developer workflows." />
+  <link rel="canonical" href="https://emptyinbox.me/blog/" />
+  <meta property="og:title" content="Blog — EmptyInbox" />
+  <meta property="og:description" content="Tutorials and guides on using disposable email APIs for AI agents, automation testing, and developer workflows." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <meta property="og:url" content="https://emptyinbox.me/blog/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Blog — EmptyInbox" />
+  <meta name="twitter:description" content="Tutorials and guides on using disposable email APIs for AI agents, automation testing, and developer workflows." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "EmptyInbox Blog",
+    "description": "Tutorials and guides on using disposable email APIs for AI agents, automation testing, and developer workflows.",
+    "url": "https://emptyinbox.me/blog/",
+    "publisher": {
+      "@type": "Organization",
+      "name": "EmptyInbox",
+      "url": "https://emptyinbox.me",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://emptyinbox.me/assets/emptyinboxlogo.png"
+      }
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-index-page">
+
+    <div class="blog-index-header">
+      <h1>Blog</h1>
+      <p>Tutorials and guides for developers building with disposable email APIs and AI agents.</p>
+    </div>
+
+    <ul class="blog-post-list">
+
+      <li class="blog-post-item">
+        <span class="post-tag">Case #001</span>
+        <h2><a href="/blog/how-to-give-your-claude-agent-an-email-inbox.html">How to Give Your Claude Agent an Email Inbox</a></h2>
+        <p class="post-excerpt">AI agents can't open browser tabs. Here's how to give Claude a disposable inbox it can create, wait on, and read — all via MCP or REST API, in under 60 seconds.</p>
+        <span class="post-meta">May 23, 2026 · 4 min read</span>
+      </li>
+
+    </ul>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">A clutter-free space to help you reset, refocus, and stay in control.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelector('.nav-toggle')?.addEventListener('click', function() {
+      const nav = document.querySelector('.site-nav');
+      nav?.classList.toggle('nav-open');
+      this.classList.toggle('nav-toggle-active');
+      document.body.classList.toggle('nav-open-body');
+    });
+    document.addEventListener('click', function(e) {
+      const navbar = document.querySelector('.site-navbar');
+      const nav = document.querySelector('.site-nav');
+      if (navbar && nav && !navbar.contains(e.target) && nav.classList.contains('nav-open')) {
+        nav.classList.remove('nav-open');
+        document.querySelector('.nav-toggle')?.classList.remove('nav-toggle-active');
+        document.body.classList.remove('nav-open-body');
+      }
+    });
+    window.addEventListener('scroll', function() {
+      document.querySelector('.site-navbar')?.classList.toggle('scrolled', window.scrollY > 50);
+    });
+  </script>
+</body>
+</html>

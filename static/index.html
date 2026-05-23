@@ -3,25 +3,285 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EmptyInbox - Disposable Email API for AI Agents</title>
+  <title>EmptyInbox — Disposable Email API for AI Agents &amp; Developers</title>
   <meta name="description" content="Create disposable email inboxes via REST API or MCP. No browser required. Perfect for AI agents, automation, and testing." />
+  <link rel="canonical" href="https://emptyinbox.me/" />
   <meta property="og:title" content="EmptyInbox — Disposable Email for AI Agents" />
   <meta property="og:description" content="Create inboxes and read email via REST API or MCP. No browser. No passwords. Just an API key." />
   <meta property="og:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:url" content="https://emptyinbox.me" />
+  <meta property="og:url" content="https://emptyinbox.me/" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="EmptyInbox — Disposable Email API for AI Agents" />
+  <meta name="twitter:description" content="Create inboxes and read email via REST API or MCP. No browser. No passwords. Just an API key." />
   <meta name="twitter:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "name": "EmptyInbox",
+        "url": "https://emptyinbox.me",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://emptyinbox.me/assets/emptyinboxlogo.png",
+          "width": 140,
+          "height": 36
+        }
+      },
+      {
+        "@type": "WebSite",
+        "name": "EmptyInbox",
+        "url": "https://emptyinbox.me",
+        "publisher": {
+          "@type": "Organization",
+          "name": "EmptyInbox",
+          "url": "https://emptyinbox.me"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "EmptyInbox",
+        "url": "https://emptyinbox.me",
+        "description": "Disposable email inbox API for AI agents and developers. Create temporary addresses, receive messages, and read content via REST API or MCP server. No browser required.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "featureList": [
+          "MCP Server for Claude and Claude Code",
+          "REST API with OpenAPI spec",
+          "Email polling via wait_for_message tool",
+          "API key authentication — works headlessly",
+          "Auto-delete messages after 7 days",
+          "Crypto payments via USDT — no credit card"
+        ],
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "Free",
+            "price": "0",
+            "priceCurrency": "USD",
+            "description": "5 disposable inboxes, REST API and MCP access"
+          },
+          {
+            "@type": "Offer",
+            "name": "Pay-as-you-go",
+            "price": "1",
+            "priceCurrency": "USDT",
+            "description": "10 inboxes per $1 USDT, no expiry"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/navbar.css" />
   <link rel="stylesheet" href="css/footer.css" />
   <link rel="stylesheet" href="css/home.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body>
+
+  <!-- Static navbar — JS replaces after auth check -->
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Hero -->
+    <section class="hero hero-split">
+      <div class="hero-split-inner">
+        <div class="hero-content">
+          <div class="hero-eyebrow">
+            <span class="hero-eyebrow-dot"></span>
+            <span>REST API &amp; MCP Server</span>
+          </div>
+          <h1>Disposable Email<br>for <span class="hero-accent">AI Agents</span></h1>
+          <p>Create inboxes and read email via REST API or MCP.<br>No browser. No passwords. Just an API key.</p>
+          <div class="hero-cta-group">
+            <a href="/login.html" class="btn btn-primary" role="button">Get API Key</a>
+            <a href="/docs.html" class="btn btn-secondary" role="button">View Docs</a>
+          </div>
+          <div class="npm-snippet">
+            <span class="npm-prompt">$</span>
+            <code>npx emptyinbox-mcp</code>
+            <button class="copy-btn" title="Copy">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="hero-demo" aria-hidden="true">
+          <div class="demo-card">
+            <div class="demo-chrome">
+              <span class="chrome-dot chrome-red"></span>
+              <span class="chrome-dot chrome-yellow"></span>
+              <span class="chrome-dot chrome-green"></span>
+              <span class="demo-chrome-title">terminal</span>
+            </div>
+            <div class="demo-body">
+              <div class="demo-line demo-comment" style="--delay:0.3s"># 1. Create a disposable inbox</div>
+              <div class="demo-line" style="--delay:0.6s"><span class="demo-method">POST</span> <span class="demo-path">/api/inbox</span></div>
+              <div class="demo-line demo-response" style="--delay:1.1s">→ <span class="demo-key">"address"</span>: <span class="demo-string">"fox12@emptyinbox.me"</span></div>
+              <div class="demo-spacer"></div>
+              <div class="demo-line demo-comment" style="--delay:1.8s"># 2. Poll until email arrives</div>
+              <div class="demo-line" style="--delay:2.1s"><span class="demo-method">GET</span>  <span class="demo-path">/api/messages</span></div>
+              <div class="demo-line demo-response" style="--delay:2.7s">→ <span class="demo-key">"from"</span>: <span class="demo-string">"noreply@github.com"</span></div>
+              <div class="demo-line demo-response" style="--delay:3.0s">   <span class="demo-key">"subject"</span>: <span class="demo-string">"Verify your email"</span></div>
+              <div class="demo-line demo-response" style="--delay:3.3s">   <span class="demo-key">"code"</span>: <span class="demo-string">"847291"</span></div>
+              <div class="demo-badge" style="--delay:3.9s">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Done in 3.9s
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section">
+      <div class="features-container">
+        <div class="features-carousel">
+
+          <div class="feature-card" style="animation-delay:0s">
+            <div class="feature-icon">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 2v6"/><path d="M15 2v6"/><path d="M12 17v5"/><path d="M5 8h14"/><path d="M6 11V8h12v3a6 6 0 1 1-12 0Z"/></svg>
+            </div>
+            <div class="feature-content">
+              <h3 class="feature-title">MCP Server</h3>
+              <p class="feature-description">Install in Claude, Claude Code, or any MCP-compatible agent with one line: npx emptyinbox-mcp.</p>
+            </div>
+          </div>
+
+          <div class="feature-card" style="animation-delay:0.1s">
+            <div class="feature-icon">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>
+            </div>
+            <div class="feature-content">
+              <h3 class="feature-title">OpenAPI / GPT Actions</h3>
+              <p class="feature-description">Import the OpenAPI spec directly into OpenAI GPTs, LangChain, CrewAI, or any OpenAPI-compatible framework.</p>
+            </div>
+          </div>
+
+          <div class="feature-card" style="animation-delay:0.2s">
+            <div class="feature-icon">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 12.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h7.5"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="M18 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="m22 22-1.5-1.5"/></svg>
+            </div>
+            <div class="feature-content">
+              <h3 class="feature-title">Email Polling</h3>
+              <p class="feature-description">Block until a verification email arrives. The primitive every agent needs for signup and OTP flows — via the wait_for_message MCP tool.</p>
+            </div>
+          </div>
+
+          <div class="feature-card" style="animation-delay:0.3s">
+            <div class="feature-icon">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+            </div>
+            <div class="feature-content">
+              <h3 class="feature-title">API Key Auth</h3>
+              <p class="feature-description">No passkeys, no browser sessions. Authenticate with a static API key — works headlessly from any environment.</p>
+            </div>
+          </div>
+
+          <div class="feature-card" style="animation-delay:0.4s">
+            <div class="feature-icon">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
+            </div>
+            <div class="feature-content">
+              <h3 class="feature-title">Crypto Payments</h3>
+              <p class="feature-description">Top up inbox quota with USDT via Blockonomics. No credit card, no KYC.</p>
+            </div>
+          </div>
+
+          <div class="feature-card" style="animation-delay:0.5s">
+            <div class="feature-icon">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
+            </div>
+            <div class="feature-content">
+              <h3 class="feature-title">Auto-Delete in 7 Days</h3>
+              <p class="feature-description">Messages are automatically purged. No cleanup needed after your agent finishes a task.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Integrations -->
+    <section class="integrations-section">
+      <h2 class="integrations-title">Integrations</h2>
+      <div class="integrations-grid">
+        <div class="integration">
+          <h3 class="integration-title">Bash</h3>
+          <a href="https://github.com/shivaenigma/tmpmail" class="integration-link">Download from GitHub</a>
+          <img src="/assets/bash.png" alt="Bash integration screenshot" class="integration-img" loading="lazy" width="600" height="400">
+        </div>
+        <div class="integration">
+          <h3 class="integration-title">Web</h3>
+          <a href="/login.html" class="integration-link">Try out</a>
+          <div class="integration-images">
+            <img src="/assets/web1.jpg" alt="Web integration screenshot 1" class="integration-img" loading="lazy" width="600" height="400">
+            <img src="/assets/web2.jpg" alt="Web integration screenshot 2" class="integration-img" loading="lazy" width="600" height="400">
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Static footer — JS replaces after load -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">A clutter-free space to help you reset, refocus, and stay in control.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
   <script type="module" src="./main.js"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@ export function renderFeaturesCarousel() {
   FEATURES.forEach(({ title, description }, index) => {
     const featureCard = document.createElement("div");
     featureCard.className = "feature-card";
-    featureCard.style.animationDelay = `${index * 0.1}s`;
+    featureCard.style.transitionDelay = `${index * 0.08}s`;
 
     // Icon placeholder - you can add specific icons later
     const iconDiv = document.createElement("div");
@@ -39,6 +39,25 @@ export function renderFeaturesCarousel() {
 
   container.appendChild(carousel);
   section.appendChild(container);
+
+  // Scroll-triggered reveal
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) {
+    section.querySelectorAll('.feature-card').forEach(card => card.classList.add('visible'));
+  } else {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    section.querySelectorAll('.feature-card').forEach(card => observer.observe(card));
+  }
 
   return section;
 }

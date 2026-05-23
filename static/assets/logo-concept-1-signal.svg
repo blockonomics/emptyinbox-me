@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 38" role="img" aria-labelledby="ei-logo-1-title">
+  <title id="ei-logo-1-title">EmptyInbox.me</title>
+
+  <!-- Concept 1: Signal — concentric arcs centered at dot (16,30), r=9,14,19 -->
+  <!-- Communicates "receiving" — fits AI agent / API inbox use case -->
+
+  <circle cx="16" cy="30" r="2.5"
+          style="fill: var(--color-primary, #10b981)"/>
+
+  <!-- Inner arc -->
+  <path d="M10.34,23 A9,9 0 0,1 21.66,23"
+        fill="none"
+        style="stroke: var(--color-primary, #10b981)"
+        stroke-width="2.2" stroke-linecap="round"/>
+
+  <!-- Middle arc -->
+  <path d="M8.79,18 A14,14 0 0,1 23.21,18"
+        fill="none"
+        style="stroke: var(--color-primary, #10b981)"
+        stroke-width="2.2" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Outer arc -->
+  <path d="M7.51,13 A19,19 0 0,1 24.49,13"
+        fill="none"
+        style="stroke: var(--color-primary, #10b981)"
+        stroke-width="2.2" stroke-linecap="round" opacity="0.3"/>
+
+  <!-- Wordmark -->
+  <text x="36" y="26"
+        font-family="'Poppins', system-ui, -apple-system, sans-serif"
+        font-size="20" font-weight="600" letter-spacing="-0.4"
+        style="fill: var(--color-text-primary, #1e2533)">EmptyInbox<tspan style="fill: var(--color-primary, #10b981)">.me</tspan></text>
+</svg>

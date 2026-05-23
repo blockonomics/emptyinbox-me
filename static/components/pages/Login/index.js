@@ -7,6 +7,8 @@ import {
   checkPasskeySupport,
 } from "../../../services/apiService.js";
 
+const KEY_ICON = `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>`;
+
 export function renderLoginPage() {
   const main = document.createElement("main");
 
@@ -15,16 +17,20 @@ export function renderLoginPage() {
 
   container.innerHTML = `
     <section class="login">
-      <h1>Welcome to EmptyInbox</h1>
-      <p>Enter your username to get started creating your passkey.</p>
-      <a href="https://support.apple.com/en-us/102195" target="_blank" class="learn-more">Learn more about passkeys.</a>
-      
+      <div class="login-brand">
+        <span class="login-brand-dot"></span>
+        <span>EmptyInbox</span>
+      </div>
+
+      <h1>Get your API key</h1>
+      <p>Choose a username to create a passkey-secured account. No password required.</p>
+
       <div class="form-group">
         <label for="username-input">Username</label>
-        <input 
-          type="text" 
-          id="username-input" 
-          placeholder="Choose your username"
+        <input
+          type="text"
+          id="username-input"
+          placeholder="e.g. agentsmith"
           autocomplete="username"
           required
         />
@@ -32,15 +38,6 @@ export function renderLoginPage() {
 
       <button id="continue-btn" type="button" class="primary-btn">
         Continue
-      </button>
-
-      <div class="divider">
-        <span>Or</span>
-      </div>
-
-      <button id="sign-in-btn" type="button" class="secondary-btn">
-        <span>🔐</span>
-        <span>Sign in with a passkey</span>
       </button>
 
       <div id="loading" class="loading hidden">
@@ -51,16 +48,19 @@ export function renderLoginPage() {
         <p></p>
       </div>
 
-      <div class="passkey-info">
-        <p class="passkey-description">Your account will be secured with a passkey using your device's biometrics or PIN.</p>
-        <div class="supported-methods">
-          <span>Face ID</span>
-          <span>Touch ID</span>
-          <span>Windows Hello</span>
-          <span>Android Biometric</span>
-        </div>
+      <div class="divider">
+        <span>Already have a passkey?</span>
       </div>
-      
+
+      <button id="sign-in-btn" type="button" class="secondary-btn">
+        ${KEY_ICON}
+        <span>Sign in with a passkey</span>
+      </button>
+
+      <p class="login-footnote">
+        Secured by your device biometrics or PIN. <a href="https://support.apple.com/en-us/102195" target="_blank" rel="noopener">What's a passkey?</a>
+      </p>
+
       <div id="debug-info" class="debug-info hidden">
         <p><strong>Debug Info:</strong></p>
         <p id="platform-info"></p>
@@ -221,7 +221,7 @@ async function initializeLogin() {
       }
     } finally {
       isProcessing = false;
-      updateButtonState(signInBtn, false, "🔐 Sign in with a passkey");
+      updateButtonState(signInBtn, false, `${KEY_ICON}<span>Sign in with a passkey</span>`);
       showLoading(false);
     }
   });

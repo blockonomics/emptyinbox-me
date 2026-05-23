@@ -13,6 +13,7 @@ import { ROUTES } from "./utils/constants.js";
 document.addEventListener("DOMContentLoaded", async () => {
   (async () => {
     const navbar = await createNavbar(); // Wait for it to finish
+    document.querySelector('.site-navbar')?.remove(); // Remove static navbar
     document.body.prepend(navbar);
 
     // Add scroll listener after navbar is in the DOM
@@ -52,8 +53,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     case ROUTES.SETTINGS:
       renderSettingsPage();
       break;
+    case ROUTES.PRIVACY:
+    case ROUTES.TERMS:
+      // Static pages — no JS render needed
+      break;
     default:
       console.error("Page not found:", path);
   }
+  document.querySelector('.site-footer')?.remove(); // Remove static footer
   document.body.appendChild(createFooter());
 });

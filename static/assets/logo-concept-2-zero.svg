@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 38" role="img" aria-labelledby="ei-logo-2-title">
+  <title id="ei-logo-2-title">EmptyInbox.me</title>
+
+  <!-- Concept 2: Zero Box — developer-native "inbox zero" badge -->
+  <!-- Rounded square with monospace "0" inside. Clean, technical, distinctive. -->
+
+  <!-- Box -->
+  <rect x="3" y="5" width="26" height="28" rx="5"
+        fill="none"
+        style="stroke: var(--color-text-primary, #1e2533)"
+        stroke-width="2"/>
+
+  <!-- Zero -->
+  <text x="16" y="26" text-anchor="middle"
+        font-family="'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace"
+        font-size="16" font-weight="700"
+        style="fill: var(--color-primary, #10b981)">0</text>
+
+  <!-- Wordmark -->
+  <text x="38" y="26"
+        font-family="'Poppins', system-ui, -apple-system, sans-serif"
+        font-size="20" font-weight="600" letter-spacing="-0.4"
+        style="fill: var(--color-text-primary, #1e2533)">EmptyInbox<tspan style="fill: var(--color-primary, #10b981)">.me</tspan></text>
+</svg>

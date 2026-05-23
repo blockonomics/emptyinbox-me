@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Logo Concepts — EmptyInbox.me</title>
+<link rel="stylesheet" href="css/fonts.css">
+<style>
+  :root {
+    --color-primary:       oklch(0.696 0.17 162.5);
+    --color-primary-alpha: oklch(0.696 0.17 162.5 / 0.13);
+    --color-text-primary:  oklch(0.261 0.009 248);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Poppins", system-ui, sans-serif;
+    background: oklch(0.965 0.006 248);
+    padding: 48px 40px;
+    color: #1e2533;
+    min-height: 100vh;
+  }
+
+  .page-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: oklch(0.65 0.01 248);
+    margin-bottom: 32px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: oklch(0.75 0.008 248);
+    margin: 40px 0 16px;
+  }
+
+  .section-label:first-of-type { margin-top: 0; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .card-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: oklch(0.78 0.008 248);
+    margin-bottom: 18px;
+  }
+
+  /* Icon-only strip at multiple sizes */
+  .icon-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .icon-row svg { display: block; flex-shrink: 0; }
+
+  /* Simulated navbar */
+  .navbar-strip {
+    background: white;
+    border: 1px solid oklch(0.91 0.007 248);
+    border-radius: 8px;
+    padding: 0 18px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .navbar-strip svg { height: 38px; width: auto; display: block; }
+
+  .tagline {
+    font-size: 11px;
+    color: oklch(0.65 0.01 248);
+    line-height: 1.5;
+  }
+
+  /* Reference (current PNG) */
+  .card.reference {
+    background: oklch(0.975 0.004 248);
+    grid-column: span 3;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+  .card.reference img { height: 38px; }
+  .card.reference .note { font-size: 12px; color: oklch(0.65 0.01 248); }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid oklch(0.91 0.007 248); margin: 8px 0 32px; }
+</style>
+</head>
+<body>
+
+<p class="page-title">EmptyInbox.me — Logo Icon Concepts</p>
+
+<p class="section-label">Set A — New concepts (via Impeccable)</p>
+<div class="grid">
+
+  <!-- A: CAPTURE -->
+  <div class="card">
+    <p class="card-label">A · Capture</p>
+    <div class="icon-row">
+      <!-- 18px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18">
+        <line x1="5"  y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+        <line x1="16" y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="2"   stroke-linecap="round" opacity="0.75"/>
+        <line x1="27" y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+        <circle cx="16" cy="27" r="3.5" style="fill:var(--color-primary,#10b981)"/>
+      </svg>
+      <!-- 32px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+        <line x1="5"  y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+        <line x1="16" y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="2"   stroke-linecap="round" opacity="0.75"/>
+        <line x1="27" y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+        <circle cx="16" cy="27" r="3.5" style="fill:var(--color-primary,#10b981)"/>
+      </svg>
+      <!-- 48px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="48" height="48">
+        <line x1="5"  y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+        <line x1="16" y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="2"   stroke-linecap="round" opacity="0.75"/>
+        <line x1="27" y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+        <circle cx="16" cy="27" r="3.5" style="fill:var(--color-primary,#10b981)"/>
+      </svg>
+      <!-- 64px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="64" height="64">
+        <line x1="5"  y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+        <line x1="16" y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="2"   stroke-linecap="round" opacity="0.75"/>
+        <line x1="27" y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+        <circle cx="16" cy="27" r="3.5" style="fill:var(--color-primary,#10b981)"/>
+      </svg>
+    </div>
+    <div class="navbar-strip">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 38">
+        <g transform="translate(1,3)">
+          <line x1="5"  y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+          <line x1="16" y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="2"   stroke-linecap="round" opacity="0.75"/>
+          <line x1="27" y1="4" x2="16" y2="22" stroke="#1e2533" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+          <circle cx="16" cy="27" r="3.5" style="fill:var(--color-primary,#10b981)"/>
+        </g>
+        <text x="40" y="26" font-family="'Poppins',system-ui,sans-serif" font-size="20" font-weight="600" letter-spacing="-0.4" style="fill:var(--color-text-primary,#1e2533)">EmptyInbox<tspan style="fill:var(--color-primary,#10b981)">.me</tspan></text>
+      </svg>
+    </div>
+    <p class="tagline">Three signals converging to a capture point. Emails arrive, land at one endpoint. Pipeline / collection metaphor.</p>
+  </div>
+
+  <!-- B: HOURGLASS -->
+  <div class="card">
+    <p class="card-label">B · Hourglass</p>
+    <div class="icon-row">
+      <!-- 18px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18">
+        <path d="M5,3 L27,3 L16,14 Z" style="fill:var(--color-primary-alpha,rgba(16,185,129,0.13))" stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M16,18 L5,29 L27,29 Z" fill="none" stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+        <line x1="16" y1="14" x2="16" y2="18" style="stroke:var(--color-primary,#10b981)" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <!-- 32px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+        <path d="M5,3 L27,3 L16,14 Z" style="fill:var(--color-primary-alpha,rgba(16,185,129,0.13))" stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M16,18 L5,29 L27,29 Z" fill="none" stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+        <line x1="16" y1="14" x2="16" y2="18" style="stroke:var(--color-primary,#10b981)" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <!-- 48px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="48" height="48">
+        <path d="M5,3 L27,3 L16,14 Z" style="fill:var(--color-primary-alpha,rgba(16,185,129,0.13))" stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M16,18 L5,29 L27,29 Z" fill="none" stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+        <line x1="16" y1="14" x2="16" y2="18" style="stroke:var(--color-primary,#10b981)" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <!-- 64px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="64" height="64">
+        <path d="M5,3 L27,3 L16,14 Z" style="fill:var(--color-primary-alpha,rgba(16,185,129,0.13))" stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M16,18 L5,29 L27,29 Z" fill="none" stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+        <line x1="16" y1="14" x2="16" y2="18" style="stroke:var(--color-primary,#10b981)" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="navbar-strip">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 38">
+        <g transform="translate(1,3)">
+          <path d="M5,3 L27,3 L16,14 Z" style="fill:var(--color-primary-alpha,rgba(16,185,129,0.13))" stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M16,18 L5,29 L27,29 Z" fill="none" stroke="#1e2533" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="16" y1="14" x2="16" y2="18" style="stroke:var(--color-primary,#10b981)" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <text x="40" y="26" font-family="'Poppins',system-ui,sans-serif" font-size="20" font-weight="600" letter-spacing="-0.4" style="fill:var(--color-text-primary,#1e2533)">EmptyInbox<tspan style="fill:var(--color-primary,#10b981)">.me</tspan></text>
+      </svg>
+    </div>
+    <p class="tagline">Geometric bowtie. Top filled (email received), bottom empty (expired). Teal neck = the brief moment it exists. Disposable by design.</p>
+  </div>
+
+  <!-- C: DASHED RING -->
+  <div class="card">
+    <p class="card-label">C · Dashed Ring</p>
+    <div class="icon-row">
+      <!-- 18px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18">
+        <circle cx="16" cy="16" r="12" fill="none" stroke="#1e2533" stroke-width="2" stroke-dasharray="4.5 3" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="2.5" style="fill:var(--color-primary,#10b981)"/>
+      </svg>
+      <!-- 32px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+        <circle cx="16" cy="16" r="12" fill="none" stroke="#1e2533" stroke-width="2" stroke-dasharray="4.5 3" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="2.5" style="fill:var(--color-primary,#10b981)"/>
+      </svg>
+      <!-- 48px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="48" height="48">
+        <circle cx="16" cy="16" r="12" fill="none" stroke="#1e2533" stroke-width="2" stroke-dasharray="4.5 3" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="2.5" style="fill:var(--color-primary,#10b981)"/>
+      </svg>
+      <!-- 64px -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="64" height="64">
+        <circle cx="16" cy="16" r="12" fill="none" stroke="#1e2533" stroke-width="2" stroke-dasharray="4.5 3" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="2.5" style="fill:var(--color-primary,#10b981)"/>
+      </svg>
+    </div>
+    <div class="navbar-strip">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 38">
+        <g transform="translate(3,3)">
+          <circle cx="16" cy="16" r="12" fill="none" stroke="#1e2533" stroke-width="2" stroke-dasharray="4.5 3" stroke-linecap="round"/>
+          <circle cx="16" cy="16" r="2.5" style="fill:var(--color-primary,#10b981)"/>
+        </g>
+        <text x="40" y="26" font-family="'Poppins',system-ui,sans-serif" font-size="20" font-weight="600" letter-spacing="-0.4" style="fill:var(--color-text-primary,#1e2533)">EmptyInbox<tspan style="fill:var(--color-primary,#10b981)">.me</tspan></text>
+      </svg>
+    </div>
+    <p class="tagline">Dashed ring = impermanent container. Developer visual language: dashed means draft, optional, temporary. One teal dot — one email, briefly held.</p>
+  </div>
+
+</div>
+
+<p class="section-label" style="margin-top:48px">Set B — Previous concepts</p>
+<div class="grid">
+
+  <!-- OLD 1: Signal arcs -->
+  <div class="card">
+    <p class="card-label">1 · Signal arcs</p>
+    <div class="navbar-strip">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 38">
+        <circle cx="16" cy="30" r="2.5" style="fill:var(--color-primary,#10b981)"/>
+        <path d="M10.34,23 A9,9 0 0,1 21.66,23" fill="none" style="stroke:var(--color-primary,#10b981)" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M8.79,18 A14,14 0 0,1 23.21,18" fill="none" style="stroke:var(--color-primary,#10b981)" stroke-width="2.2" stroke-linecap="round" opacity="0.6"/>
+        <path d="M7.51,13 A19,19 0 0,1 24.49,13" fill="none" style="stroke:var(--color-primary,#10b981)" stroke-width="2.2" stroke-linecap="round" opacity="0.3"/>
+        <text x="36" y="26" font-family="'Poppins',system-ui,sans-serif" font-size="20" font-weight="600" letter-spacing="-0.4" style="fill:var(--color-text-primary,#1e2533)">EmptyInbox<tspan style="fill:var(--color-primary,#10b981)">.me</tspan></text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- OLD 2: Zero box -->
+  <div class="card">
+    <p class="card-label">2 · Zero box</p>
+    <div class="navbar-strip">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 38">
+        <rect x="3" y="5" width="26" height="28" rx="5" fill="none" style="stroke:var(--color-text-primary,#1e2533)" stroke-width="2"/>
+        <text x="16" y="26" text-anchor="middle" font-family="'SF Mono',ui-monospace,monospace" font-size="16" font-weight="700" style="fill:var(--color-primary,#10b981)">0</text>
+        <text x="38" y="26" font-family="'Poppins',system-ui,sans-serif" font-size="20" font-weight="600" letter-spacing="-0.4" style="fill:var(--color-text-primary,#1e2533)">EmptyInbox<tspan style="fill:var(--color-primary,#10b981)">.me</tspan></text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- OLD 3: Clearing lines -->
+  <div class="card">
+    <p class="card-label">3 · Clearing</p>
+    <div class="navbar-strip">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 38">
+        <rect x="3" y="4" width="26" height="30" rx="4" fill="none" style="stroke:var(--color-text-primary,#1e2533)" stroke-width="2"/>
+        <line x1="8" y1="13" x2="22" y2="13" style="stroke:var(--color-primary,#10b981)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="8" y1="20" x2="18" y2="20" style="stroke:var(--color-primary,#10b981)" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+        <line x1="8" y1="27" x2="12" y2="27" style="stroke:var(--color-primary,#10b981)" stroke-width="2" stroke-linecap="round" opacity="0.2"/>
+        <text x="38" y="26" font-family="'Poppins',system-ui,sans-serif" font-size="20" font-weight="600" letter-spacing="-0.4" style="fill:var(--color-text-primary,#1e2533)">EmptyInbox<tspan style="fill:var(--color-primary,#10b981)">.me</tspan></text>
+      </svg>
+    </div>
+  </div>
+
+</div>
+
+<p class="section-label" style="margin-top:48px">Reference — current PNG</p>
+<div class="card reference">
+  <img src="assets/emptyinboxlogo.png" alt="Current logo">
+  <p class="note">PNG · two-line stack · generic envelope + checkmark · no CSS theming</p>
+</div>
+
+</body>
+</html>

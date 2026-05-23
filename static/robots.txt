@@ -3,5 +3,7 @@ Disallow: /inboxes.html
 Disallow: /messages.html
 Disallow: /settings.html
 Disallow: /debug-passkeys.html
+Disallow: /purchase.html
+Disallow: /login.html
 
 Sitemap: https://emptyinbox.me/sitemap.xml

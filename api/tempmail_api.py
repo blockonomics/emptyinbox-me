@@ -24,7 +24,7 @@ if IS_DEV:
     CORS(
         app,
         supports_credentials=True,
-        origins=["http://localhost:8000"]  # must match your frontend origin exactly
+        origins=["http://localhost:8000", "http://localhost:8080", "http://localhost:5173", "null"]
     )
 
 
