@@ -122,7 +122,7 @@
             </li>
           </ul>
           <div class="card-cta">
-            <a href="/login.html" class="btn btn-secondary btn-full">Get started free</a>
+            <a href="/login.html" id="free-cta" class="btn btn-secondary btn-full">Get started free</a>
           </div>
         </div>
 
@@ -169,7 +169,7 @@
             </li>
           </ul>
           <div class="card-cta">
-            <a href="/login.html" class="btn btn-primary btn-full">Buy inboxes</a>
+            <a href="/login.html" id="buy-cta" class="btn btn-primary btn-full">Buy inboxes</a>
           </div>
         </div>
 
@@ -229,5 +229,11 @@
   </footer>
 
   <script type="module" src="main.js"></script>
+  <script>
+    if (localStorage.getItem('isLoggedIn')) {
+      document.getElementById('free-cta').href = '/inboxes.html';
+      document.getElementById('buy-cta').href = '/inboxes.html';
+    }
+  </script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 import { ROUTES } from "../../../utils/constants.js";
+import { getIsLoggedIn } from "../../../utils/storage.js";
 
 const CHECK_ICON = `<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
 
@@ -16,6 +17,10 @@ function featureItem(text) {
 
 export async function renderPricingPage() {
   if (document.querySelector('main')) return;
+
+  const isLoggedIn = getIsLoggedIn();
+  const freeCTA = isLoggedIn ? ROUTES.INBOXES : ROUTES.LOGIN;
+  const buyCTA = isLoggedIn ? ROUTES.INBOXES : ROUTES.LOGIN;
 
   const main = document.createElement("main");
   main.className = "pricing-page";
@@ -55,7 +60,7 @@ export async function renderPricingPage() {
           </ul>
 
           <div class="card-cta">
-            <a href="${ROUTES.LOGIN}" class="btn btn-secondary btn-full">Get started free</a>
+            <a href="${freeCTA}" class="btn btn-secondary btn-full">Get started free</a>
           </div>
         </div>
 
@@ -86,7 +91,7 @@ export async function renderPricingPage() {
           </ul>
 
           <div class="card-cta">
-            <a href="${ROUTES.LOGIN}" class="btn btn-primary btn-full">Buy inboxes</a>
+            <a href="${buyCTA}" class="btn btn-primary btn-full">Buy inboxes</a>
           </div>
         </div>
 
