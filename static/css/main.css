@@ -2,7 +2,7 @@
 
 /* === Design Tokens (OKLCH) === */
 :root {
-  --font-display: "Syne", "Poppins", sans-serif;
+  --font-display: "Jost", "Poppins", sans-serif;
   /* Brand — Emerald */
   --color-primary:        oklch(0.696 0.17 162.5);
   --color-primary-dark:   oklch(0.627 0.155 162.5);
@@ -104,7 +104,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  font-family: "Poppins", sans-serif;
+  font-family: "Figtree", sans-serif;
   background: var(--color-bg);
   color: var(--color-text-primary);
   margin: 0;
@@ -157,9 +157,8 @@ html { scroll-behavior: smooth; }
   font-weight: 700;
   color: var(--color-text-primary);
   margin-bottom: var(--space-6);
-  line-height: 1.15;
+  line-height: 1.1;
   letter-spacing: -0.03em;
-  padding-bottom: 0.25em;
 }
 
 .hero p {
@@ -186,7 +185,7 @@ html { scroll-behavior: smooth; }
   height: 44px;
   border: none;
   border-radius: var(--radius-md);
-  font-family: "Poppins", sans-serif;
+  font-family: "Figtree", sans-serif;
   font-weight: 600;
   font-size: var(--text-base);
   text-decoration: none;
@@ -315,7 +314,7 @@ html { scroll-behavior: smooth; }
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
-  font-family: "Poppins", sans-serif;
+  font-family: "Figtree", sans-serif;
   font-size: var(--text-base);
   color: var(--color-text-primary);
   transition: border-color var(--duration-fast) ease,

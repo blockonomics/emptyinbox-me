@@ -6,73 +6,70 @@ import { ROUTES } from "../../../utils/constants.js";
 export function createMessageCards() {
   const container = createElement("div", "messages-container");
   container.id = "messages-container";
-
-  // Load all messages
-  setTimeout(async () => {
-    await loadAllMessages(container);
-  }, 100);
-
+  loadAllMessages(container);
   return container;
 }
 
 async function loadAllMessages(container) {
+  container.innerHTML = buildSkeletonHTML();
   try {
-    container.innerHTML = `
-      <div class="loading-state">
-        <div class="loading-animation">
-          <div class="loading-spinner"></div>
-          <div class="loading-dots">
-            <span></span><span></span><span></span>
-          </div>
-        </div>
-        <div class="loading-text">Fetching messages...</div>
-      </div>
-    `;
-
     const messages = await fetchMessages();
-
     displayAllMessages(container, messages || []);
-  } catch (error) {
-    container.innerHTML = `
-      <div class="error-state">
-        <div class="error-animation">
-          <span class="error-icon">⚠️</span>
-          <div class="error-pulse"></div>
-        </div>
-        <div class="error-text">Unable to load messages</div>
-      </div>
-    `;
+  } catch {
+    container.innerHTML = buildErrorHTML();
   }
 }
 
+const SKELETON_CARD = `
+  <div class="msg-skeleton-card">
+    <div class="msg-skel-header">
+      <div class="skel skel-avatar"></div>
+      <div class="skel skel-line skel-line-md"></div>
+      <div class="skel skel-line skel-line-sm" style="margin-left:auto"></div>
+    </div>
+    <div class="skel skel-block"></div>
+  </div>`;
+
+function buildSkeletonHTML() {
+  return `<div class="msg-skeleton">${SKELETON_CARD}${SKELETON_CARD}${SKELETON_CARD}</div>`;
+}
+
+function buildErrorHTML() {
+  return `
+    <div class="msg-state-container">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="msg-state-icon msg-state-icon--error" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p class="msg-state-title">Couldn't load messages</p>
+      <p class="msg-state-sub">Check your connection and refresh the page.</p>
+    </div>`;
+}
+
+function buildEmptyHTML() {
+  return `
+    <div class="msg-state-container">
+      <svg class="msg-empty-svg" width="88" height="72" viewBox="0 0 88 72" fill="none" aria-hidden="true">
+        <rect x="8" y="22" width="72" height="46" rx="6" fill="oklch(0.975 0.012 162.5)" stroke="oklch(0.73 0.13 162.5)" stroke-width="1.5"/>
+        <path d="M8 32L44 54L80 32" stroke="oklch(0.73 0.13 162.5)" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M32 8L56 8" stroke="oklch(0.82 0.08 162.5)" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M40 2L48 2" stroke="oklch(0.82 0.08 162.5)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <p class="msg-state-title">No messages yet</p>
+      <p class="msg-state-sub">Share an inbox address to start receiving mail.</p>
+      <a href="${ROUTES.INBOXES}" class="msg-state-cta">View Inboxes</a>
+    </div>`;
+}
+
 function displayAllMessages(container, messages) {
-  // Clear content with smooth transition
-  container.style.opacity = "0";
-
-  setTimeout(() => {
-    container.innerHTML = "";
-
-    if (messages.length === 0) {
-      const noMessagesDiv = createElement("div", "no-messages-state");
-      noMessagesDiv.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-text">
-            You have zero messages <span class="empty-icon">🎉</span> — see 
-            <a href="${ROUTES.INBOXES}">Inboxes</a> to choose an address and start receiving mail.
-          </div>
-        </div>
-      `;
-      container.appendChild(noMessagesDiv);
-    } else {
-      // Create a separate card for each message
-      messages.forEach((message, index) => {
-        const messageCard = createElement("div", "message-card");
-        const preview = createMessagePreview(message);
-        messageCard.appendChild(preview);
-        container.appendChild(messageCard);
-      });
-    }
-
-    container.style.opacity = "1";
-  }, 150);
+  container.innerHTML = "";
+  if (messages.length === 0) {
+    container.innerHTML = buildEmptyHTML();
+    return;
+  }
+  messages.forEach((message, index) => {
+    const card = createElement("div", "message-card");
+    card.style.setProperty("--card-i", index);
+    card.appendChild(createMessagePreview(message));
+    container.appendChild(card);
+  });
 }

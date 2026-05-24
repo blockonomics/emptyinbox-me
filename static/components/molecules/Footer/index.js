@@ -28,7 +28,7 @@ export function createFooter() {
 
   const brandText = document.createElement("p");
   brandText.className = "footer-brand-text";
-  brandText.textContent = "A clutter-free space to help you reset, refocus, and stay in control.";
+  brandText.textContent = "Disposable email infrastructure for AI agents and developers.";
 
   logoLink.appendChild(logo);
   brandSection.appendChild(logoLink);

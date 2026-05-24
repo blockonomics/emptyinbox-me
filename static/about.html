@@ -55,6 +55,8 @@
       <nav class="site-nav" aria-label="Main navigation">
         <a href="/login.html" class="nav-link"><span>Login</span></a>
         <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
       </nav>
     </div>
   </header>
@@ -64,39 +66,35 @@
     <header class="about-header">
       <div class="about-header-inner">
         <span class="about-page-label">About</span>
-        <h1 class="about-headline">Built for developers<br>who hate email clutter</h1>
+        <h1 class="about-headline">Email infrastructure<br>built for <span class="hero-accent">AI agents</span></h1>
       </div>
     </header>
 
     <section class="about-section about-why">
       <div class="about-section-inner">
         <h2 class="about-section-title">Why EmptyInbox</h2>
-        <div class="about-stat-block">
-          <span class="about-stat-number">99%</span>
-          <span class="about-stat-label">of inbox storage filled with emails that are never read again</span>
-        </div>
         <div class="about-why-text">
-          <p>We are in 2026, yet email inboxes are clunky, pesky and filled with trash. The drudgery of copying activation codes and reset‑password links still exists.</p>
-          <p>As developers at a SaaS startup, we frequently sign up to different web services and need to automate and test emails. We created EmptyInbox to streamline this flow and have a digitally minimal inbox. Hope you find it useful!</p>
+          <p>AI agents need email. Every signup flow, OTP, password reset, and verification link requires a real inbox — but pointing an agent at your personal email is messy, fragile, and doesn't scale.</p>
+          <p>We're developers building automation tools at <a href="https://www.blockonomics.co/merchants" target="_blank" rel="noopener">Blockonomics</a>. We needed a way to give each agent run its own throwaway inbox — accessible via API, no browser, no human in the loop. EmptyInbox is what we built.</p>
         </div>
       </div>
     </section>
 
     <section class="about-section about-how">
       <div class="about-section-inner">
-        <h2 class="about-section-title">How to use</h2>
+        <h2 class="about-section-title">How it works</h2>
         <ol class="about-steps">
           <li class="about-step">
             <span class="step-num">01</span>
-            <p>For each new web service you sign up to, create a new inbox. Use your browser's password manager to remember the password and email address for each service.</p>
+            <p>Sign up and grab your API key from Settings. Add it to your agent's environment — one line of config.</p>
           </li>
           <li class="about-step">
             <span class="step-num">02</span>
-            <p>Use "See Messages" to view emails and quickly access activation codes.</p>
+            <p>Call <code>POST /api/inbox</code> to create a fresh disposable address for each task or agent run.</p>
           </li>
           <li class="about-step">
             <span class="step-num">03</span>
-            <p>Use our Bash extension or API for developer testing and automation.</p>
+            <p>Call <code>wait_for_message</code> (MCP) or poll <code>GET /api/messages</code> until the verification email arrives. Extract the code. Continue.</p>
           </li>
         </ol>
       </div>
@@ -106,11 +104,11 @@
       <div class="about-section-inner about-meta-grid">
         <div class="about-meta-item">
           <h2 class="about-section-title">Contact</h2>
-          <p>Log an issue or contribute on <a href="https://github.com/blockonomics/emptyinbox-me/" target="_blank" rel="noopener">GitHub</a>.</p>
+          <p>Log an issue or contribute on <a href="https://github.com/blockonomics/emptyinbox-me/" target="_blank" rel="noopener">GitHub</a>. Open source under the MIT license.</p>
         </div>
         <div class="about-meta-item">
-          <h2 class="about-section-title">Credits</h2>
-          <p>Supported and maintained by <a href="https://www.blockonomics.co/merchants" target="_blank" rel="noopener">Blockonomics</a> — the easiest way to accept crypto payments on your e‑commerce website.</p>
+          <h2 class="about-section-title">Built by</h2>
+          <p>Supported and maintained by <a href="https://www.blockonomics.co/merchants" target="_blank" rel="noopener">Blockonomics</a> — crypto payment infrastructure for e‑commerce, trusted by thousands of merchants worldwide.</p>
         </div>
       </div>
     </section>
@@ -125,7 +123,7 @@
           <a href="/" class="footer-logo-link">
             <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
           </a>
-          <p class="footer-brand-text">A clutter-free space to help you reset, refocus, and stay in control.</p>
+          <p class="footer-brand-text">Disposable email infrastructure for AI agents and developers.</p>
         </div>
         <div class="footer-links">
           <h3 class="footer-section-title">Product</h3>

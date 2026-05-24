@@ -15,8 +15,7 @@ export const ROUTES = {
 
 export const TEXT = {
   SITE_NAME: "EmptyInbox.me",
-  TAGLINE:
-    "A clutter-free space to help you reset, refocus, and stay in control.",
+  TAGLINE: "Disposable email infrastructure for AI agents and developers.",
 };
 
 export const NAV_LINKS = [
@@ -25,6 +24,8 @@ export const NAV_LINKS = [
   { label: "Inboxes", href: ROUTES.INBOXES },
   { label: "Settings", href: ROUTES.SETTINGS },
   { label: "Pricing", href: ROUTES.PRICING },
+  { label: "Docs", href: ROUTES.API_DOCS },
+  { label: "Blog", href: ROUTES.BLOG },
 ];
 
 export const FOOTER_LINKS = {

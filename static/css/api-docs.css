@@ -6,8 +6,7 @@
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: calc(100vh - 140px);
-  max-width: 1320px;
-  margin: 0 auto;
+  max-width: 1440px;
   position: relative;
 }
 

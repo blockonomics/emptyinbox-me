@@ -99,6 +99,8 @@
       <nav class="site-nav" aria-label="Main navigation">
         <a href="/login.html" class="nav-link"><span>Login</span></a>
         <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
       </nav>
     </div>
   </header>
@@ -125,6 +127,20 @@
             <button class="copy-btn" title="Copy">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             </button>
+          </div>
+
+          <div class="hero-trust">
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="trust-item" target="_blank" rel="noopener noreferrer">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.004.07 1.532 1.031 1.532 1.031.892 1.529 2.341 1.088 2.91.832.091-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.03-2.682-.104-.253-.447-1.27.097-2.646 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.748-1.025 2.748-1.025.546 1.376.202 2.393.1 2.646.64.698 1.028 1.591 1.028 2.682 0 3.841-2.337 4.687-4.565 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+              Open source
+            </a>
+            <span class="trust-divider">·</span>
+            <span class="trust-item">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              Free to start
+            </span>
+            <span class="trust-divider">·</span>
+            <span class="trust-item">Built by the <a href="https://www.blockonomics.co/merchants" target="_blank" rel="noopener noreferrer">Blockonomics</a> team</span>
           </div>
         </div>
         <div class="hero-demo" aria-hidden="true">
@@ -157,66 +173,58 @@
 
     <!-- Features -->
     <section class="features-section">
+      <div class="features-header">
+        <h2 class="features-title">Built for headless automation</h2>
+        <p class="features-subtitle">Six capabilities your agent needs to handle email — from inbox creation to OTP extraction — without touching a browser.</p>
+      </div>
       <div class="features-container">
         <div class="features-carousel">
 
           <div class="feature-card" style="animation-delay:0s">
-            <div class="feature-icon">
-              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 2v6"/><path d="M15 2v6"/><path d="M12 17v5"/><path d="M5 8h14"/><path d="M6 11V8h12v3a6 6 0 1 1-12 0Z"/></svg>
-            </div>
+            <span class="feature-num">01</span>
             <div class="feature-content">
               <h3 class="feature-title">MCP Server</h3>
-              <p class="feature-description">Install in Claude, Claude Code, or any MCP-compatible agent with one line: npx emptyinbox-mcp.</p>
+              <p class="feature-description">One line installs it in Claude, Claude Code, or any MCP-compatible agent: <code>npx emptyinbox-mcp</code>. No config file.</p>
             </div>
           </div>
 
           <div class="feature-card" style="animation-delay:0.1s">
-            <div class="feature-icon">
-              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>
-            </div>
+            <span class="feature-num">02</span>
             <div class="feature-content">
-              <h3 class="feature-title">OpenAPI / GPT Actions</h3>
-              <p class="feature-description">Import the OpenAPI spec directly into OpenAI GPTs, LangChain, CrewAI, or any OpenAPI-compatible framework.</p>
+              <h3 class="feature-title">OpenAPI &amp; GPT Actions</h3>
+              <p class="feature-description">Import the spec directly into OpenAI GPTs, LangChain, CrewAI, or any OpenAPI-compatible framework — instant integration.</p>
             </div>
           </div>
 
           <div class="feature-card" style="animation-delay:0.2s">
-            <div class="feature-icon">
-              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 12.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h7.5"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="M18 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="m22 22-1.5-1.5"/></svg>
-            </div>
+            <span class="feature-num">03</span>
             <div class="feature-content">
               <h3 class="feature-title">Email Polling</h3>
-              <p class="feature-description">Block until a verification email arrives. The primitive every agent needs for signup and OTP flows — via the wait_for_message MCP tool.</p>
+              <p class="feature-description">Wait for a verification email, then extract the code — one MCP call handles the full OTP flow. Your agent stays unblocked.</p>
             </div>
           </div>
 
           <div class="feature-card" style="animation-delay:0.3s">
-            <div class="feature-icon">
-              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
-            </div>
+            <span class="feature-num">04</span>
             <div class="feature-content">
               <h3 class="feature-title">API Key Auth</h3>
-              <p class="feature-description">No passkeys, no browser sessions. Authenticate with a static API key — works headlessly from any environment.</p>
+              <p class="feature-description">One static key works from CI, containers, and cloud functions — no browser session, no OAuth dance.</p>
             </div>
           </div>
 
           <div class="feature-card" style="animation-delay:0.4s">
-            <div class="feature-icon">
-              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
-            </div>
+            <span class="feature-num">05</span>
             <div class="feature-content">
               <h3 class="feature-title">Crypto Payments</h3>
-              <p class="feature-description">Top up inbox quota with USDT via Blockonomics. No credit card, no KYC.</p>
+              <p class="feature-description">Buy inbox capacity with USDT via Blockonomics. No credit card, no KYC — pay and use immediately.</p>
             </div>
           </div>
 
           <div class="feature-card" style="animation-delay:0.5s">
-            <div class="feature-icon">
-              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
-            </div>
+            <span class="feature-num">06</span>
             <div class="feature-content">
-              <h3 class="feature-title">Auto-Delete in 7 Days</h3>
-              <p class="feature-description">Messages are automatically purged. No cleanup needed after your agent finishes a task.</p>
+              <h3 class="feature-title">7-Day Auto-Delete</h3>
+              <p class="feature-description">Messages purge automatically. Zero retention risk, no cleanup scripts — your agent can move on without looking back.</p>
             </div>
           </div>
 
@@ -226,16 +234,17 @@
 
     <!-- Integrations -->
     <section class="integrations-section">
-      <h2 class="integrations-title">Integrations</h2>
+      <h2 class="integrations-title">Use it your way</h2>
+      <span class="integrations-subtitle">EmptyInbox works wherever you run code — shell scripts, browsers, or any HTTP client.</span>
       <div class="integrations-grid">
         <div class="integration">
-          <h3 class="integration-title">Bash</h3>
+          <h3 class="integration-title">Shell / Bash</h3>
           <a href="https://github.com/shivaenigma/tmpmail" class="integration-link">Download from GitHub</a>
           <img src="/assets/bash.png" alt="Bash integration screenshot" class="integration-img" loading="lazy" width="600" height="400">
         </div>
         <div class="integration">
-          <h3 class="integration-title">Web</h3>
-          <a href="/login.html" class="integration-link">Try out</a>
+          <h3 class="integration-title">Web Inbox</h3>
+          <a href="/login.html" class="integration-link">Open the inbox UI</a>
           <div class="integration-images">
             <img src="/assets/web1.jpg" alt="Web integration screenshot 1" class="integration-img" loading="lazy" width="600" height="400">
             <img src="/assets/web2.jpg" alt="Web integration screenshot 2" class="integration-img" loading="lazy" width="600" height="400">
@@ -254,7 +263,7 @@
           <a href="/" class="footer-logo-link">
             <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
           </a>
-          <p class="footer-brand-text">A clutter-free space to help you reset, refocus, and stay in control.</p>
+          <p class="footer-brand-text">Disposable email infrastructure for AI agents and developers.</p>
         </div>
         <div class="footer-links">
           <h3 class="footer-section-title">Product</h3>

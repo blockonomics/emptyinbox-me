@@ -165,13 +165,13 @@ def query_inbox(inbox):
 @app.route('/email', methods=['POST'])
 def create_email():
     email_data = request.json
-    secret = request.headers.get('Authorization').split(' ')[-1]
+    secret = (request.headers.get('Authorization') or '').split(' ')[-1]
 
     if secret != os.getenv('SECRET'):
        return '', 403
     for recipient in email_data['recipients']:
         if query_inbox(recipient):
-            msg_id = str(uuid4())[:8]
+            msg_id = str(uuid4()).replace('-', '')[:16]
             timestamp = int(time.time())
             subject = email_data.get("headers", {}).get("Subject")
             db.session.add(Message(id=msg_id, inbox=recipient, timestamp=timestamp, 

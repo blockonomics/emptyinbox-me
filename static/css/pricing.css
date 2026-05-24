@@ -222,6 +222,14 @@
 /* CTA */
 .card-cta { margin-top: auto; }
 
+/* Credit clarification note */
+.pricing-credit-note {
+  text-align: center;
+  margin-top: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 /* Payment info */
 .pricing-payment-note {
   text-align: center;

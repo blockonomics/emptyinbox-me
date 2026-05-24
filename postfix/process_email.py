@@ -30,4 +30,9 @@ if email.get_body(('plain',)):
 if email.get_body(('html',)):
     data['html_body'] = email.get_body(('html',)).get_content()
 
-requests.post(f'https://{domain}/api/email', json=data, headers=headers)
+try:
+    resp = requests.post(f'https://{domain}/api/email', json=data, headers=headers, timeout=10)
+    resp.raise_for_status()
+except Exception as e:
+    print(f'[process_email] delivery failed: {e}', file=sys.stderr)
+    sys.exit(1)

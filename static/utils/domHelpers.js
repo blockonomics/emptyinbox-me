@@ -56,64 +56,6 @@ export function cleanHtmlContent(htmlContent) {
   );
 }
 
-export function sanitizeHtmlContent(htmlContent) {
-  if (!htmlContent) return "";
-
-  return (
-    htmlContent
-      // Remove dangerous elements
-      .replace(/<script[^>]*>.*?<\/script>/gis, "")
-      .replace(/<iframe[^>]*>.*?<\/iframe>/gis, "")
-      .replace(/<object[^>]*>.*?<\/object>/gis, "")
-      .replace(/<embed[^>]*>.*?<\/embed>/gis, "")
-      .replace(/<form[^>]*>.*?<\/form>/gis, "")
-
-      // Remove or neutralize style elements
-      .replace(/<style[^>]*>.*?<\/style>/gis, "")
-      .replace(/style\s*=\s*["']([^"']*)["']/gi, (match, styleContent) => {
-        // Keep safe styles, remove potentially conflicting ones
-        const safeStyles = styleContent
-          .split(";")
-          .filter((style) => {
-            const property = style.split(":")[0]?.trim().toLowerCase();
-            // Allow safe styling properties, block layout-affecting ones
-            return (
-              property &&
-              ![
-                "position",
-                "top",
-                "left",
-                "right",
-                "bottom",
-                "z-index",
-                "display",
-                "float",
-                "clear",
-                "overflow",
-                "width",
-                "height",
-                "margin",
-                "padding",
-                "border",
-                "background",
-                "font-family",
-              ].includes(property)
-            );
-          })
-          .join(";");
-
-        return safeStyles ? `style="${safeStyles}"` : "";
-      })
-
-      // Remove link tags that could affect styling
-      .replace(/<link[^>]*>/gi, "")
-
-      // Remove head and meta content
-      .replace(/<head[^>]*>.*?<\/head>/gis, "")
-      .replace(/<meta[^>]*>/gi, "")
-      .replace(/<title[^>]*>.*?<\/title>/gis, "")
-  );
-}
 
 export function extractActivationCode(htmlBody, textBody, subject) {
   const allText = [subject || "", htmlBody || "", textBody || ""].join(" ");
@@ -274,7 +216,8 @@ function isValidCode(code) {
     !blacklist.has(upper) &&
     !code.includes("@") &&
     !code.includes(".") &&
-    /^[A-Z0-9]+$/.test(code) // only uppercase letters and digits
+    /^[A-Z0-9]+$/.test(code) &&
+    /\d/.test(code) // must contain at least one digit — rejects pure-word false positives
   );
 }
 
@@ -310,57 +253,3 @@ export function getContentType(htmlBody, textBody, subject) {
   return "general";
 }
 
-export function formatTimeAgo(timestamp) {
-  if (!timestamp) return "Unknown time";
-
-  const now = Date.now();
-  const messageTime = timestamp * 1000; // Convert to milliseconds if needed
-  const diffInSeconds = Math.floor((now - messageTime) / 1000);
-
-  if (diffInSeconds < 60) return "Just now";
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  if (diffInSeconds < 604800)
-    return `${Math.floor(diffInSeconds / 86400)}d ago`;
-
-  return new Date(messageTime).toLocaleDateString();
-}
-
-export function getServiceInfo(inbox) {
-  // Extract service info from inbox email
-  if (!inbox || !inbox.includes("@")) return { name: "Unknown", icon: "📧" };
-
-  const domain = inbox.split("@")[1].toLowerCase();
-
-  // Common services mapping
-  const services = {
-    "gmail.com": { name: "Gmail", icon: "📧", color: "#ea4335" },
-    "yahoo.com": { name: "Yahoo", icon: "💜", color: "#720e9e" },
-    "outlook.com": { name: "Outlook", icon: "📨", color: "#0078d4" },
-    "hotmail.com": { name: "Hotmail", icon: "📨", color: "#0078d4" },
-    "apple.com": { name: "Apple", icon: "🍎", color: "#007aff" },
-    "icloud.com": { name: "iCloud", icon: "☁️", color: "#007aff" },
-    "proton.me": { name: "ProtonMail", icon: "🔒", color: "#6d4aff" },
-    "discord.com": { name: "Discord", icon: "🎮", color: "#5865f2" },
-    "github.com": { name: "GitHub", icon: "🐙", color: "#24292f" },
-    "twitter.com": { name: "Twitter", icon: "🐦", color: "#1da1f2" },
-    "facebook.com": { name: "Facebook", icon: "👥", color: "#1877f2" },
-    "instagram.com": { name: "Instagram", icon: "📷", color: "#e4405f" },
-    "linkedin.com": { name: "LinkedIn", icon: "💼", color: "#0a66c2" },
-    "netflix.com": { name: "Netflix", icon: "🎬", color: "#e50914" },
-    "spotify.com": { name: "Spotify", icon: "🎵", color: "#1db954" },
-    "amazon.com": { name: "Amazon", icon: "📦", color: "#ff9900" },
-    "paypal.com": { name: "PayPal", icon: "💳", color: "#0070ba" },
-    "stripe.com": { name: "Stripe", icon: "💰", color: "#635bff" },
-  };
-
-  return (
-    services[domain] || {
-      name:
-        domain.split(".")[0].charAt(0).toUpperCase() +
-        domain.split(".")[0].slice(1),
-      icon: "📧",
-      color: "#6b7280",
-    }
-  );
-}
