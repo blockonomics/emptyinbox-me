@@ -165,7 +165,7 @@ async function initializeLogin() {
       if (result.success) {
         console.log("Registration successful");
         localStorage.setItem(LOCAL_STORAGE_KEYS.IS_LOGGED_IN, true);
-        window.location.href = "/settings.html";
+        window.location.href = "/messages.html";
       } else {
         showError("Registration failed. Please try again.");
       }
