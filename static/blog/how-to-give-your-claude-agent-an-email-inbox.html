@@ -251,34 +251,6 @@ Done. Account active.</code></pre>
     </div>
   </footer>
 
-  <script>
-    document.querySelector('.nav-toggle')?.addEventListener('click', function() {
-      const nav = document.querySelector('.site-nav');
-      nav?.classList.toggle('nav-open');
-      this.classList.toggle('nav-toggle-active');
-      document.body.classList.toggle('nav-open-body');
-    });
-    document.addEventListener('click', function(e) {
-      const navbar = document.querySelector('.site-navbar');
-      const nav = document.querySelector('.site-nav');
-      if (navbar && nav && !navbar.contains(e.target) && nav.classList.contains('nav-open')) {
-        nav.classList.remove('nav-open');
-        document.querySelector('.nav-toggle')?.classList.remove('nav-toggle-active');
-        document.body.classList.remove('nav-open-body');
-      }
-    });
-    window.addEventListener('scroll', function() {
-      document.querySelector('.site-navbar')?.classList.toggle('scrolled', window.scrollY > 50);
-    });
-    (function() {
-      var path = window.location.pathname;
-      document.querySelectorAll('.nav-link').forEach(function(link) {
-        var href = link.getAttribute('href');
-        if (!href) return;
-        var isActive = href === '/blog/' ? path.startsWith('/blog/') : path === href || path === href.replace(/\.html$/, '');
-        if (isActive) link.classList.add('active');
-      });
-    })();
-  </script>
+  <script type="module" src="/main.js"></script>
 </body>
 </html>

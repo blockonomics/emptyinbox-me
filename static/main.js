@@ -55,10 +55,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       break;
     case ROUTES.PRIVACY:
     case ROUTES.TERMS:
+    case ROUTES.BLOG:
       // Static pages — no JS render needed
       break;
     default:
-      console.error("Page not found:", path);
+      if (!path.startsWith("/blog/")) {
+        console.error("Page not found:", path);
+      }
   }
   document.querySelector('.site-footer')?.remove(); // Remove static footer
   document.body.appendChild(createFooter());
