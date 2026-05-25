@@ -23,7 +23,7 @@
     "description": "Your Claude agent needs to verify emails but can't open a browser. Here's how to give it a disposable inbox in 60 seconds — MCP or REST, your choice.",
     "url": "https://emptyinbox.me/blog/how-to-give-your-claude-agent-an-email-inbox.html",
     "datePublished": "2026-05-23",
-    "dateModified": "2026-05-23",
+    "dateModified": "2026-05-25",
     "image": "https://emptyinbox.me/assets/opengraph-image.png",
     "author": {
       "@type": "Organization",
@@ -39,6 +39,32 @@
         "url": "https://emptyinbox.me/assets/emptyinboxlogo.png"
       }
     }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://emptyinbox.me/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://emptyinbox.me/blog/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "How to Give Your Claude Agent an Email Inbox",
+        "item": "https://emptyinbox.me/blog/how-to-give-your-claude-agent-an-email-inbox.html"
+      }
+    ]
   }
   </script>
   <link rel="stylesheet" href="/css/main.css" />
@@ -62,6 +88,8 @@
       <nav class="site-nav" aria-label="Main navigation">
         <a href="/login.html" class="nav-link"><span>Login</span></a>
         <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
       </nav>
     </div>
   </header>
@@ -176,6 +204,10 @@ Done. Account active.</code></pre>
       Full endpoint reference with request/response examples: <a href="/docs.html">API Documentation →</a>
     </div>
 
+    <div class="blog-internal-link">
+      Using ChatGPT instead of Claude? <a href="/blog/how-to-connect-emptyinbox-to-chatgpt-with-gpt-actions.html">Connect EmptyInbox via GPT Actions →</a>
+    </div>
+
     <div class="blog-cta">
       <h3>Ready to give your agent an inbox?</h3>
       <p>Free tier includes 5 inboxes. No credit card required.</p>
@@ -238,6 +270,15 @@ Done. Account active.</code></pre>
     window.addEventListener('scroll', function() {
       document.querySelector('.site-navbar')?.classList.toggle('scrolled', window.scrollY > 50);
     });
+    (function() {
+      var path = window.location.pathname;
+      document.querySelectorAll('.nav-link').forEach(function(link) {
+        var href = link.getAttribute('href');
+        if (!href) return;
+        var isActive = href === '/blog/' ? path.startsWith('/blog/') : path === href || path === href.replace(/\.html$/, '');
+        if (isActive) link.classList.add('active');
+      });
+    })();
   </script>
 </body>
 </html>

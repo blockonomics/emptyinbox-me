@@ -85,6 +85,12 @@ export async function createNavbar() {
       link.setAttribute("rel", "noopener noreferrer");
     }
 
+    const currentPath = window.location.pathname;
+    const isActive = href === "/blog/"
+      ? currentPath.startsWith("/blog/")
+      : currentPath === href || currentPath === href.replace(/\.html$/, "");
+    if (isActive) link.classList.add("active");
+
     link.onclick = () => {
       nav.classList.remove("nav-open");
       navToggle.classList.remove("nav-toggle-active");

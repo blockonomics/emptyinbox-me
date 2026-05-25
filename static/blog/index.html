@@ -30,7 +30,23 @@
         "@type": "ImageObject",
         "url": "https://emptyinbox.me/assets/emptyinboxlogo.png"
       }
-    }
+    },
+    "blogPost": [
+      {
+        "@type": "TechArticle",
+        "headline": "How to Connect EmptyInbox to ChatGPT with GPT Actions",
+        "url": "https://emptyinbox.me/blog/how-to-connect-emptyinbox-to-chatgpt-with-gpt-actions.html",
+        "datePublished": "2026-05-25",
+        "image": "https://emptyinbox.me/assets/opengraph-image.png"
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "How to Give Your Claude Agent an Email Inbox",
+        "url": "https://emptyinbox.me/blog/how-to-give-your-claude-agent-an-email-inbox.html",
+        "datePublished": "2026-05-23",
+        "image": "https://emptyinbox.me/assets/opengraph-image.png"
+      }
+    ]
   }
   </script>
   <link rel="stylesheet" href="/css/main.css" />
@@ -68,6 +84,13 @@
     </div>
 
     <ul class="blog-post-list">
+
+      <li class="blog-post-item">
+        <span class="post-tag">Case #002</span>
+        <h2><a href="/blog/how-to-connect-emptyinbox-to-chatgpt-with-gpt-actions.html">How to Connect EmptyInbox to ChatGPT with GPT Actions</a></h2>
+        <p class="post-excerpt">Custom GPTs can't receive email natively. Here's how to wire in a disposable inbox via GPT Actions and the EmptyInbox OpenAPI spec — no code, just an API key and a URL.</p>
+        <span class="post-meta">May 25, 2026 · 5 min read</span>
+      </li>
 
       <li class="blog-post-item">
         <span class="post-tag">Case #001</span>
@@ -134,6 +157,15 @@
     window.addEventListener('scroll', function() {
       document.querySelector('.site-navbar')?.classList.toggle('scrolled', window.scrollY > 50);
     });
+    (function() {
+      var path = window.location.pathname;
+      document.querySelectorAll('.nav-link').forEach(function(link) {
+        var href = link.getAttribute('href');
+        if (!href) return;
+        var isActive = href === '/blog/' ? path.startsWith('/blog/') : path === href || path === href.replace(/\.html$/, '');
+        if (isActive) link.classList.add('active');
+      });
+    })();
   </script>
 </body>
 </html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Connect EmptyInbox to ChatGPT with GPT Actions | EmptyInbox</title>
+  <meta name="description" content="Custom GPTs can't receive email natively. Here's how to give yours a disposable inbox in 5 minutes using GPT Actions and the EmptyInbox OpenAPI spec." />
+  <link rel="canonical" href="https://emptyinbox.me/blog/how-to-connect-emptyinbox-to-chatgpt-with-gpt-actions.html" />
+  <meta property="og:title" content="How to Connect EmptyInbox to ChatGPT with GPT Actions" />
+  <meta property="og:description" content="Custom GPTs can't receive email natively. Here's how to give yours a disposable inbox in 5 minutes — no code, just an API key and an OpenAPI URL." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <meta property="og:url" content="https://emptyinbox.me/blog/how-to-connect-emptyinbox-to-chatgpt-with-gpt-actions.html" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="How to Connect EmptyInbox to ChatGPT with GPT Actions" />
+  <meta name="twitter:description" content="Custom GPTs can't receive email natively. Here's how to give yours a disposable inbox in 5 minutes." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "How to Connect EmptyInbox to ChatGPT with GPT Actions",
+    "description": "Custom GPTs can't receive email natively. Here's how to give yours a disposable inbox in 5 minutes using GPT Actions and the EmptyInbox OpenAPI spec.",
+    "url": "https://emptyinbox.me/blog/how-to-connect-emptyinbox-to-chatgpt-with-gpt-actions.html",
+    "datePublished": "2026-05-25",
+    "dateModified": "2026-05-25",
+    "image": "https://emptyinbox.me/assets/opengraph-image.png",
+    "author": {
+      "@type": "Organization",
+      "name": "EmptyInbox",
+      "url": "https://emptyinbox.me"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "EmptyInbox",
+      "url": "https://emptyinbox.me",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://emptyinbox.me/assets/emptyinboxlogo.png"
+      }
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://emptyinbox.me/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://emptyinbox.me/blog/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "How to Connect EmptyInbox to ChatGPT with GPT Actions",
+        "item": "https://emptyinbox.me/blog/how-to-connect-emptyinbox-to-chatgpt-with-gpt-actions.html"
+      }
+    ]
+  }
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-article-page">
+
+    <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>›</span>
+      <a href="/blog/">Blog</a>
+      <span>›</span>
+      <span>How to Connect EmptyInbox to ChatGPT with GPT Actions</span>
+    </nav>
+
+    <header>
+      <span class="blog-case-tag">Case #002</span>
+      <h1>How to Connect EmptyInbox to ChatGPT with GPT Actions</h1>
+      <p class="post-meta">May 25, 2026 · 5 min read</p>
+    </header>
+
+    <div class="blog-tldr">
+      <strong>TL;DR</strong>
+      <ul>
+        <li>Custom GPTs can't receive email natively — GPT Actions bridge that gap</li>
+        <li>EmptyInbox ships an OpenAPI spec you can import in one click</li>
+        <li>Authentication is a single Bearer token — no OAuth, no callback URLs</li>
+        <li>Zero code: from nothing to a GPT that creates and reads inboxes in under 5 minutes</li>
+      </ul>
+    </div>
+
+    <div class="blog-verdict">
+      <strong>Verdict</strong>
+      GPT Actions + EmptyInbox is the fastest way to give a Custom GPT email superpowers — no code, no server, just an API key and an OpenAPI URL.
+    </div>
+
+    <div class="blog-body">
+
+      <h2>The Problem</h2>
+      <p>Custom GPTs can run web searches, write code, read documents, generate images. What they can't do is receive email. If your GPT is helping users automate a signup flow, test a transactional email, or verify an address mid-conversation — it hits a wall the moment an inbox is required.</p>
+      <p>GPT Actions fix this. They let a Custom GPT call any REST API mid-conversation, with results returned directly to the chat. EmptyInbox is a REST API for disposable inboxes. Put them together and your GPT can create an address, wait for messages, and extract verification codes — without leaving the chat window.</p>
+
+      <h2>What You'll Need</h2>
+      <ul>
+        <li>A ChatGPT Plus or Team account (GPT Actions require a paid plan)</li>
+        <li>An EmptyInbox API key — free, no credit card</li>
+        <li>5 minutes</li>
+      </ul>
+
+      <h2>Step 1 — Get an API Key</h2>
+      <p>Go to <a href="/login.html">emptyinbox.me</a> and click <strong>Get API Key</strong>. Register with a username. You'll receive an API key that starts with <code>ei</code>. Copy it — you'll paste it into ChatGPT in a moment.</p>
+      <p>Human accounts start with 5 inboxes on the free tier. That's more than enough to test the full flow.</p>
+
+      <h2>Step 2 — Create a Custom GPT</h2>
+      <p>In ChatGPT, click your avatar in the top-right corner, then <strong>My GPTs → Create a GPT</strong>. Give it a name like "Email Assistant" or "Inbox Agent." You can refine the system prompt after confirming everything works.</p>
+
+      <h2>Step 3 — Add the EmptyInbox Action</h2>
+      <p>In the <strong>Configure</strong> tab, scroll down to <strong>Actions</strong> and click <strong>Add actions</strong>. On the schema screen:</p>
+      <ol>
+        <li>Find the <strong>Import from URL</strong> field</li>
+        <li>Paste: <code>https://emptyinbox.me/openapi.yaml</code></li>
+        <li>Click <strong>Import</strong></li>
+      </ol>
+      <p>ChatGPT reads the spec and populates the available operations automatically. You'll see three actions appear:</p>
+      <ul>
+        <li><code>POST /api/inbox</code> — create a fresh disposable address</li>
+        <li><code>GET /api/messages</code> — list all received messages</li>
+        <li><code>GET /api/messages/{id}</code> — read a specific message body</li>
+      </ul>
+
+      <h2>Step 4 — Set Authentication</h2>
+      <p>Still on the Actions screen, click <strong>Authentication</strong> and set:</p>
+      <ul>
+        <li>Auth type: <strong>API Key</strong></li>
+        <li>Auth header value type: <strong>Bearer</strong></li>
+        <li>API key: paste your <code>ei...</code> key</li>
+      </ul>
+      <p>Save. That's it — no OAuth dance, no redirect URLs, no callback server.</p>
+
+      <h2>Step 5 — Test It</h2>
+      <p>Back in the GPT preview pane, type:</p>
+      <pre><code>Create a new inbox for me.</code></pre>
+      <p>Your GPT will call the EmptyInbox API and return a fresh <code>@emptyinbox.me</code> address. From there, ask it to wait for incoming mail or check for messages across all your inboxes.</p>
+
+      <p>A full verification flow looks like this:</p>
+      <pre><code>You: Create an inbox and wait for a verification email from Vercel.
+
+GPT: Created inbox: rapid.cedar.moon@emptyinbox.me
+     Signed up and waiting for messages...
+     Message received — Subject: "Verify your Vercel account"
+     Verification link: https://vercel.com/confirm?token=xyz123
+
+     Want me to extract just the token, or navigate to the link?</code></pre>
+
+      <h2>What This Unlocks</h2>
+      <p>Once the action is wired up, your Custom GPT can handle scenarios that were previously impossible without a browser or a human in the loop:</p>
+      <ul>
+        <li><strong>No-code email automation</strong> — non-technical users can run signup flows directly in ChatGPT</li>
+        <li><strong>Transactional email testing</strong> — send yourself a test email and have the GPT verify subject lines, links, and content in one step</li>
+        <li><strong>Multi-step flows</strong> — create an inbox, trigger a signup, wait for the code, submit it — all in one conversation</li>
+      </ul>
+
+      <h2>Free Tier and Scaling</h2>
+      <p>The 5 free inboxes are enough to build and test any flow. Messages auto-delete after 7 days — no cleanup code needed. When you need more capacity, top up in batches of 10 inboxes for $1 USDT. No subscription, no KYC.</p>
+      <p>If you're building a Custom GPT for a team that runs high-volume testing, you can register a separate API agent account via the REST API and keep it isolated from your personal free tier.</p>
+
+    </div>
+
+    <div class="blog-internal-link">
+      Full endpoint reference with request/response examples: <a href="/docs.html">API Documentation →</a>
+    </div>
+
+    <div class="blog-internal-link">
+      Using Claude instead of ChatGPT? <a href="/blog/how-to-give-your-claude-agent-an-email-inbox.html">Give your Claude agent an inbox via MCP →</a>
+    </div>
+
+    <div class="blog-cta">
+      <h3>Ready to give your GPT an inbox?</h3>
+      <p>Free tier includes 5 inboxes. No credit card required.</p>
+      <a href="/login.html" class="btn">Get API Key</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">Disposable email infrastructure for AI agents and developers.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelector('.nav-toggle')?.addEventListener('click', function() {
+      const nav = document.querySelector('.site-nav');
+      nav?.classList.toggle('nav-open');
+      this.classList.toggle('nav-toggle-active');
+      document.body.classList.toggle('nav-open-body');
+    });
+    document.addEventListener('click', function(e) {
+      const navbar = document.querySelector('.site-navbar');
+      const nav = document.querySelector('.site-nav');
+      if (navbar && nav && !navbar.contains(e.target) && nav.classList.contains('nav-open')) {
+        nav.classList.remove('nav-open');
+        document.querySelector('.nav-toggle')?.classList.remove('nav-toggle-active');
+        document.body.classList.remove('nav-open-body');
+      }
+    });
+    window.addEventListener('scroll', function() {
+      document.querySelector('.site-navbar')?.classList.toggle('scrolled', window.scrollY > 50);
+    });
+    (function() {
+      var path = window.location.pathname;
+      document.querySelectorAll('.nav-link').forEach(function(link) {
+        var href = link.getAttribute('href');
+        if (!href) return;
+        var isActive = href === '/blog/' ? path.startsWith('/blog/') : path === href || path === href.replace(/\.html$/, '');
+        if (isActive) link.classList.add('active');
+      });
+    })();
+  </script>
+</body>
+</html>
