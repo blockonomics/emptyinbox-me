@@ -23,13 +23,13 @@
 /* Card — solid, no glassmorphism */
 .login {
   background: var(--color-surface);
-  border: 1px solid oklch(0.88 0.007 248);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: var(--space-10) var(--space-8);
   max-width: 420px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 2px 12px oklch(0 0 0 / 0.06), 0 1px 3px oklch(0 0 0 / 0.04);
+  box-shadow: var(--shadow-md), var(--shadow-sm);
   position: relative;
   z-index: 1;
   animation: fadeInUp 0.5s var(--ease-out);
@@ -218,8 +218,8 @@ input[type="text"]:focus {
   justify-content: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  background: oklch(0.97 0.015 255);
-  border: 1px solid oklch(0.88 0.05 255);
+  background: var(--color-secondary-soft);
+  border: 1px solid var(--color-secondary-border);
   border-radius: var(--radius-md);
   color: var(--color-secondary-dark);
   margin-bottom: var(--space-3);
@@ -231,7 +231,7 @@ input[type="text"]:focus {
   content: "";
   width: 16px;
   height: 16px;
-  border: 2px solid oklch(0.88 0.05 255);
+  border: 2px solid var(--color-secondary-border);
   border-top-color: var(--color-secondary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -241,8 +241,8 @@ input[type="text"]:focus {
 /* Error state */
 .error-message {
   padding: var(--space-3) var(--space-4);
-  background: oklch(0.97 0.02 25);
-  border: 1px solid oklch(0.88 0.06 25);
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
   border-radius: var(--radius-md);
   color: var(--color-danger-dark);
   margin-bottom: var(--space-3);
@@ -289,7 +289,7 @@ input[type="text"]:focus {
 .hidden { display: none !important; }
 
 /* Mobile */
-@media (max-width: 480px) {
+@media (max-width: 639px) {
   .login-page { padding: var(--space-4); }
   .login { padding: var(--space-8) var(--space-5); }
 }

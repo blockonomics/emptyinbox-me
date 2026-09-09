@@ -1,7 +1,7 @@
 /* Blog layout */
 .blog-index-page,
 .blog-article-page {
-  max-width: 720px;
+  max-width: var(--container-prose);
   margin: 0 auto;
   padding: 3rem 1.5rem 5rem;
 }
@@ -90,7 +90,7 @@
   letter-spacing: 0.08em;
   color: var(--color-primary);
   background: var(--color-primary-alpha);
-  border: 1px solid oklch(0.696 0.17 162.5 / 0.25);
+  border: 1px solid var(--color-primary-border);
   padding: 0.2rem 0.6rem;
   border-radius: 4px;
   margin-bottom: 1rem;
@@ -111,8 +111,8 @@
 
 /* TL;DR box */
 .blog-tldr {
-  background: oklch(0.696 0.17 162.5 / 0.06);
-  border: 1px solid oklch(0.696 0.17 162.5 / 0.2);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
   border-radius: 8px;
   padding: 1.25rem 1.5rem;
   margin: 2rem 0;
@@ -201,7 +201,7 @@
 }
 
 .blog-body code {
-  background: oklch(0 0 0 / 0.05);
+  background: var(--color-neutral-soft);
   border: 1px solid var(--color-border);
   border-radius: 4px;
   padding: 0.15em 0.4em;
@@ -211,8 +211,8 @@
 }
 
 .blog-body pre {
-  background: #0d1117;
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-code-border);
   border-radius: 8px;
   padding: 1.25rem;
   overflow-x: auto;
@@ -226,7 +226,7 @@
   border: none;
   padding: 0;
   font-size: inherit;
-  color: #e6edf3;
+  color: var(--color-code-text);
 }
 
 /* Internal link section */
@@ -254,8 +254,8 @@
 .blog-cta {
   margin-top: 3rem;
   padding: 2rem;
-  background: oklch(0.696 0.17 162.5 / 0.06);
-  border: 1px solid oklch(0.696 0.17 162.5 / 0.2);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
   border-radius: 12px;
   text-align: center;
 }
@@ -277,7 +277,7 @@
   display: inline-block;
   padding: 0.65rem 1.5rem;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
@@ -309,7 +309,7 @@
   margin: 0 0.4rem;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 639px) {
   .blog-index-page,
   .blog-article-page {
     padding: 2rem 1rem 4rem;

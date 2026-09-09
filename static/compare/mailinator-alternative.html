@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mailinator Alternative with Private Inboxes | EmptyInbox</title>
+  <meta name="description" content="Mailinator's free inboxes are public and private plans start at $79/mo. EmptyInbox gives private, API-key-scoped inboxes free, then $0.10 each. Side-by-side comparison." />
+  <link rel="canonical" href="https://emptyinbox.me/compare/mailinator-alternative.html" />
+  <meta property="og:title" content="Mailinator Alternative with Private Inboxes | EmptyInbox" />
+  <meta property="og:description" content="Mailinator's free inboxes are public and private plans start at $79/mo. EmptyInbox gives private, API-key-scoped inboxes free, then $0.10 each. Side-by-side comparison." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://emptyinbox.me/compare/mailinator-alternative.html" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Mailinator Alternative with Private Inboxes | EmptyInbox" />
+  <meta name="twitter:description" content="Mailinator's free inboxes are public and private plans start at $79/mo. EmptyInbox gives private, API-key-scoped inboxes free, then $0.10 each. Side-by-side comparison." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://emptyinbox.me/" },
+      { "@type": "ListItem", "position": 2, "name": "Comparisons", "item": "https://emptyinbox.me/compare/" },
+      { "@type": "ListItem", "position": 3, "name": "Mailinator Alternative", "item": "https://emptyinbox.me/compare/mailinator-alternative.html" }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Are EmptyInbox addresses public like Mailinator's?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Every inbox belongs to the API key that created it, and messages are only readable through that key. This is true on the free tier as well as paid."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use EmptyInbox without signing up?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Not quite, but close. The MCP server auto-registers an account on first run, so there is no dashboard visit and no key to copy by hand. Over REST you call the register endpoint once and keep the key it returns."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How much does it cost to move off Mailinator's free tier?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On Mailinator, private inboxes start at $79 per month billed yearly. On EmptyInbox the first 5 inboxes are free and 50 more cost $5, with credits that never expire."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does EmptyInbox support custom domains?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Every address is on emptyinbox.me. If your test depends on your own domain appearing in the address, Mailinator is the better fit."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens to messages after 7 days?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "They are deleted automatically. There is no archive, no storage quota, and no cleanup job for you to run."
+        }
+      }
+    ]
+  }
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+  <link rel="stylesheet" href="/css/compare.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-article-page compare-page">
+
+    <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>&rsaquo;</span>
+      <a href="/compare/">Comparisons</a>
+      <span>&rsaquo;</span>
+      <span>Mailinator Alternative</span>
+    </nav>
+
+    <header>
+      <span class="blog-case-tag">Comparison</span>
+      <h1>EmptyInbox as a Mailinator Alternative</h1>
+      <p class="post-meta">Updated September 9, 2026 · 6 min read</p>
+    </header>
+
+    <div class="blog-tldr">
+      <strong>TL;DR</strong>
+      <ul>
+        <li>Mailinator's free tier is public: anyone who guesses the address reads the mail</li>
+        <li>Private inboxes and a private domain start at $79/month, billed yearly</li>
+        <li>EmptyInbox inboxes are private to your API key at every tier, including the free one</li>
+        <li>Mailinator still wins on load testing, SMS, team seats and long retention</li>
+      </ul>
+    </div>
+
+    <div class="blog-verdict">
+      <strong>Verdict</strong>
+      If the only reason you were about to pay Mailinator is that the free tier is world-readable, EmptyInbox solves that for $0.10 an inbox instead of $79 a month. If you need private domains, SMS or load testing, Mailinator is still the right tool.
+    </div>
+
+    <div class="blog-body">
+
+      <h2>The public inbox problem</h2>
+      <p>Mailinator's free tier works because every inbox is public. There is no signup, which is genuinely useful, but the trade is that any address is readable by anyone who types it into the web interface. A verification link sitting in a public inbox is a verification link anyone can click.</p>
+      <p>For throwaway manual QA that is fine. For an automated flow creating real accounts on real services, it is a live credential leak. The usual fix is to move up to a paid plan with private inboxes and a private domain, which starts at $79 per month billed yearly.</p>
+      <p>EmptyInbox has no public tier to escape from. An address is only readable by the API key that created it, and that holds on the free tier as much as on a paid one. Addresses are randomly generated, so guessing one gets you nothing anyway.</p>
+
+      <div class="cmp-table-wrap">
+        <table class="cmp-table">
+          <caption>Feature and pricing comparison</caption>
+          <thead>
+            <tr>
+              <th scope="col">&nbsp;</th>
+              <th scope="col" class="cmp-own">EmptyInbox</th>
+              <th scope="col">Mailinator</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Free tier privacy</th>
+              <td class="cmp-own">Private, scoped to your API key</td>
+              <td>Public, readable by anyone</td>
+            </tr>
+            <tr>
+              <th scope="row">Free tier size</th>
+              <td class="cmp-own">5 inbox credits</td>
+              <td>Unlimited public inboxes</td>
+            </tr>
+            <tr>
+              <th scope="row">Cheapest private inboxes</th>
+              <td class="cmp-own">$0, then $5 for 50 more</td>
+              <td>$79/mo, billed yearly</td>
+            </tr>
+            <tr>
+              <th scope="row">Pricing model</th>
+              <td class="cmp-own">Prepaid credits, no expiry</td>
+              <td>Annual subscription</td>
+            </tr>
+            <tr>
+              <th scope="row">Payment</th>
+              <td class="cmp-own">Bitcoin or USDT, no card, no KYC</td>
+              <td>Card or invoice</td>
+            </tr>
+            <tr>
+              <th scope="row">Signup required</th>
+              <td class="cmp-own">Yes, or auto-register from the MCP server</td>
+              <td>No, for public inboxes</td>
+            </tr>
+            <tr>
+              <th scope="row">MCP server</th>
+              <td class="cmp-own">Yes, <code>npx emptyinbox-mcp</code></td>
+              <td>No first-party MCP server</td>
+            </tr>
+            <tr>
+              <th scope="row">Private domains</th>
+              <td class="cmp-own">No</td>
+              <td>Yes, on paid plans</td>
+            </tr>
+            <tr>
+              <th scope="row">SMS testing</th>
+              <td class="cmp-own">No</td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <th scope="row">Load testing</th>
+              <td class="cmp-own">No</td>
+              <td>Yes, on higher plans</td>
+            </tr>
+            <tr>
+              <th scope="row">Retention</th>
+              <td class="cmp-own">7 days, then auto-deleted</td>
+              <td>Temporary on public, permanent storage on paid</td>
+            </tr>
+            <tr>
+              <th scope="row">Source</th>
+              <td class="cmp-own">Open source</td>
+              <td>Proprietary</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cmp-asof">Mailinator plan details checked September 9, 2026 against their public pricing page. Verify before budgeting.</p>
+
+      <h2>What an agent flow looks like without a public inbox</h2>
+      <p>Create the address, hand it to whatever is signing up, then wait. The wait is a blocking call rather than a polling loop you write yourself.</p>
+
+      <pre><code>curl -X POST https://emptyinbox.me/api/inbox \
+  -H "Authorization: Bearer $EMPTYINBOX_API_KEY"
+
+# swift.copper.owl@emptyinbox.me</code></pre>
+
+      <p>From an MCP agent, the same flow is three tool calls and no HTTP at all: <code>create_inbox</code>, then <code>wait_for_message</code>, then read the code out of the body. The address never appears anywhere a third party can read it.</p>
+
+      <div class="cmp-caveat">
+        <strong>Stay on Mailinator if</strong>
+        <ul>
+          <li>You want inboxes with no signup at all, and the mail is not sensitive</li>
+          <li>You need addresses on your own domain</li>
+          <li>You run email load tests at thousands of messages per second</li>
+          <li>You need SMS testing or multiple team seats</li>
+          <li>You need messages retained longer than 7 days</li>
+        </ul>
+      </div>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h3>Are EmptyInbox addresses public like Mailinator's?</h3>
+          <p>No. Every inbox belongs to the API key that created it, and messages are only readable through that key. This is true on the free tier as well as paid.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Can I use EmptyInbox without signing up?</h3>
+          <p>Not quite, but close. The MCP server auto-registers an account on first run, so there is no dashboard visit and no key to copy by hand. Over REST you call the register endpoint once and keep the key it returns.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How much does it cost to move off Mailinator's free tier?</h3>
+          <p>On Mailinator, private inboxes start at $79 per month billed yearly. On EmptyInbox the first 5 inboxes are free and 50 more cost $5, with credits that never expire.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Does EmptyInbox support custom domains?</h3>
+          <p>No. Every address is on emptyinbox.me. If your test depends on your own domain appearing in the address, Mailinator is the better fit.</p>
+        </div>
+        <div class="faq-item">
+          <h3>What happens to messages after 7 days?</h3>
+          <p>They are deleted automatically. There is no archive, no storage quota, and no cleanup job for you to run.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="blog-internal-link">
+      Weighing more than one competitor? <a href="/compare/disposable-email-api-comparison.html">Disposable email APIs compared &rarr;</a>
+    </div>
+
+    <div class="blog-internal-link">
+      Full endpoint reference with request and response examples: <a href="/docs.html">API Documentation &rarr;</a>
+    </div>
+
+    <div class="blog-cta">
+      <h3>Private inboxes, no subscription</h3>
+      <p>Free tier includes 5 inboxes. No credit card required.</p>
+      <a href="/login.html" class="btn">Get API Key</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">Disposable email infrastructure for AI agents and developers.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+            <a href="/use-cases/" class="footer-link">Use Cases</a>
+            <a href="/compare/" class="footer-link">Comparisons</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

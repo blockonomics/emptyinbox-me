@@ -5,8 +5,8 @@
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid white;
+  border: 2px solid oklch(1 0 0 / 0.3);
+  border-top: 2px solid oklch(1 0 0);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-right: 0.5rem;
@@ -25,7 +25,7 @@
 .loading-spinner.large {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
+  border: 3px solid var(--color-border);
   border-top: 3px solid var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -74,8 +74,8 @@
 
 /* ===== Success/Error States ===== */
 .success-message {
-  background: rgba(16, 185, 129, 0.05);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
   color: var(--success-dark);
   padding: var(--spacing-lg);
   border-radius: var(--radius-md);
@@ -84,8 +84,8 @@
 }
 
 .error-message {
-  background: rgba(239, 68, 68, 0.05);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
   color: var(--danger-dark);
   padding: var(--spacing-lg);
   border-radius: var(--radius-md);
@@ -117,7 +117,7 @@
   transform: translate(-50%, -50%);
   width: 60px;
   height: 60px;
-  border: 2px solid rgba(239, 68, 68, 0.3);
+  border: 2px solid var(--color-danger-border);
   border-radius: 50%;
   animation: error-pulse 2s infinite;
 }
@@ -169,7 +169,7 @@
   transform: translate(-50%, -50%);
   width: 80px;
   height: 80px;
-  border: 3px solid rgba(16, 185, 129, 0.3);
+  border: 3px solid var(--color-primary-border-strong);
   border-radius: 50%;
   animation: pulse-ring 2s infinite;
 }
@@ -203,7 +203,7 @@
 
 /* ===== Activation Code Section ===== */
 .activation-code-section {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  background: linear-gradient(135deg, var(--color-primary-soft) 0%, var(--color-primary-soft-strong) 100%);
   border: 2px solid var(--primary-color);
   border-radius: var(--radius-md);
   padding: var(--spacing-lg);
@@ -239,10 +239,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--color-glass-strong);
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid var(--color-primary-border-strong);
 }
 
 .code-value {
@@ -256,8 +256,8 @@
 
 /* No Code Section */
 .no-code-section {
-  background: rgba(107, 114, 128, 0.05);
-  border: 1px dashed #d1d5db;
+  background: var(--color-neutral-soft);
+  border: 1px dashed var(--color-border);
   border-radius: var(--radius-sm);
   padding: var(--spacing-lg);
 }
@@ -288,7 +288,7 @@
   word-break: break-all;
 }
 
-@media (min-width: 641px) {
+@media (min-width: 640px) {
   .code-display {
     flex-direction: row;
     align-items: center;
@@ -321,7 +321,7 @@
   background: linear-gradient(
     90deg,
     var(--color-bg-subtle) 25%,
-    oklch(0.955 0.004 248) 50%,
+    var(--color-skeleton-highlight) 50%,
     var(--color-bg-subtle) 75%
   );
   background-size: 200% 100%;

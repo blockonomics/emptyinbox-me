@@ -652,13 +652,36 @@ _register_attempts: dict = {}
 REGISTER_LIMIT = 3       # max registrations
 REGISTER_WINDOW = 86400  # per 24 hours
 
+
+def client_ip() -> str:
+    """The address the request actually came from.
+
+    nginx overwrites X-Real-IP on every proxied request, so a value here cannot
+    have been supplied by the caller. Reading X-Forwarded-For instead would let
+    anyone mint a fresh bucket per request by sending their own header, while
+    falling back to remote_addr alone puts every caller in one bucket keyed on
+    the nginx loopback address."""
+    return request.headers.get('X-Real-IP') or request.remote_addr or 'unknown'
+
+
+def prune_register_attempts(now: float) -> None:
+    """Drop addresses whose attempts have all aged out.
+
+    Without this the store keeps one entry per address ever seen, for the life
+    of the process."""
+    stale = [ip for ip, times in _register_attempts.items()
+             if all(now - t >= REGISTER_WINDOW for t in times)]
+    for ip in stale:
+        del _register_attempts[ip]
+
 @auth_bp.route('/register', methods=['POST'])
 def agent_register():
     """Programmatic registration for agents. Returns api_key directly."""
     try:
         # Rate limit by IP
-        ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
+        ip = client_ip()
         now = time.time()
+        prune_register_attempts(now)
         attempts = [t for t in _register_attempts.get(ip, []) if now - t < REGISTER_WINDOW]
         if len(attempts) >= REGISTER_LIMIT:
             return error_response('Rate limit exceeded. Max 3 registrations per IP per day.', 429)

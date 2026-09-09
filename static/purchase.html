@@ -3,28 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f8f9fb" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1c1e24" media="(prefers-color-scheme: dark)" />
+  <meta name="robots" content="noindex, follow" />
   <title>Buy Quota — EmptyInbox</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="stylesheet" href="css/fonts.css" />
+  <link rel="stylesheet" href="css/main.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Poppins', sans-serif;
-      background: #f8fafc;
+      background: var(--color-bg);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 2rem 1rem;
-      color: #1f2937;
+      color: var(--color-text-primary);
     }
 
     .card {
-      background: white;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      box-shadow: var(--shadow-lg);
       padding: 2.5rem 2rem;
       width: 100%;
       max-width: 480px;
@@ -43,7 +47,7 @@
     }
 
     .subtitle {
-      color: #6b7280;
+      color: var(--color-text-secondary);
       font-size: 0.95rem;
       margin-bottom: 2rem;
       line-height: 1.5;
@@ -59,14 +63,16 @@
 
     .amount-row label {
       font-size: 0.9rem;
-      color: #6b7280;
+      color: var(--color-text-secondary);
     }
 
     .amount-input {
       width: 100px;
       padding: 0.4rem 0.6rem;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--color-border);
       border-radius: 8px;
+      background: var(--color-surface);
+      color: var(--color-text-primary);
       font-size: 1rem;
       font-family: inherit;
       text-align: center;
@@ -74,7 +80,7 @@
 
     .rate {
       font-size: 0.8rem;
-      color: #9ca3af;
+      color: var(--color-text-muted);
       margin-bottom: 1.5rem;
     }
 
@@ -94,20 +100,20 @@
     }
 
     .status.success {
-      background: #ecfdf5;
-      color: #065f46;
+      background: var(--color-primary-soft);
+      color: var(--color-on-primary-soft);
       display: block;
     }
 
     .status.error {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-danger-soft);
+      color: var(--color-on-danger-soft);
       display: block;
     }
 
     .status.pending {
-      background: #fffbeb;
-      color: #92400e;
+      background: var(--color-warning-soft);
+      color: var(--color-on-warning-soft);
       display: block;
     }
 
@@ -115,16 +121,16 @@
       display: inline-block;
       margin-top: 1.5rem;
       font-size: 0.85rem;
-      color: #6b7280;
+      color: var(--color-text-secondary);
       text-decoration: none;
     }
 
-    .back:hover { color: #10b981; }
+    .back:hover { color: var(--color-primary); }
   </style>
 </head>
 <body>
   <div class="card">
-    <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox" class="logo" />
+    <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox" class="logo purchase-logo" />
     <h1>Buy Inbox Quota</h1>
     <p class="subtitle" id="subtitle">Loading payment details...</p>
 

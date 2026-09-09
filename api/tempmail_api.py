@@ -120,18 +120,24 @@ def get_mailboxname():
     noun = random.choice(nouns)
     return f'{adjective_part}.{noun}'
 
-def is_quota_available(api_key):
-    row = db.session.query(User).filter(User.api_key==api_key,User.inbox_quota>0).first()
-    if row:
-        return True
-    return False
+def consume_quota(api_key):
+    """Spend one inbox credit, returning False if there were none left.
+
+    The check and the decrement have to be a single statement. Split in two,
+    concurrent requests both read a positive balance and both decrement it,
+    driving the quota negative and handing out inboxes nobody paid for."""
+    spent = db.session.query(User).filter(
+        User.api_key == api_key,
+        User.inbox_quota > 0,
+    ).update({"inbox_quota": User.inbox_quota - 1}, synchronize_session=False)
+    return spent > 0
 
 @app.route(f'{url_prefix}/inbox', methods=['POST']) 
 @auth_required
 def create_mailbox(token):
     '''Creates new inbox'''
     api_key = get_api_key_from_token(token)
-    if not is_quota_available(api_key):
+    if not consume_quota(api_key):
         # 402 so an agent can tell "out of quota, here is how to buy more"
         # apart from "not allowed".
         return jsonify({
@@ -141,9 +147,9 @@ def create_mailbox(token):
             'quote_url': '/api/payments/quote',
         }), 402
     email_address = f'{get_mailboxname()}@{DOMAIN}'
+    # The credit was spent above and is committed with the inbox it paid for,
+    # so a failed insert takes the decrement down with it.
     db.session.add(Inbox(api_key=api_key, inbox=email_address))
-    #We used one inbox, decrease quota
-    db.session.query(User).filter(User.api_key==api_key).update({"inbox_quota":User.inbox_quota-1}) 
     db.session.commit()
     return email_address, 201
 

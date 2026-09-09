@@ -19,7 +19,7 @@
 .pricing-inner {
   position: relative;
   z-index: 1;
-  max-width: 860px;
+  max-width: var(--container-content);
   margin: 0 auto;
 }
 

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disposable Email APIs Compared: 5 Options for Agents | EmptyInbox</title>
+  <meta name="description" content="EmptyInbox, mail.tm, Mailinator, MailSlurp and Mailosaur compared on price, privacy, sending, and agent support. Verified against each vendor's own pricing page." />
+  <link rel="canonical" href="https://emptyinbox.me/compare/disposable-email-api-comparison.html" />
+  <meta property="og:title" content="Disposable Email APIs Compared: 5 Options for Agents | EmptyInbox" />
+  <meta property="og:description" content="EmptyInbox, mail.tm, Mailinator, MailSlurp and Mailosaur compared on price, privacy, sending, and agent support. Verified against each vendor's own pricing page." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://emptyinbox.me/compare/disposable-email-api-comparison.html" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Disposable Email APIs Compared: 5 Options for Agents | EmptyInbox" />
+  <meta name="twitter:description" content="EmptyInbox, mail.tm, Mailinator, MailSlurp and Mailosaur compared on price, privacy, sending, and agent support. Verified against each vendor's own pricing page." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://emptyinbox.me/" },
+      { "@type": "ListItem", "position": 2, "name": "Comparisons", "item": "https://emptyinbox.me/compare/" },
+      { "@type": "ListItem", "position": 3, "name": "Disposable Email APIs Compared", "item": "https://emptyinbox.me/compare/disposable-email-api-comparison.html" }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Which disposable email API is free for commercial use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "EmptyInbox's free tier of 5 inboxes carries no commercial restriction, and MailSlurp's free tier allows commercial use within its limits. mail.tm's terms discourage building paid products on it, and Mailinator's free inboxes are public, which rules them out for most production flows."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which of these works with Claude or another MCP agent?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "EmptyInbox ships a first-party MCP server, installed with npx emptyinbox-mcp. The others are REST APIs, which agents can still use through an OpenAPI tool loader or a custom wrapper."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I test outbound email with EmptyInbox?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. EmptyInbox only receives. To assert on mail your own application sends, use MailSlurp, Mailosaur or Mailinator."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the cheapest way to get a disposable inbox in CI?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Free options are mail.tm, subject to its terms, and Mailinator's public inboxes, if the contents are not sensitive. For private inboxes at low volume, EmptyInbox costs $0.10 each and drops to $0.053 in bulk, with no monthly floor."
+        }
+      }
+    ]
+  }
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+  <link rel="stylesheet" href="/css/compare.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-article-page compare-page">
+
+    <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>&rsaquo;</span>
+      <a href="/compare/">Comparisons</a>
+      <span>&rsaquo;</span>
+      <span>Disposable Email APIs Compared</span>
+    </nav>
+
+    <header>
+      <span class="blog-case-tag">Comparison</span>
+      <h1>Disposable Email APIs Compared: 5 Options for Agents and Test Suites</h1>
+      <p class="post-meta">Updated September 9, 2026 · 8 min read</p>
+    </header>
+
+    <div class="blog-tldr">
+      <strong>TL;DR</strong>
+      <ul>
+        <li>mail.tm is free and needs no key, but forbids wrapping it in a paid product</li>
+        <li>Mailinator's free inboxes are public; private ones start at $79/mo billed yearly</li>
+        <li>MailSlurp and Mailosaur are full testing platforms, priced from $19.99 and $20/mo</li>
+        <li>EmptyInbox is receive-only, prepaid at $0.10 an inbox, and ships an MCP server</li>
+      </ul>
+    </div>
+
+    <div class="blog-verdict">
+      <strong>Verdict</strong>
+      Match the tool to the job. Testing your own outbound mail needs a platform. Getting a verification code into an agent needs a primitive, and paying a monthly subscription for that is the expensive way to do it.
+    </div>
+
+    <div class="blog-body">
+
+      <h2>What these tools are actually for</h2>
+      <p>Everything on this page hands you an email address over an API. They diverge on what happens next, and that difference matters more than any feature checklist.</p>
+      <p>Two of them, MailSlurp and Mailosaur, are email testing platforms. Their job is testing email itself: does the message render, does it land in the inbox rather than spam, does the outbound path work. Email is the subject under test.</p>
+      <p>The other three treat email as plumbing. Something sent a code, the code needs to reach your automation, and nobody cares what the message looks like. That is a smaller problem and it should cost less.</p>
+
+      <div class="cmp-table-wrap">
+        <table class="cmp-table">
+          <caption>Five disposable email APIs, side by side</caption>
+          <thead>
+            <tr>
+              <th scope="col">&nbsp;</th>
+              <th scope="col" class="cmp-own">EmptyInbox</th>
+              <th scope="col">mail.tm</th>
+              <th scope="col">Mailinator</th>
+              <th scope="col">MailSlurp</th>
+              <th scope="col">Mailosaur</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Entry price</th>
+              <td class="cmp-own">Free, then $5 for 50 inboxes</td>
+              <td>Free</td>
+              <td>Free (public) or $79/mo</td>
+              <td>Free, then $19.99/mo</td>
+              <td>$20/mo, 14-day trial</td>
+            </tr>
+            <tr>
+              <th scope="row">Pricing model</th>
+              <td class="cmp-own">Prepaid credits, no expiry</td>
+              <td>Free, rate limited</td>
+              <td>Annual subscription</td>
+              <td>Monthly subscription</td>
+              <td>Annual subscription</td>
+            </tr>
+            <tr>
+              <th scope="row">Private inboxes when free</th>
+              <td class="cmp-own">Yes</td>
+              <td>Yes</td>
+              <td>No, public</td>
+              <td>Yes</td>
+              <td>Trial only</td>
+            </tr>
+            <tr>
+              <th scope="row">Commercial use of free tier</th>
+              <td class="cmp-own">Yes</td>
+              <td>Restricted by terms</td>
+              <td>Yes, but public</td>
+              <td>Yes, with limits</td>
+              <td>Trial only</td>
+            </tr>
+            <tr>
+              <th scope="row">Send email</th>
+              <td class="cmp-own">No</td>
+              <td>No</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <th scope="row">MCP server</th>
+              <td class="cmp-own">Yes</td>
+              <td>No</td>
+              <td>No</td>
+              <td>No</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <th scope="row">Crypto payment</th>
+              <td class="cmp-own">Bitcoin, USDT</td>
+              <td>n/a</td>
+              <td>No</td>
+              <td>No</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <th scope="row">Open source</th>
+              <td class="cmp-own">Yes</td>
+              <td>No</td>
+              <td>No</td>
+              <td>No</td>
+              <td>No</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cmp-asof">Competitor details checked September 9, 2026 against each vendor's own pricing or documentation pages. Prices drift, so verify before committing.</p>
+
+      <h2>mail.tm</h2>
+      <p>Free, no API key, no signup, and an 8 queries per second cap per IP address. For a personal script or a one-off scrape it is hard to beat, and there is no billing relationship to manage.</p>
+      <p>The catch is in the terms rather than the technology. The documentation asks you not to build a paid product that wraps the API, not to mirror or proxy it under another domain, and to attribute mail.tm if you use it. Those are reasonable requests from a free service, but they rule out a lot of commercial use. Read them before shipping anything that depends on it.</p>
+
+      <h2>Mailinator</h2>
+      <p>The free tier is unlimited and needs no signup, because every inbox is public. Anyone who guesses the address reads the mail. That is fine for disposable manual QA and unacceptable for a flow creating real accounts.</p>
+      <p>Private inboxes, private domains, SMS and load testing all live on the paid plans, which start at $79 per month billed yearly. If you need the load testing specifically, nothing else here competes.</p>
+      <p><a href="/compare/mailinator-alternative.html">Full Mailinator comparison &rarr;</a></p>
+
+      <h2>MailSlurp</h2>
+      <p>The broadest feature set of the group: send and receive, attachments, SMS, device rendering, inbox placement tests. The free tier gives 50 permanent inboxes and 500 inbound emails per month, with external sending reserved for paid plans from $19.99 per month.</p>
+      <p>If you are testing your own email product, this is a strong pick. If you just need a code out of an inbox, you are paying a platform price for a primitive.</p>
+      <p><a href="/compare/mailslurp-alternative.html">Full MailSlurp comparison &rarr;</a></p>
+
+      <h2>Mailosaur</h2>
+      <p>Aimed squarely at QA teams. Email and SMS testing, previews, and integrations with the usual test runners. Pricing starts at $20 per month billed annually with a 14-day trial, and add-ons for SMS and previews are billed on top.</p>
+      <p>There is no free tier past the trial, which makes it a poor fit for an open source project or a side project that needs one inbox a fortnight.</p>
+
+      <h2>EmptyInbox</h2>
+      <p>Receive-only by design. Create an inbox, wait for mail, read it, over REST or MCP. No sending, no private domains, no SMS, no rendering. Messages are deleted after 7 days.</p>
+      <p>The free tier is 5 inboxes and bundles start at $5 for 50, down to $0.053 an inbox in bulk, paid in Bitcoin or USDT with no card and no KYC. Credits do not expire, so bursty use does not pay for idle months. It is the only option here with a first-party MCP server, which matters if your consumer is Claude or another MCP agent rather than a test runner.</p>
+
+      <div class="cmp-caveat">
+        <strong>Choosing quickly</strong>
+        <ul>
+          <li>Testing email your own product sends: MailSlurp or Mailosaur</li>
+          <li>Load testing or a private domain: Mailinator</li>
+          <li>Personal script, no budget, non-commercial: mail.tm</li>
+          <li>An agent or CI job that needs to read a verification code: EmptyInbox</li>
+        </ul>
+      </div>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h3>Which disposable email API is free for commercial use?</h3>
+          <p>EmptyInbox's free tier of 5 inboxes carries no commercial restriction, and MailSlurp's free tier allows commercial use within its limits. mail.tm's terms discourage building paid products on it, and Mailinator's free inboxes are public, which rules them out for most production flows.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Which of these works with Claude or another MCP agent?</h3>
+          <p>EmptyInbox ships a first-party MCP server, installed with <code>npx emptyinbox-mcp</code>. The others are REST APIs, which agents can still use through an OpenAPI tool loader or a custom wrapper.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Can I test outbound email with EmptyInbox?</h3>
+          <p>No. EmptyInbox only receives. To assert on mail your own application sends, use MailSlurp, Mailosaur or Mailinator.</p>
+        </div>
+        <div class="faq-item">
+          <h3>What is the cheapest way to get a disposable inbox in CI?</h3>
+          <p>Free options are mail.tm, subject to its terms, and Mailinator's public inboxes, if the contents are not sensitive. For private inboxes at low volume, EmptyInbox costs $0.10 each and drops to $0.053 in bulk, with no monthly floor.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="blog-internal-link">
+      Wiring one into a browser test suite: <a href="/use-cases/playwright-email-testing.html">Playwright email testing &rarr;</a>
+    </div>
+
+    <div class="blog-internal-link">
+      Full endpoint reference with request and response examples: <a href="/docs.html">API Documentation &rarr;</a>
+    </div>
+
+    <div class="blog-cta">
+      <h3>Start with the free tier</h3>
+      <p>5 inboxes, REST and MCP access, no credit card.</p>
+      <a href="/login.html" class="btn">Get API Key</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">Disposable email infrastructure for AI agents and developers.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+            <a href="/use-cases/" class="footer-link">Use Cases</a>
+            <a href="/compare/" class="footer-link">Comparisons</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

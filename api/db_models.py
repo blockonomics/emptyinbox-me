@@ -14,7 +14,7 @@ class Message(db.Model):
     id = db.Column(db.String(16), primary_key=True)
     inbox = db.Column(db.String(250), index=True)
     subject  = db.Column(db.String(250))
-    timestamp = db.Column(db.BigInteger)
+    timestamp = db.Column(db.BigInteger, index=True)
     content = db.Column(db.BLOB(8 << 20))
 
 class Inbox(db.Model):

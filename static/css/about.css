@@ -7,7 +7,7 @@
 }
 
 .about-header-inner {
-  max-width: 900px;
+  max-width: var(--container-content);
   margin: 0 auto;
 }
 
@@ -37,7 +37,7 @@
 }
 
 .about-section-inner {
-  max-width: 900px;
+  max-width: var(--container-content);
   margin: 0 auto;
 }
 
@@ -176,7 +176,7 @@
 }
 
 /* --- Responsive --- */
-@media (max-width: 480px) {
+@media (max-width: 639px) {
   .about-header {
     padding: var(--space-10) var(--space-4) var(--space-8);
   }

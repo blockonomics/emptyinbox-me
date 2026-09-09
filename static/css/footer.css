@@ -17,7 +17,7 @@
 }
 
 .footer-container {
-  max-width: 1100px;
+  max-width: var(--container-page);
   margin: 0 auto;
   padding: var(--space-8) var(--space-4) var(--space-6);
   position: relative;
@@ -167,7 +167,7 @@
 }
 
 /* Desktop */
-@media (min-width: 769px) {
+@media (min-width: 900px) {
   .footer-container { padding: var(--space-12) var(--space-6) var(--space-6); }
 
   .footer-content {

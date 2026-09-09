@@ -19,7 +19,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--color-glass-strong);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
@@ -61,13 +61,13 @@
   padding: var(--spacing-lg);
 }
 
-@media (min-width: 481px) {
+@media (min-width: 640px) {
   .quota-info {
     margin: 0;
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 900px) {
   .quota-info {
     flex-direction: row;
     align-items: center;
@@ -79,7 +79,7 @@
 .quota-bar {
   flex: 1;
   height: 8px;
-  background: rgba(209, 213, 219, 0.3);
+  background: var(--color-neutral-soft-strong);
   border-radius: 4px;
   overflow: hidden;
 }

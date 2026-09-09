@@ -1,9 +1,10 @@
+# The app pages below are marked noindex in their own HTML rather than blocked
+# here. A Disallow would stop crawlers fetching the page at all, which means
+# they never read the noindex and the bare URL can still surface in results.
+# Crawl budget is not a concern at this size, so let them fetch and obey it.
+
 User-agent: *
-Disallow: /inboxes.html
-Disallow: /messages.html
-Disallow: /settings.html
-Disallow: /debug-passkeys.html
-Disallow: /purchase.html
-Disallow: /login.html
+Allow: /
+Disallow: /api/
 
 Sitemap: https://emptyinbox.me/sitemap.xml

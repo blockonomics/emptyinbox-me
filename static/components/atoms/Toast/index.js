@@ -12,12 +12,12 @@ export function createToast() {
   toast.style.right = '24px';
   toast.style.padding = '1rem 1.5rem';
   toast.style.borderRadius = '16px';
-  toast.style.color = 'white';
+  toast.style.color = 'var(--color-text-inverse)';
   toast.style.fontSize = '0.95rem';
   toast.style.fontWeight = '600';
   toast.style.backdropFilter = 'blur(16px)';
   toast.style.webkitBackdropFilter = 'blur(16px)';
-  toast.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.1)';
+  toast.style.boxShadow = 'var(--shadow-lg)';
   toast.style.opacity = '0';
   toast.style.transform = 'translateY(20px)';
   toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
@@ -38,9 +38,9 @@ export function showToast(message, type = 'success') {
 
   // Set gradient background based on type
   const gradients = {
-    [TOAST_TYPES.SUCCESS]: 'linear-gradient(135deg, #10b981, #059669)',
-    [TOAST_TYPES.ERROR]: 'linear-gradient(135deg, #ef4444, #dc2626)',
-    [TOAST_TYPES.INFO]: 'linear-gradient(135deg, #3b82f6, #2563eb)'
+    [TOAST_TYPES.SUCCESS]: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))',
+    [TOAST_TYPES.ERROR]: 'linear-gradient(135deg, var(--color-danger), var(--color-danger-dark))',
+    [TOAST_TYPES.INFO]: 'linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark))'
   };
   toast.style.background = gradients[type] || gradients[TOAST_TYPES.SUCCESS];
 

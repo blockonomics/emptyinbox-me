@@ -1,0 +1,207 @@
+/* Comparison and use-case pages. Layered on top of blog.css, which supplies
+   the article shell (.blog-article-page, .blog-body, .blog-cta and friends).
+   Only the pieces blog.css has no equivalent for live here. */
+
+/* Wider than a blog post: comparison tables need the room. */
+.compare-page {
+  max-width: var(--container-content);
+}
+
+/* Hub pages */
+.hub-header {
+  margin-bottom: 3rem;
+}
+
+.hub-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.hub-header p {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 62ch;
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hub-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: 1.25rem 1.35rem;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.hub-card:hover {
+  border-color: var(--color-primary-ring);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.hub-card h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem;
+  line-height: 1.35;
+}
+
+.hub-card h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.hub-card h2 a:hover {
+  color: var(--color-primary);
+}
+
+.hub-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+/* Comparison table. Wide content scrolls inside its own box rather than
+   pushing the page sideways on a phone. */
+.cmp-table-wrap {
+  overflow-x: auto;
+  margin: 1.75rem 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.cmp-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 560px;
+  font-size: 0.9rem;
+}
+
+.cmp-table caption {
+  caption-side: top;
+  text-align: left;
+  padding: 0.9rem 1rem 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.cmp-table th,
+.cmp-table td {
+  padding: 0.7rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+  line-height: 1.55;
+}
+
+.cmp-table thead th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-subtle);
+  white-space: nowrap;
+}
+
+.cmp-table tbody th {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.cmp-table tbody tr:last-child th,
+.cmp-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* The column describing our own product, so a reader scanning sideways does
+   not lose which one it is. */
+.cmp-table .cmp-own {
+  background: var(--color-primary-soft);
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.cmp-table thead .cmp-own {
+  color: var(--color-primary);
+  background: var(--color-primary-soft-strong);
+}
+
+/* Honest-limits box. Every comparison page carries one: the cases where the
+   other tool is the better pick. */
+.cmp-caveat {
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-text-muted);
+  background: var(--color-bg-subtle);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 1rem 1.25rem;
+  margin: 2rem 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.cmp-caveat strong {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.cmp-caveat ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+/* Price-checked stamp. Competitor pricing drifts; the date says when this was
+   last verified so the page does not quietly become wrong. */
+.cmp-asof {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0.5rem 0 0;
+}
+
+/* FAQ, mirrored by FAQPage structured data in the head of each page. */
+.faq-list {
+  margin: 1.5rem 0 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--color-border);
+  padding: 1.1rem 0;
+}
+
+.faq-item h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.faq-item p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 639px) {
+  .compare-page {
+    padding: 2rem 1rem 4rem;
+  }
+}

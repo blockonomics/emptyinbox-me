@@ -16,12 +16,12 @@ export const ButtonStates = {
       </svg>
       ${text}
     `,
-    background: 'linear-gradient(135deg, #10b981, #059669)'
+    background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))'
   }),
   
   error: (text = 'Error') => ({
     content: text,
-    background: 'linear-gradient(135deg, #ef4444, #dc2626)'
+    background: 'linear-gradient(135deg, var(--color-danger), var(--color-danger-dark))'
   }),
   
   default: (content) => ({

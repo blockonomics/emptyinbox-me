@@ -37,7 +37,7 @@ export function renderApiDocsPage() {
 }</div>
 
         <h3 style="margin-top: 1.5rem;">REST API workflow</h3>
-        <ol style="margin-left: 1.5rem; color: #6b7280; line-height: 2;">
+        <ol style="margin-left: 1.5rem; color: var(--color-text-secondary); line-height: 2;">
           <li>Call <code>POST /auth/register</code> to get an API key (one-time setup)</li>
           <li>Call <code>POST /inbox</code> to create a disposable address</li>
           <li>Trigger signup/verification using that address</li>
@@ -58,7 +58,7 @@ export function renderApiDocsPage() {
         <p>All endpoints except <code>POST /auth/register</code> require an API key in the Authorization header:</p>
         <div class="code-block" data-lang="http">Authorization: Bearer YOUR_API_KEY</div>
         <p style="margin-top: 1rem;"><strong>Agents:</strong> call <code>POST /auth/register</code> below to get a key programmatically.<br>
-        <strong>Humans:</strong> get your key at <a href="/settings.html" style="color: #10b981;">Settings</a>.</p>
+        <strong>Humans:</strong> get your key at <a href="/settings.html" style="color: var(--color-primary);">Settings</a>.</p>
       </div>
     </div>
 
@@ -74,7 +74,7 @@ export function renderApiDocsPage() {
         <div class="endpoint-header">
           <span class="endpoint-method method-post">POST</span>
           <span class="endpoint-path">/auth/register</span>
-          <span style="margin-left: auto; font-size: 0.75rem; color: #6b7280; font-family: monospace;">No auth required</span>
+          <span style="margin-left: auto; font-size: 0.75rem; color: var(--color-text-secondary); font-family: monospace;">No auth required</span>
         </div>
         <div class="endpoint-body">
           <p class="endpoint-description">Create a new account and get an API key. Agent accounts start with 5 inbox quota, the same as human accounts. Rate limited to 3 registrations per IP per 24 hours.</p>
@@ -158,7 +158,7 @@ export function renderApiDocsPage() {
           <span class="endpoint-path">/inbox</span>
         </div>
         <div class="endpoint-body">
-          <p class="endpoint-description">Creates a new disposable email inbox. Returns the email address as plain text. Each inbox consumes 1 from your quota. All accounts start with 5 inboxes. When quota runs out this returns <strong>402</strong> with links for buying more with Bitcoin. Humans can also buy at <a href="/inboxes.html" style="color:#10b981;">emptyinbox.me/inboxes.html</a>.</p>
+          <p class="endpoint-description">Creates a new disposable email inbox. Returns the email address as plain text. Each inbox consumes 1 from your quota. All accounts start with 5 inboxes. When quota runs out this returns <strong>402</strong> with links for buying more with Bitcoin. Humans can also buy at <a href="/inboxes.html" style="color: var(--color-primary);">emptyinbox.me/inboxes.html</a>.</p>
 
           <div class="response-example">
             <h4>Example Request</h4>
@@ -373,12 +373,12 @@ export function renderApiDocsPage() {
         Limits & Notes
       </h2>
       <div class="auth-info">
-        <ul style="margin-left: 1.5rem; color: #6b7280;">
+        <ul style="margin-left: 1.5rem; color: var(--color-text-secondary);">
           <li style="margin-bottom: 0.5rem;">All accounts start with <strong>5 inbox quota</strong></li>
-          <li style="margin-bottom: 0.5rem;">Creating an inbox consumes 1 quota unit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html" style="color:#10b981;">emptyinbox.me/inboxes.html</a></li>
+          <li style="margin-bottom: 0.5rem;">Creating an inbox consumes 1 quota unit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html" style="color: var(--color-primary);">emptyinbox.me/inboxes.html</a></li>
           <li style="margin-bottom: 0.5rem;">Messages are automatically deleted after <strong>7 days</strong></li>
           <li style="margin-bottom: 0.5rem;">Registration is limited to <strong>3 new accounts per IP per 24 hours</strong></li>
-          <li>Full OpenAPI 3.1 spec available at <a href="/openapi.yaml" style="color:#10b981;">/openapi.yaml</a></li>
+          <li>Full OpenAPI 3.1 spec available at <a href="/openapi.yaml" style="color: var(--color-primary);">/openapi.yaml</a></li>
         </ul>
       </div>
     </div>
@@ -397,13 +397,13 @@ function copyCode(button) {
   navigator.clipboard.writeText(code).then(() => {
     const originalText = button.textContent;
     button.textContent = 'Copied!';
-    button.style.background = 'rgba(16, 185, 129, 0.2)';
-    button.style.color = '#10b981';
+    button.style.background = 'var(--color-primary-soft-strong)';
+    button.style.color = 'var(--color-primary)';
 
     setTimeout(() => {
       button.textContent = originalText;
-      button.style.background = 'rgba(255, 255, 255, 0.1)';
-      button.style.color = '#9ca3af';
+      button.style.background = 'oklch(1 0 0 / 0.07)';
+      button.style.color = 'oklch(0.62 0.01 248)';
     }, 2000);
   });
 }

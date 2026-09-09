@@ -6,13 +6,13 @@
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: calc(100vh - 140px);
-  max-width: 1440px;
+  max-width: var(--container-wide);
   position: relative;
 }
 
 /* === Sidebar === */
 .docs-sidebar {
-  background: oklch(0.972 0.006 162);
+  background: var(--color-bg-subtle);
   border-right: 1px solid var(--color-border);
   position: sticky;
   top: 63px; /* navbar height: 38px logo + 2×12px padding + 1px border */
@@ -93,13 +93,13 @@
 
 .nav-link:hover {
   color: var(--color-text-primary);
-  background: oklch(0.696 0.17 162.5 / 0.06);
+  background: var(--color-primary-soft);
 }
 
 .nav-link.active {
   color: var(--color-primary);
   font-weight: 600;
-  background: oklch(0.696 0.17 162.5 / 0.1);
+  background: var(--color-primary-soft-strong);
 }
 
 .nav-method {
@@ -114,8 +114,8 @@
   line-height: 1.6;
 }
 
-.nav-get  { background: oklch(0.696 0.17 162.5 / 0.14); color: oklch(0.554 0.135 162.5); }
-.nav-post { background: oklch(0.623 0.214 255  / 0.14); color: oklch(0.546 0.244 262); }
+.nav-get  { background: var(--color-primary-soft-strong); color: var(--color-on-primary-soft); }
+.nav-post { background: var(--color-secondary-soft); color: var(--color-on-secondary-soft); }
 
 .sidebar-footer {
   margin-top: auto;
@@ -141,7 +141,7 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: oklch(0 0 0 / 0.4);
+  background: var(--color-overlay);
   z-index: 35;
 }
 .sidebar-overlay.active { display: block; }
@@ -154,7 +154,7 @@
   right: var(--space-6);
   z-index: 50;
   background: var(--color-primary);
-  color: white;
+  color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-full);
   width: 48px;
@@ -247,8 +247,8 @@
 
 /* === Info blocks === */
 .info-block {
-  background: oklch(0.975 0.007 162);
-  border: 1px solid oklch(0.89 0.022 162);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   margin-bottom: var(--space-5);
@@ -288,8 +288,8 @@
 .workflow-list li code {
   font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
   font-size: 0.8125rem;
-  background: oklch(0.696 0.17 162.5 / 0.1);
-  color: var(--color-primary-darker);
+  background: var(--color-primary-soft-strong);
+  color: var(--color-on-primary-soft);
   padding: 0.15em 0.4em;
   border-radius: 3px;
 }
@@ -318,7 +318,7 @@
   width: 22px;
   height: 22px;
   background: var(--color-primary);
-  color: white;
+  color: var(--color-text-inverse);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -343,7 +343,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-5);
-  background: oklch(0.975 0.005 162);
+  background: var(--color-bg-subtle);
   border-bottom: 1px solid var(--color-border);
   flex-wrap: wrap;
 }
@@ -359,10 +359,10 @@
   flex-shrink: 0;
 }
 
-.method-get    { background: oklch(0.696 0.17 162.5 / 0.14); color: oklch(0.47 0.14 162.5); }
-.method-post   { background: oklch(0.623 0.214 255  / 0.14); color: oklch(0.46 0.22 262); }
-.method-put    { background: oklch(0.769 0.163 78   / 0.14); color: oklch(0.52 0.13 78); }
-.method-delete { background: oklch(0.637 0.215 25   / 0.14); color: oklch(0.5  0.18 25); }
+.method-get    { background: var(--color-primary-soft-strong); color: var(--color-on-primary-soft); }
+.method-post   { background: var(--color-secondary-soft); color: var(--color-on-secondary-soft); }
+.method-put    { background: var(--color-warning-soft); color: var(--color-on-warning-soft); }
+.method-delete { background: var(--color-danger-soft-strong); color: var(--color-on-danger-soft); }
 
 .endpoint-path {
   font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
@@ -408,7 +408,7 @@
 
 /* === Code blocks === */
 .code-block {
-  background: oklch(0.18 0.01 248);
+  background: var(--color-code-bg);
   border-radius: var(--radius-md);
   margin: var(--space-3) 0;
   overflow: hidden;
@@ -420,8 +420,8 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-2) var(--space-4);
-  background: oklch(0.14 0.012 248);
-  border-bottom: 1px solid oklch(1 0 0 / 0.07);
+  background: var(--color-code-bg-bar);
+  border-bottom: 1px solid var(--color-code-border);
 }
 
 .code-lang {
@@ -430,7 +430,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: oklch(0.58 0.01 248);
+  color: oklch(0.62 0.01 248);
 }
 
 .copy-btn {
@@ -447,7 +447,7 @@
 }
 
 .copy-btn:hover { background: oklch(1 0 0 / 0.15); color: oklch(0.9 0 0); }
-.copy-btn.copied { color: oklch(0.696 0.17 162.5); }
+.copy-btn.copied { color: var(--color-primary); }
 
 .code-block pre {
   margin: 0;
@@ -458,7 +458,7 @@
 
 .code-block code {
   font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
-  color: oklch(0.88 0.01 248);
+  color: var(--color-code-text);
   font-size: inherit;
 }
 
@@ -487,7 +487,7 @@
 
 .parameter-table td {
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid oklch(0 0 0 / 0.04);
+  border-bottom: 1px solid var(--color-border-subtle);
   color: var(--color-text-secondary);
   vertical-align: top;
   line-height: 1.5;
@@ -498,8 +498,8 @@
 .parameter-table code {
   font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
   font-size: 0.8125rem;
-  background: oklch(0.696 0.17 162.5 / 0.08);
-  color: var(--color-primary-darker);
+  background: var(--color-primary-soft);
+  color: var(--color-on-primary-soft);
   padding: 0.15em 0.4em;
   border-radius: 3px;
 }
@@ -511,8 +511,8 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: oklch(0.577 0.2 25);
-  background: oklch(0.637 0.215 25 / 0.1);
+  color: var(--color-on-danger-soft);
+  background: var(--color-danger-soft-strong);
   padding: 0.2em 0.5em;
   border-radius: 3px;
 }
@@ -527,13 +527,13 @@
 }
 
 .status-200, .status-201 {
-  background: oklch(0.965 0.04 162);
-  color: oklch(0.42 0.13 162);
+  background: var(--color-primary-soft-strong);
+  color: var(--color-on-primary-soft);
 }
 
 .status-400, .status-401, .status-402, .status-403, .status-404, .status-409, .status-429 {
-  background: oklch(0.965 0.04 25);
-  color: oklch(0.45 0.16 25);
+  background: var(--color-danger-soft-strong);
+  color: var(--color-on-danger-soft);
 }
 
 /* === Limits list === */
@@ -575,7 +575,7 @@
   .docs-content { padding: var(--space-10) var(--space-8) var(--space-12); }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 899px) {
   .docs-wrapper { grid-template-columns: 1fr; }
 
   .docs-sidebar {

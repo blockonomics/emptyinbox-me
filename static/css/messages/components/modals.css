@@ -5,7 +5,7 @@
   position: fixed;
   z-index: 1000;
   inset: 0;
-  background: oklch(0.2 0.01 248 / 0.65);
+  background: var(--color-overlay);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: flex;
@@ -221,8 +221,8 @@
 .qm-error {
   font-size: var(--text-sm);
   color: var(--color-danger-dark);
-  background: oklch(0.96 0.03 25);
-  border: 1px solid oklch(0.88 0.07 25);
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
 }
@@ -261,7 +261,7 @@
 }
 
 /* ===== Mobile ===== */
-@media (max-width: 480px) {
+@media (max-width: 639px) {
   .qm-shell { border-radius: var(--radius-xl); max-width: 100%; }
   .qm-header,
   .qm-body { padding-left: var(--space-4); padding-right: var(--space-4); }

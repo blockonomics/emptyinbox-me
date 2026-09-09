@@ -11,14 +11,14 @@
     var(--primary-color),
     var(--primary-dark)
   );
-  color: white;
+  color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-md);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-normal);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: var(--shadow-primary);
   position: relative;
   overflow: hidden;
   min-width: 70px;
@@ -26,17 +26,17 @@
 
 .buy-quota-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  box-shadow: var(--shadow-primary-lg);
 }
 
 .buy-quota-btn:active {
   transform: translateY(0);
 }
 
-.buy-quota-btn:focus {
-  outline: none;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3),
-    0 0 0 3px rgba(16, 185, 129, 0.2);
+.buy-quota-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-primary), 0 0 0 3px var(--color-primary-ring);
 }
 
 .buy-quota-btn::before {
@@ -49,7 +49,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    oklch(1 0 0 / 0.2),
     transparent
   );
   transition: left 0.5s ease;
@@ -70,21 +70,21 @@
     var(--secondary-color),
     var(--secondary-dark)
   );
-  color: white;
+  color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-md);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-slow);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px var(--color-secondary-border);
   font-family: inherit;
   margin-bottom: 12px;
 }
 
 .create-inbox-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 6px 20px var(--color-secondary-border);
 }
 
 .create-inbox-btn:disabled {
@@ -100,7 +100,7 @@
     var(--primary-color) 0%,
     var(--primary-dark) 100%
   );
-  color: white;
+  color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-md);
   padding: 16px;
@@ -116,7 +116,7 @@
 
 .proceed-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+  box-shadow: var(--shadow-primary-lg);
 }
 
 .btn-icon {
@@ -129,7 +129,7 @@
   align-items: center;
   gap: var(--spacing-md);
   background: linear-gradient(135deg, var(--danger-color), var(--danger-dark));
-  color: white;
+  color: var(--color-text-inverse);
   border: none;
   padding: var(--spacing-md) var(--spacing-2xl);
   border-radius: 10px;
@@ -141,7 +141,7 @@
 
 .retry-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 12px var(--color-danger-glow);
 }
 
 /* ===== Navigation Button ===== */
@@ -151,8 +151,8 @@
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  background: #f9fafb;
-  border: 1px solid #d1d5db;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   color: var(--text-primary);
   cursor: pointer;
@@ -160,8 +160,8 @@
 }
 
 .nav-button:hover:not(.disabled) {
-  background: #e5e7eb;
-  border-color: #9ca3af;
+  background: var(--color-neutral-soft-strong);
+  border-color: var(--color-text-muted);
   transform: translateY(-1px);
 }
 
@@ -186,8 +186,8 @@
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
   border-radius: 0.5rem;
   color: var(--primary-color);
   cursor: pointer;
@@ -195,8 +195,8 @@
 }
 
 .refresh-button:hover:not(:disabled) {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: rgba(16, 185, 129, 0.3);
+  background: var(--color-primary-soft-strong);
+  border-color: var(--color-primary-border-strong);
   transform: translateY(-1px);
 }
 
@@ -219,8 +219,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(107, 114, 128, 0.1);
-  border: 1px solid rgba(107, 114, 128, 0.2);
+  background: var(--color-neutral-soft);
+  border: 1px solid var(--color-neutral-border);
   border-radius: 10px;
   font-size: 1.25rem;
   cursor: pointer;
@@ -230,9 +230,9 @@
 }
 
 .close-modal:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--color-danger-soft-strong);
   color: var(--danger-color);
-  border-color: rgba(239, 68, 68, 0.2);
+  border-color: var(--color-danger-border);
 }
 
 /* Alternative close modal button style */
@@ -240,7 +240,7 @@
   background: none;
   border: none;
   font-size: 24px;
-  color: #999;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
@@ -248,8 +248,8 @@
 }
 
 .close-modal.alt:hover {
-  background: #f5f5f5;
-  color: #333;
+  background: var(--color-neutral-soft);
+  color: var(--color-text-primary);
 }
 
 /* ===== Code Copy Button ===== */
@@ -267,11 +267,11 @@
 }
 
 .code-copy:hover {
-  background: rgba(16, 185, 129, 0.1);
+  background: var(--color-primary-soft);
   transform: scale(1.1);
 }
 
 .code-copy.copied {
   color: var(--primary-darker);
-  background: rgba(16, 185, 129, 0.2);
+  background: var(--color-primary-soft-strong);
 }

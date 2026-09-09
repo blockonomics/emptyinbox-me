@@ -10,16 +10,16 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1; /* Soft gray */
+  background-color: var(--color-scrollbar);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8; /* Darker on hover */
+  background-color: var(--color-scrollbar-hover);
 }
 
 /* ===== Firefox Scrollbar ===== */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: var(--color-scrollbar) transparent;
 }

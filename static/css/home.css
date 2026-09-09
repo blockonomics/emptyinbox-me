@@ -19,7 +19,7 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1100px;
+  max-width: var(--container-page);
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr;
@@ -179,7 +179,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-3);
-  background: var(--color-text-primary);
+  background: var(--color-code-bg);
   border-radius: var(--radius-md);
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-xs);
@@ -194,7 +194,7 @@
 
 .npm-snippet code {
   font-family: monospace;
-  color: oklch(0.92 0.005 248);
+  color: var(--color-code-text);
   background: none;
   padding: 0;
   letter-spacing: 0.01em;
@@ -257,7 +257,7 @@ a.trust-item:hover { color: var(--color-primary); }
 }
 
 .features-header {
-  max-width: 1100px;
+  max-width: var(--container-page);
   margin: 0 auto var(--space-12);
 }
 
@@ -278,7 +278,7 @@ a.trust-item:hover { color: var(--color-primary); }
 }
 
 .features-container {
-  max-width: 1100px;
+  max-width: var(--container-page);
   margin: 0 auto;
 }
 
@@ -375,7 +375,7 @@ a.trust-item:hover { color: var(--color-primary); }
   text-align: left;
   color: var(--color-text-primary);
   letter-spacing: -0.02em;
-  max-width: 1100px;
+  max-width: var(--container-page);
   margin-inline: auto;
 }
 
@@ -384,7 +384,7 @@ a.trust-item:hover { color: var(--color-primary); }
   color: var(--color-text-secondary);
   line-height: 1.6;
   margin: 0 auto var(--space-8);
-  max-width: 1100px;
+  max-width: var(--container-page);
   display: block;
 }
 
@@ -392,7 +392,7 @@ a.trust-item:hover { color: var(--color-primary); }
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--space-6);
-  max-width: 1100px;
+  max-width: var(--container-page);
   margin: 0 auto;
 }
 

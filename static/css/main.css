@@ -84,10 +84,143 @@
   --duration-fast:   0.15s;
   --duration-normal: 0.25s;
   --duration-slow:   0.4s;
+
+  /* Tinted surfaces — alpha over the page ground so they hold in both themes */
+  --color-primary-soft:        oklch(0.696 0.17 162.5 / 0.08);
+  --color-primary-soft-strong: oklch(0.696 0.17 162.5 / 0.16);
+  --color-primary-border:      oklch(0.696 0.17 162.5 / 0.25);
+  --color-primary-border-strong: oklch(0.696 0.17 162.5 / 0.4);
+
+  --color-secondary-soft:      oklch(0.623 0.214 255 / 0.08);
+  --color-secondary-border:    oklch(0.623 0.214 255 / 0.25);
+
+  --color-danger-soft:         oklch(0.637 0.215 25 / 0.08);
+  --color-danger-soft-strong:  oklch(0.637 0.215 25 / 0.16);
+  --color-danger-border:       oklch(0.637 0.215 25 / 0.25);
+
+  --color-warning-soft:        oklch(0.769 0.163 78 / 0.12);
+  --color-warning-border:      oklch(0.769 0.163 78 / 0.3);
+
+  --color-neutral-soft:        oklch(0.55 0.01 258 / 0.08);
+  --color-neutral-soft-strong: oklch(0.55 0.01 258 / 0.16);
+  --color-neutral-border:      oklch(0.55 0.01 258 / 0.22);
+
+  /* Text on tinted surfaces */
+  --color-on-primary-soft:   var(--color-primary-darker);
+  --color-on-secondary-soft: var(--color-secondary-dark);
+  --color-on-danger-soft:    var(--color-danger-dark);
+  --color-on-warning-soft:   oklch(0.52 0.13 78);
+
+  /* Chrome */
+  --color-nav-bg:          oklch(0.999 0.003 162 / 0.94);
+  --color-nav-bg-scrolled: oklch(0.999 0.003 162 / 0.98);
+  --color-overlay:         oklch(0.2 0.01 248 / 0.65);
+  --color-scrollbar:       oklch(0.78 0.012 258);
+  --color-scrollbar-hover: oklch(0.65 0.014 258);
+  --color-skeleton-highlight: oklch(0.955 0.004 248);
+  --color-hover-wash:      oklch(0 0 0 / 0.04);
+
+  /* Code surfaces — deliberately dark in both themes */
+  --color-code-bg:      oklch(0.16 0.012 248);
+  --color-code-bg-bar:  oklch(0.14 0.012 248);
+  --color-code-text:    oklch(0.88 0.01 248);
+  --color-code-border:  oklch(1 0 0 / 0.07);
+
+  /* Layout widths — every page shell picks one of these four */
+  --container-prose:   720px;
+  --container-content: 900px;
+  --container-page:   1100px;
+  --container-wide:   1400px;
+}
+
+/*
+ * === Breakpoints ===
+ * Three tiers only. Mobile-first (min-width) is preferred; the max-width
+ * forms below are the exclusive complements, so no range is ever uncovered.
+ *   sm  min-width:  640px   /  max-width:  639px
+ *   md  min-width:  900px   /  max-width:  899px
+ *   lg  min-width: 1024px   /  max-width: 1023px
+ */
+
+/* === Dark theme === */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Brand holds its hue; lightness lifts slightly to carry on dark ground */
+    --color-primary:        oklch(0.72 0.16 162.5);
+    --color-primary-dark:   oklch(0.66 0.15 162.5);
+    --color-primary-darker: oklch(0.82 0.13 162.5);
+    --color-primary-alpha:  oklch(0.72 0.16 162.5 / 0.18);
+    --color-primary-glow:   oklch(0.72 0.16 162.5 / 0.28);
+
+    --color-text-primary:   oklch(0.96 0.004 258);
+    --color-text-hover:     oklch(0.99 0 0);
+    --color-text-secondary: oklch(0.79 0.011 258);
+    --color-text-muted:     oklch(0.63 0.013 258);
+    --color-text-inverse:   oklch(0.17 0.012 258);
+
+    --color-bg:             oklch(0.185 0.012 258);
+    --color-bg-subtle:      oklch(0.225 0.014 258);
+    --color-surface:        oklch(0.245 0.015 258);
+
+    --color-glass:          oklch(0.245 0.015 258 / 0.85);
+    --color-glass-strong:   oklch(0.245 0.015 258 / 0.94);
+    --color-glass-border:   oklch(1 0 0 / 0.08);
+
+    --color-border:         oklch(0.44 0.013 258 / 0.7);
+    --color-border-subtle:  oklch(1 0 0 / 0.08);
+    --color-primary-ring:   oklch(0.72 0.16 162.5 / 0.28);
+
+    --color-danger:         oklch(0.68 0.19 25);
+    --color-danger-dark:    oklch(0.78 0.15 25);
+    --color-danger-glow:    oklch(0.68 0.19 25 / 0.3);
+    --color-secondary:      oklch(0.66 0.19 255);
+    --color-secondary-dark: oklch(0.78 0.13 258);
+    --color-warning:        oklch(0.8 0.15 78);
+    --color-success:        oklch(0.72 0.16 162.5);
+
+    --shadow-sm:  0 1px 3px oklch(0 0 0 / 0.4);
+    --shadow-md:  0 4px 16px oklch(0 0 0 / 0.42);
+    --shadow-lg:  0 12px 32px oklch(0 0 0 / 0.5);
+    --shadow-xl:  0 24px 48px oklch(0 0 0 / 0.58);
+
+    --color-primary-soft:        oklch(0.72 0.16 162.5 / 0.12);
+    --color-primary-soft-strong: oklch(0.72 0.16 162.5 / 0.22);
+    --color-primary-border:      oklch(0.72 0.16 162.5 / 0.32);
+    --color-primary-border-strong: oklch(0.72 0.16 162.5 / 0.5);
+
+    --color-secondary-soft:      oklch(0.66 0.19 255 / 0.14);
+    --color-secondary-border:    oklch(0.66 0.19 255 / 0.32);
+
+    --color-danger-soft:         oklch(0.68 0.19 25 / 0.13);
+    --color-danger-soft-strong:  oklch(0.68 0.19 25 / 0.22);
+    --color-danger-border:       oklch(0.68 0.19 25 / 0.32);
+
+    --color-on-warning-soft:     oklch(0.86 0.14 85);
+    --color-warning-soft:        oklch(0.8 0.15 78 / 0.14);
+    --color-warning-border:      oklch(0.8 0.15 78 / 0.34);
+
+    --color-neutral-soft:        oklch(0.75 0.01 258 / 0.09);
+    --color-neutral-soft-strong: oklch(0.75 0.01 258 / 0.16);
+    --color-neutral-border:      oklch(0.75 0.01 258 / 0.22);
+
+    --color-nav-bg:          oklch(0.205 0.013 258 / 0.94);
+    --color-nav-bg-scrolled: oklch(0.205 0.013 258 / 0.98);
+    --color-overlay:         oklch(0.08 0.01 258 / 0.78);
+    --color-scrollbar:       oklch(0.45 0.013 258);
+    --color-scrollbar-hover: oklch(0.58 0.013 258);
+    --color-skeleton-highlight: oklch(0.31 0.014 258);
+    --color-hover-wash:      oklch(1 0 0 / 0.07);
+
+    --color-code-bg:      oklch(0.14 0.012 258);
+    --color-code-bg-bar:  oklch(0.115 0.012 258);
+  }
 }
 
 /* === Reset & Base === */
 *, *::before, *::after { box-sizing: border-box; }
+
+/* Tell the UA to theme form controls, scrollbars and canvas with the page */
+:root { color-scheme: light dark; }
 
 h1, h2 {
   font-family: var(--font-display);
@@ -114,7 +247,7 @@ body {
 main { flex: 1; }
 
 .container {
-  max-width: 960px;
+  max-width: var(--container-page);
   margin: 0 auto;
   padding: 0 var(--space-4);
 }
@@ -147,7 +280,7 @@ html { scroll-behavior: smooth; }
   position: relative;
   z-index: 2;
   text-align: center;
-  max-width: 720px;
+  max-width: var(--container-prose);
   margin: 0 auto;
   animation: fadeInUp 0.7s var(--ease-out);
 }
@@ -171,7 +304,7 @@ html { scroll-behavior: smooth; }
   margin-inline: auto;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 639px) {
   .hero { padding: var(--space-8) var(--space-4); }
 }
 
@@ -339,21 +472,21 @@ html { scroll-behavior: smooth; }
 }
 
 .alert-error {
-  background: oklch(0.95 0.04 25);
-  border: 1px solid oklch(0.85 0.08 25);
-  color: var(--color-danger-dark);
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-on-danger-soft);
 }
 
 .alert-info {
-  background: oklch(0.97 0.015 255);
-  border: 1px solid oklch(0.88 0.05 255);
-  color: var(--color-secondary-dark);
+  background: var(--color-secondary-soft);
+  border: 1px solid var(--color-secondary-border);
+  color: var(--color-on-secondary-soft);
 }
 
 .alert-success {
-  background: oklch(0.97 0.03 162);
-  border: 1px solid oklch(0.88 0.07 162);
-  color: var(--color-primary-darker);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-on-primary-soft);
 }
 
 /* === Spinner === */
@@ -383,4 +516,53 @@ html { scroll-behavior: smooth; }
   padding: var(--space-3) var(--space-4);
   background: var(--color-bg-subtle);
   border-bottom: 1px solid var(--color-border);
+}
+
+/* === Global focus visibility ===
+   Every interactive element gets a ring unless a component opts out with its
+   own :focus-visible rule. Keyboard only — pointer focus stays quiet. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Drop the UA default only where our ring replaces it */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* === Reduced motion ===
+   Honour the OS setting globally: no transforms, no shimmer, no auto-scroll.
+   Opacity-only fades stay, they do not trigger vestibular symptoms. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Hover lifts and shimmers are pure decoration — remove them outright */
+  .btn:hover:not(:disabled),
+  .btn-primary:hover:not(:disabled),
+  .btn-secondary:hover:not(:disabled),
+  .btn-danger:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .btn::before { display: none; }
+}
+
+/* === Brand mark in dark theme ===
+   The wordmark PNG is single-colour navy on transparent, so knocking it to
+   near-white keeps it legible instead of shipping a second asset. */
+@media (prefers-color-scheme: dark) {
+  .site-logo,
+  .footer-logo,
+  .purchase-logo {
+    filter: brightness(0) invert(0.94);
+  }
 }
