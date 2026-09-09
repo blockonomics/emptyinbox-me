@@ -53,21 +53,31 @@ def blockonomics_headers():
     return {'Authorization': f"Bearer {os.getenv('BLOCKONOMICS_API_KEY')}"}
 
 
+def check(r, what):
+    """raise_for_status() drops the response body, which is where Blockonomics
+    puts the reason. Keep it - it is the difference between "400 Bad Request"
+    and "No matching store found for the given callback URL"."""
+    if not r.ok:
+        raise RuntimeError(f'{what} -> {r.status_code} {r.text[:500]}')
+    return r
+
+
 def btc_price_usd():
     """Price of 1 BTC in USD. Divide by this, never multiply."""
     r = requests.get(f'{BLOCKONOMICS_API}/price',
                      params={'currency': 'USD', 'crypto': 'BTC'}, timeout=15)
-    r.raise_for_status()
+    check(r, 'price')
     return float(r.json()['price'])
 
 
 def new_btc_address():
     """Derive a fresh receive address. Every call advances the xPub index, so
     callers must reuse an existing open intent rather than quoting twice."""
+    match_callback = os.getenv('MATCH_CALLBACK')
     r = requests.post(f'{BLOCKONOMICS_API}/new_address',
-                      params={'match_callback': os.getenv('MATCH_CALLBACK'), 'crypto': 'BTC'},
+                      params={'match_callback': match_callback, 'crypto': 'BTC'},
                       headers=blockonomics_headers(), timeout=15)
-    r.raise_for_status()
+    check(r, f'new_address(match_callback={match_callback!r})')
     return r.json()['address']
 
 
