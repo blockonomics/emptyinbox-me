@@ -180,10 +180,12 @@ server.registerTool("check_payment", {
         poll_interval_seconds: z.number().default(5).describe("Seconds between checks (default: 5)"),
     },
 }, async ({ address, wait_seconds, poll_interval_seconds }) => {
-    const deadline = Date.now() + wait_seconds * 1000;
+    // A zero interval would hammer the API in a tight loop.
+    const intervalMs = Math.max(1, poll_interval_seconds) * 1000;
+    const deadline = Date.now() + Math.max(0, wait_seconds) * 1000;
     let state = await client.getPaymentStatus(address);
     while (!state.quota_credited && Date.now() < deadline) {
-        await new Promise((r) => setTimeout(r, poll_interval_seconds * 1000));
+        await new Promise((r) => setTimeout(r, intervalMs));
         state = await client.getPaymentStatus(address);
     }
     return { content: [{ type: "text", text: JSON.stringify({

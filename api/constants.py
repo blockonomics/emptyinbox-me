@@ -16,7 +16,9 @@ QUOTA_BUNDLES = {
 }
 DEFAULT_BUNDLE = 'starter'
 
-# A quote is only good while the price behind it is fresh.
+# A quote is only good while the price behind it is fresh. Expiry stops the
+# quote being reused, but a payment that lands late is still credited at the
+# quoted rate - refusing coins already sent is worse than eating the drift.
 QUOTE_TTL_MINUTES = 15
 
 # Wallets deduct the network fee from the sent amount and the price moves

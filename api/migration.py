@@ -6,7 +6,15 @@ def migrate_passkey_challenges():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
-    # Drop the old table if it exists
+    # Challenges are short-lived, so rebuilding the table is cheap - but only
+    # do it when the schema is actually stale. This runs on every deploy.
+    cur.execute("PRAGMA table_info(passkey_challenges);")
+    columns = {row[1] for row in cur.fetchall()}
+    if columns and 'operation_type' in columns:
+        conn.close()
+        print("Migration skipped: passkey_challenges already current.")
+        return
+
     cur.execute("DROP TABLE IF EXISTS passkey_challenges;")
 
     # Create the new table with updated schema
@@ -80,5 +88,11 @@ def migrate_btc_payments():
     print("Migration completed: btc_payment_intents and payment_callbacks created.")
 
 
-if __name__ == "__main__":
+def main():
+    """Every migration is idempotent, so a deploy runs the whole set."""
+    migrate_passkey_challenges()
     migrate_btc_payments()
+
+
+if __name__ == "__main__":
+    main()

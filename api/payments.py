@@ -4,6 +4,7 @@ import hmac
 import math
 import requests
 import os
+from sqlalchemy import func
 from config import db, app
 
 from constants import (
@@ -258,17 +259,37 @@ def credit(user_id, quota):
     return True
 
 
+def received_at_address(addr):
+    """Total received, derived from the callback ledger instead of accumulated
+    in place. Each status repeats the same value for one transaction, so take a
+    single value per txid; separate transactions to the address add up."""
+    rows = (db.session.query(PaymentCallback.txid, func.max(PaymentCallback.value))
+            .filter(PaymentCallback.addr == addr)
+            .group_by(PaymentCallback.txid)
+            .all())
+    return sum(value or 0 for _, value in rows)
+
+
+def claim_credit(intent):
+    """Flip credited in a single conditional statement, so two callbacks racing
+    on one address cannot both grant the quota. True for the caller that won."""
+    updated = (db.session.query(BtcPaymentIntent)
+               .filter(BtcPaymentIntent.address == intent.address,
+                       BtcPaymentIntent.credited.is_(False))
+               .update({'credited': True, 'credited_at': datetime.utcnow()},
+                       synchronize_session='fetch'))
+    return updated == 1
+
+
 def handle_btc_callback(txid, addr, status, value, rbf_present):
-    intent = db.session.query(BtcPaymentIntent).filter_by(address=addr).first()
+    intent = (db.session.query(BtcPaymentIntent)
+              .filter_by(address=addr).with_for_update().first())
     if not intent:
         # Money arrived at an address we derived but hold no intent for.
         app.logger.error(f'Unmatched BTC payment addr={addr} txid={txid} value={value}')
         return
 
-    if intent.txid and intent.txid != txid:
-        intent.received_satoshis += value          # a second transaction topping up
-    else:
-        intent.received_satoshis = value           # same transaction, later status
+    intent.received_satoshis = received_at_address(addr)
     intent.txid = txid
     intent.status = str(min(status, 2))
 
@@ -288,12 +309,21 @@ def handle_btc_callback(txid, addr, status, value, rbf_present):
         return
 
     if not intent.credited:
-        if credit(intent.user_id, intent.quota):
-            intent.credited = True
-            intent.credited_at = datetime.utcnow()
-            app.logger.info(
-                f'Credited {intent.quota} inboxes to {intent.user_id} '
-                f'addr={addr} status={status}')
+        if intent.expires_at < datetime.utcnow():
+            # Honoured anyway - the sender parted with the coins. Logged because
+            # the BTC price behind the quote is stale by now.
+            app.logger.warning(
+                f'Payment after quote expiry addr={addr} expired={intent.expires_at} '
+                f'usd={intent.usd_amount}')
+        if not claim_credit(intent):
+            return                      # a concurrent callback got there first
+        if not credit(intent.user_id, intent.quota):
+            # Unknown user: fail the whole callback so the retry can settle it
+            # rather than marking an intent credited that granted nothing.
+            raise RuntimeError(f'Credit failed for intent {addr}')
+        app.logger.info(
+            f'Credited {intent.quota} inboxes to {intent.user_id} '
+            f'addr={addr} status={status}')
     elif intent.revoked and status >= 2:
         # Clawed back as unconfirmed, then it confirmed after all.
         if credit(intent.user_id, intent.quota):

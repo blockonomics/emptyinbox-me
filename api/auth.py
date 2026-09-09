@@ -10,8 +10,8 @@ from urllib.parse import urlparse
 import traceback
 from auth_utils import auth_required
 
-from db_models import AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus, PasskeyCredential, PasskeyChallenge
-from constants import USER_STARTING_QUOTA, AGENT_STARTING_QUOTA
+from db_models import AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus, PasskeyCredential, PasskeyChallenge, BtcPaymentIntent
+from constants import USER_STARTING_QUOTA, AGENT_STARTING_QUOTA, QUOTA_PER_USDT
 
 # Add these imports for passkey functionality
 from cryptography.hazmat.primitives import hashes
@@ -577,10 +577,29 @@ def auth_me(token):
             {
                 'txhash': p.txhash,
                 'amount': p.amount,
+                'currency': 'USDT',
+                'usd': p.amount / QUOTA_PER_USDT,
                 'created_at': p.created_at.isoformat()
             }
             for p in payments
         ]
+
+        # BTC bundles live in their own table. Show credited purchases that
+        # have not been clawed back, so the history matches the quota.
+        btc_payments = (
+            db.session.query(BtcPaymentIntent)
+            .filter_by(user_id=user.user_id, credited=True, revoked=False)
+            .all()
+        )
+        payment_data.extend({
+            'txhash': p.txid,
+            'amount': p.quota,
+            'currency': 'BTC',
+            'usd': p.usd_amount,
+            'settled': p.settled,
+            'created_at': (p.credited_at or p.created_at).isoformat()
+        } for p in btc_payments)
+        payment_data.sort(key=lambda p: p['created_at'], reverse=True)
 
         # Check if user has passkeys to determine auth method
         has_passkeys = db.session.query(PasskeyCredential).filter_by(user_id=user.user_id).first() is not None

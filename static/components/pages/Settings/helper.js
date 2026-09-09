@@ -71,23 +71,35 @@ function _renderBilling(payments) {
       day: "numeric",
       year: "numeric",
     });
-    const usdt = (payment.amount / QUOTA_PER_USDT).toFixed(2);
+    const isBtc = payment.currency === "BTC";
+    const usdValue =
+      typeof payment.usd === "number"
+        ? payment.usd
+        : payment.amount / QUOTA_PER_USDT;
+    const cost = isBtc
+      ? `$${usdValue.toFixed(2)} in BTC`
+      : `${usdValue.toFixed(2)} USDT`;
     const txhash = payment.txhash || "";
     const shortHash = txhash
       ? txhash.slice(0, 10) + "…" + txhash.slice(-6)
       : "—";
-    const txLink = `https://etherscan.io/tx/${txhash}`;
+    const txLink = isBtc
+      ? `https://mempool.space/tx/${txhash}`
+      : `https://etherscan.io/tx/${txhash}`;
+    const explorer = isBtc ? "mempool.space" : "Etherscan";
+    // Zero-conf credit: quota is already granted, confirmation still pending.
+    const pending = isBtc && payment.settled === false;
 
     const row = document.createElement("div");
     row.className = "billing-row";
     row.innerHTML = `
       <div class="billing-row-left">
         <span class="billing-date">${formattedDate}</span>
-        <span class="billing-amount">${payment.amount} inboxes</span>
+        <span class="billing-amount">${payment.amount} inboxes${pending ? " (confirming)" : ""}</span>
       </div>
       <div class="billing-row-right">
-        <span class="billing-cost">${usdt} USDT</span>
-        ${txhash ? `<a href="${txLink}" target="_blank" rel="noopener noreferrer" class="billing-tx" aria-label="View transaction on Etherscan">${shortHash}</a>` : ""}
+        <span class="billing-cost">${cost}</span>
+        ${txhash ? `<a href="${txLink}" target="_blank" rel="noopener noreferrer" class="billing-tx" aria-label="View transaction on ${explorer}">${shortHash}</a>` : ""}
       </div>
     `;
     container.appendChild(row);
