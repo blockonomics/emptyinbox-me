@@ -111,9 +111,10 @@
 }
 
 .stat-card {
-  background: var(--color-glass);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  /* Opaque surface: a translucent card over the page gradient made the
+     label/value contrast depend on what happened to sit behind it. */
+  background: var(--color-surface);
+  color: var(--text-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
   padding: var(--spacing-xl);
@@ -154,7 +155,7 @@
 
 .stat-card h3 {
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -192,7 +193,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: var(--color-bg-subtle);
+  background: var(--color-neutral-soft);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
 }
@@ -200,6 +201,7 @@
 .api-key {
   font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 14px;
+  color: var(--text-primary);
   flex: 1;
   word-break: break-all;
   margin: 0;

@@ -204,7 +204,9 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-text-muted);
+  /* Sits on the always-dark code surface, so it tracks the code text token
+     rather than the theme-dependent muted grey. */
+  color: var(--color-code-text);
   padding: 0;
   display: flex;
   align-items: center;
@@ -493,4 +495,65 @@ a.trust-item:hover { color: var(--color-primary); }
   color: var(--color-text-inverse);
   cursor: pointer;
   line-height: 1;
+}
+
+/* Guides. Cards link the hub pages and framework walkthroughs from the
+   home page, which is the only page with links worth passing on. */
+.guides-section {
+  margin-top: var(--space-16);
+  text-align: center;
+}
+
+.guides-title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.guides-subtitle {
+  display: block;
+  margin: var(--space-2) auto var(--space-8);
+  max-width: 52ch;
+  color: var(--color-text-secondary);
+  font-size: var(--text-base);
+}
+
+.guides-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.guide-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.guide-card:hover {
+  border-color: var(--color-primary-ring);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.guide-card a {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.guide-card a:hover { color: var(--color-primary); }
+
+.guide-card p {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
 }

@@ -13,8 +13,8 @@
   /* Neutral */
   --color-text-primary:   oklch(0.261 0.009 248);
   --color-text-hover:     oklch(0.327 0.01 257);
-  --color-text-secondary: oklch(0.52 0.012 265);
-  --color-text-muted:     oklch(0.686 0.01 257);
+  --color-text-secondary: oklch(0.455 0.013 265);
+  --color-text-muted:     oklch(0.55 0.011 257);
   --color-text-inverse:   oklch(1 0 0);
 
   /* Surfaces */
@@ -154,8 +154,8 @@
 
     --color-text-primary:   oklch(0.96 0.004 258);
     --color-text-hover:     oklch(0.99 0 0);
-    --color-text-secondary: oklch(0.79 0.011 258);
-    --color-text-muted:     oklch(0.63 0.013 258);
+    --color-text-secondary: oklch(0.845 0.011 258);
+    --color-text-muted:     oklch(0.72 0.012 258);
     --color-text-inverse:   oklch(0.17 0.012 258);
 
     --color-bg:             oklch(0.185 0.012 258);

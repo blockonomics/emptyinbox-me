@@ -37,6 +37,33 @@ npm package: `emptyinbox-mcp`
 - `POST /api/payments/quote` — get a Bitcoin address and amount to buy quota `{bundle}`
 - `GET /api/payments/status/{address}` — check whether a payment landed and quota was credited
 
+## Guides
+
+- Playwright email verification testing: https://emptyinbox.me/use-cases/playwright-email-testing.html
+- Cypress email verification testing: https://emptyinbox.me/use-cases/cypress-email-testing.html
+- Email verification in an n8n workflow: https://emptyinbox.me/use-cases/n8n-email-verification.html
+- Giving a LangChain agent an inbox: https://emptyinbox.me/use-cases/langchain-agent-email.html
+- Claude agent inbox via MCP: https://emptyinbox.me/blog/how-to-give-your-claude-agent-an-email-inbox.html
+- ChatGPT via GPT Actions: https://emptyinbox.me/blog/how-to-connect-emptyinbox-to-chatgpt-with-gpt-actions.html
+
+## Comparisons
+
+Facts below were checked against each vendor's own pricing or documentation
+pages on 2026-09-09. EmptyInbox is receive-only: it cannot send email, has no
+private domains and no SMS.
+
+- vs MailSlurp: https://emptyinbox.me/compare/mailslurp-alternative.html
+  MailSlurp is a full email testing platform from $19.99/mo with sending, SMS
+  and private domains. EmptyInbox is receive-only prepaid credits at $0.10 an
+  inbox with no subscription.
+- vs Mailinator: https://emptyinbox.me/compare/mailinator-alternative.html
+  Mailinator's free inboxes are public and readable by anyone; private inboxes
+  start at $79/mo billed yearly. EmptyInbox inboxes are private to the API key
+  that created them on every tier.
+- Five options compared: https://emptyinbox.me/compare/disposable-email-api-comparison.html
+  EmptyInbox, mail.tm, Mailinator, MailSlurp and Mailosaur on price, privacy,
+  sending and agent support.
+
 ## Typical Agent Workflow
 
 1. `POST /api/inbox` → get a disposable address
@@ -70,6 +97,8 @@ for confirmations. The MCP tools `buy_quota` and `check_payment` wrap this flow.
 - [Pricing](https://emptyinbox.me/pricing.html): Free and paid tiers
 - [Login](https://emptyinbox.me/login.html): Get your API key
 - [Blog](https://emptyinbox.me/blog/): Tutorials and guides
+- [Use Cases](https://emptyinbox.me/use-cases/): Framework setup guides
+- [Comparisons](https://emptyinbox.me/compare/): How this compares to other disposable email APIs
 - [How to Give Your Claude Agent an Email Inbox](https://emptyinbox.me/blog/how-to-give-your-claude-agent-an-email-inbox.html): MCP and REST setup walkthrough
 
 ## Source & Contact
