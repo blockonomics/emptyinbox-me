@@ -160,7 +160,8 @@ def get_message(token, msgid):
         return jsonify({'error': 'unreadable_content', 'id': row.id}), 500
 
     message = message_parse.normalize(
-        row.id, row.inbox, row.subject, row.timestamp, content_json
+        row.id, row.inbox, row.subject, row.timestamp, content_json,
+        include_headers=True
     )
 
     if fmt == 'text':

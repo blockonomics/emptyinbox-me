@@ -161,7 +161,10 @@ components:
           example: "<p>Your verification code is <strong>482910</strong></p>"
         headers:
           type: object
-          description: Raw email headers as delivered. Omitted when `include_body=false`.
+          description: |
+            Raw email headers as delivered. Returned by `GET /message/{msgid}`
+            only — a listing leaves them out, since DKIM and ARC signature
+            blobs run to kilobytes per message.
           additionalProperties:
             type: string
 

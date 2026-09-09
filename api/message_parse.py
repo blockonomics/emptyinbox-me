@@ -172,12 +172,17 @@ def iso_timestamp(timestamp):
     return stamp.isoformat().replace("+00:00", "Z")
 
 
-def normalize(msg_id, inbox, subject, timestamp, content, include_body=True):
+def normalize(msg_id, inbox, subject, timestamp, content, include_body=True,
+              include_headers=False):
     """Build the API shape for one message from its stored blob.
 
     `content` is the dict decoded from the stored JSON. Missing pieces become
     empty values rather than absent keys, so callers can index without
     guarding every field.
+
+    Headers are opt-in and belong to the single-message endpoint. A real
+    message carries kilobytes of DKIM/ARC signature blobs, which would swamp
+    a listing whose whole point is to be cheap to read.
     """
     content = content or {}
     html_body = content.get("html_body") or ""
@@ -224,6 +229,8 @@ def normalize(msg_id, inbox, subject, timestamp, content, include_body=True):
         result["text"] = text
         result["text_body"] = text_body
         result["html_body"] = html_body
+
+    if include_headers:
         # Kept so clients written against the old raw response — which handed
         # back the headers dict — keep working, and because Date, Reply-To and
         # Message-ID are occasionally what someone is actually debugging.

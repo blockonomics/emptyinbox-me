@@ -273,7 +273,6 @@ export function renderApiDocsPage() {
               <tr><td><code>preview</code></td><td>string</td><td>First 200 characters of the plain-text body</td></tr>
               <tr><td><code>text</code></td><td>string</td><td>Body as plain text — the HTML flattened when there is no text part</td></tr>
               <tr><td><code>text_body</code> / <code>html_body</code></td><td>string</td><td>Raw MIME parts, unchanged</td></tr>
-              <tr><td><code>headers</code></td><td>object</td><td>Raw email headers as delivered (Date, Reply-To, Message-ID…)</td></tr>
             </tbody>
           </table>
 
@@ -345,8 +344,9 @@ export function renderApiDocsPage() {
 
           <h4>Response Fields</h4>
           <p class="endpoint-description">
-            Same fields as <code>GET /messages</code>, plus <code>to</code> — the envelope
-            recipients. <code>format=raw</code> instead returns <code>recipients</code>,
+            Same fields as <code>GET /messages</code>, plus <code>headers</code> — the raw
+            email headers, which the listing omits because DKIM and ARC signature blobs run
+            to kilobytes per message. <code>format=raw</code> instead returns <code>recipients</code>,
             <code>headers</code>, <code>text_body</code>, <code>html_body</code> and
             <code>sender</code> exactly as delivered.
           </p>
