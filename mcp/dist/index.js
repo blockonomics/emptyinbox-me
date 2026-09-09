@@ -40,7 +40,7 @@ if (!apiKey) {
 const client = new EmptyInboxClient(apiKey);
 const server = new McpServer({
     name: "emptyinbox",
-    version: "1.1.0",
+    version: "1.2.0",
 });
 server.registerTool("register_account", {
     description: "Register a new EmptyInbox account and get an API key. Use this if there is no account configured yet, or if authentication is failing. Saves the key locally for future sessions.",

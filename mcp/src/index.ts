@@ -45,7 +45,7 @@ const client = new EmptyInboxClient(apiKey);
 
 const server = new McpServer({
   name: "emptyinbox",
-  version: "1.1.0",
+  version: "1.2.0",
 });
 
 server.registerTool("register_account", {

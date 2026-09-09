@@ -2,7 +2,7 @@ export const BASE_URL = process.env.EMPTYINBOX_BASE_URL ?? "https://emptyinbox.m
 
 // Sent on every request so the server can tell MCP traffic from hand-rolled
 // REST clients. Without it, registrations are indistinguishable in the logs.
-export const CLIENT_ID = "emptyinbox-mcp/1.1.0";
+export const CLIENT_ID = "emptyinbox-mcp/1.2.0";
 
 export interface MessageLink {
   url: string;
@@ -35,6 +35,7 @@ export interface Message {
   text?: string;
   text_body?: string;
   html_body?: string;
+  headers?: Record<string, string>;
 }
 
 export interface ListMessagesOptions {

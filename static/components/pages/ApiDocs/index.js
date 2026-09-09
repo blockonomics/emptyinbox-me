@@ -273,6 +273,7 @@ export function renderApiDocsPage() {
               <tr><td><code>preview</code></td><td>string</td><td>First 200 characters of the plain-text body</td></tr>
               <tr><td><code>text</code></td><td>string</td><td>Body as plain text — the HTML flattened when there is no text part</td></tr>
               <tr><td><code>text_body</code> / <code>html_body</code></td><td>string</td><td>Raw MIME parts, unchanged</td></tr>
+              <tr><td><code>headers</code></td><td>object</td><td>Raw email headers as delivered (Date, Reply-To, Message-ID…)</td></tr>
             </tbody>
           </table>
 

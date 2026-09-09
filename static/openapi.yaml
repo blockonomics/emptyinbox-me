@@ -17,7 +17,7 @@ info:
     Or use the [emptyinbox-mcp](https://www.npmjs.com/package/emptyinbox-mcp) package — auto-registers on first run, no setup needed.
 
     Human accounts: get your API key at https://emptyinbox.me/settings.html
-  version: 1.1.0
+  version: 1.2.0
   contact:
     url: https://emptyinbox.me
 
@@ -159,6 +159,11 @@ components:
           type: string
           description: Raw text/html MIME part (may be empty). Omitted when `include_body=false`.
           example: "<p>Your verification code is <strong>482910</strong></p>"
+        headers:
+          type: object
+          description: Raw email headers as delivered. Omitted when `include_body=false`.
+          additionalProperties:
+            type: string
 
     Inbox:
       type: object

@@ -1,7 +1,7 @@
 export const BASE_URL = process.env.EMPTYINBOX_BASE_URL ?? "https://emptyinbox.me/api";
 // Sent on every request so the server can tell MCP traffic from hand-rolled
 // REST clients. Without it, registrations are indistinguishable in the logs.
-export const CLIENT_ID = "emptyinbox-mcp/1.1.0";
+export const CLIENT_ID = "emptyinbox-mcp/1.2.0";
 /** Thrown when the account is out of inbox quota and must pay to continue. */
 export class QuotaExhaustedError extends Error {
     detail;

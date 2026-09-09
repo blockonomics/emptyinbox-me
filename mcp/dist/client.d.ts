@@ -1,5 +1,5 @@
 export declare const BASE_URL: string;
-export declare const CLIENT_ID = "emptyinbox-mcp/1.1.0";
+export declare const CLIENT_ID = "emptyinbox-mcp/1.2.0";
 export interface MessageLink {
     url: string;
     text: string;
@@ -30,6 +30,7 @@ export interface Message {
     text?: string;
     text_body?: string;
     html_body?: string;
+    headers?: Record<string, string>;
 }
 export interface ListMessagesOptions {
     inbox?: string;

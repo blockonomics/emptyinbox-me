@@ -224,6 +224,10 @@ def normalize(msg_id, inbox, subject, timestamp, content, include_body=True):
         result["text"] = text
         result["text_body"] = text_body
         result["html_body"] = html_body
+        # Kept so clients written against the old raw response — which handed
+        # back the headers dict — keep working, and because Date, Reply-To and
+        # Message-ID are occasionally what someone is actually debugging.
+        result["headers"] = headers
 
     return result
 
