@@ -244,7 +244,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-main { flex: 1; }
+/* min-width:0 is the load-bearing half. body is a column flex container, and
+   a flex item defaults to min-width:auto, meaning it refuses to shrink below
+   its content's min-content width. A <pre> full of curl commands has a wide
+   min-content, so article pages were forcing main to ~670px and scrolling the
+   whole page sideways on a phone instead of scrolling inside the code block. */
+main {
+  flex: 1;
+  min-width: 0;
+}
 
 .container {
   max-width: var(--container-page);

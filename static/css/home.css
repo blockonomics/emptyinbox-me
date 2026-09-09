@@ -532,6 +532,7 @@ a.trust-item:hover { color: var(--color-primary); }
 }
 
 .guide-card {
+  position: relative;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -551,7 +552,24 @@ a.trust-item:hover { color: var(--color-primary); }
   text-decoration: none;
 }
 
-.guide-card a:hover { color: var(--color-primary); }
+/* The whole card is the hit area: the title link stretches over it. */
+.guide-card a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.guide-card:hover a,
+.guide-card:focus-within a { color: var(--color-primary); }
+
+.guide-card:focus-within {
+  border-color: var(--color-primary-ring);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.guide-card a:focus-visible { outline: none; }
 
 .guide-card p {
   margin: var(--space-2) 0 0;

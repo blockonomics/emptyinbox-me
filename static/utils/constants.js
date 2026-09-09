@@ -9,6 +9,8 @@ export const ROUTES = {
   MESSAGES: "/messages.html",
   API_DOCS: "/docs.html",
   BLOG: "/blog/",
+  USE_CASES: "/use-cases/",
+  COMPARE: "/compare/",
   PRIVACY: "/privacy.html",
   TERMS: "/terms.html",
 };
@@ -32,6 +34,8 @@ export const FOOTER_LINKS = {
   product: [
     { label: "Pricing", href: ROUTES.PRICING },
     { label: "API Docs", href: ROUTES.API_DOCS },
+    { label: "Use Cases", href: ROUTES.USE_CASES },
+    { label: "Comparisons", href: ROUTES.COMPARE },
   ],
   company: [
     { label: "About", href: ROUTES.ABOUT },

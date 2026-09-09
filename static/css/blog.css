@@ -1,6 +1,12 @@
 /* Blog layout */
 .blog-index-page,
 .blog-article-page {
+  /* width:100% is not redundant. These elements are <main>, a column flex
+     item of body, and the auto side margins below cancel the default stretch.
+     Without an explicit width the item falls back to shrink-to-fit, so a wide
+     <pre> or table inflated it past the viewport and scrolled the whole page
+     sideways on a phone instead of scrolling inside its own box. */
+  width: 100%;
   max-width: var(--container-prose);
   margin: 0 auto;
   padding: 3rem 1.5rem 5rem;

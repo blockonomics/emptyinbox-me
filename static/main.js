@@ -56,10 +56,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     case ROUTES.PRIVACY:
     case ROUTES.TERMS:
     case ROUTES.BLOG:
+    case ROUTES.USE_CASES:
+    case ROUTES.COMPARE:
       // Static pages — no JS render needed
       break;
     default:
-      if (!path.startsWith("/blog/")) {
+      // Directories of hand-written static pages. Anything outside them is a
+      // genuinely unknown route and still worth logging.
+      const STATIC_DIRS = ["/blog/", "/use-cases/", "/compare/"];
+      if (!STATIC_DIRS.some((dir) => path.startsWith(dir))) {
         console.error("Page not found:", path);
       }
   }
