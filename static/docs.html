@@ -36,10 +36,67 @@
     }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why does POST /inbox return plain text instead of JSON?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The response body is the new address itself. Clients that assume JSON will fail to parse it, so read the body as text and trim it before use."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there an endpoint that waits for a message to arrive?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Not over REST. Poll GET /messages and filter on the inbox field. The MCP server exposes wait_for_message, which does that polling for you and blocks until the mail lands."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I get an EmptyInbox API key?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Call POST /auth/register once and keep the key it returns, or install the MCP server, which registers on first run. Registration is limited to 3 new accounts per IP per 24 hours."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does listing messages return mail from every inbox?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. GET /messages returns everything on the account, with each message carrying the inbox it arrived at. Filter client-side when a test or agent owns several inboxes at once."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can EmptyInbox send email?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. It receives only. There is no send endpoint and no SMTP credential, so testing your own outbound mail needs a different tool."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long are messages retained?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Seven days, then they are deleted automatically. Read anything you need to keep, and store it on your side."
+        }
+      }
+    ]
+  }
+  </script>
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/api-docs.css" />
   <link rel="stylesheet" href="css/navbar.css" />
   <link rel="stylesheet" href="css/footer.css" />
+  <link rel="stylesheet" href="css/faq.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body>
@@ -124,6 +181,7 @@
             <a href="#error-codes" class="nav-link">Error Codes</a>
             <a href="#limits" class="nav-link">Limits &amp; Notes</a>
             <a href="#guides" class="nav-link">Integration Guides</a>
+            <a href="#faq" class="nav-link">FAQ</a>
           </div>
         </nav>
 
@@ -721,6 +779,36 @@
             <li><a href="/use-cases/langchain-agent-email.html">Giving a LangChain agent an email inbox</a></li>
             <li><a href="/compare/">How EmptyInbox compares to other disposable email APIs</a></li>
           </ul>
+        </div>
+      </section>
+
+      <section class="docs-section" id="faq">
+        <h2>FAQ</h2>
+        <div class="faq-list">
+          <div class="faq-item">
+            <h3>Why does POST /inbox return plain text instead of JSON?</h3>
+            <p>The response body is the new address itself. Clients that assume JSON will fail to parse it, so read the body as text and trim it before use.</p>
+          </div>
+          <div class="faq-item">
+            <h3>Is there an endpoint that waits for a message to arrive?</h3>
+            <p>Not over REST. Poll <code>GET /messages</code> and filter on the <code>inbox</code> field. The MCP server exposes <code>wait_for_message</code>, which does that polling for you and blocks until the mail lands.</p>
+          </div>
+          <div class="faq-item">
+            <h3>How do I get an API key?</h3>
+            <p>Call <code>POST /auth/register</code> once and keep the key it returns, or install the MCP server, which registers on first run. Registration is limited to 3 new accounts per IP per 24 hours.</p>
+          </div>
+          <div class="faq-item">
+            <h3>Does listing messages return mail from every inbox?</h3>
+            <p>Yes. <code>GET /messages</code> returns everything on the account, with each message carrying the <code>inbox</code> it arrived at. Filter client-side when a test or agent owns several inboxes at once.</p>
+          </div>
+          <div class="faq-item">
+            <h3>Can EmptyInbox send email?</h3>
+            <p>No. It receives only. There is no send endpoint and no SMTP credential, so testing your own outbound mail needs a different tool.</p>
+          </div>
+          <div class="faq-item">
+            <h3>How long are messages retained?</h3>
+            <p>Seven days, then they are deleted automatically. Read anything you need to keep, and store it on your side.</p>
+          </div>
         </div>
       </section>
 
