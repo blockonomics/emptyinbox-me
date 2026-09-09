@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playwright Email Verification Testing with Disposable Inboxes | EmptyInbox</title>
+  <meta name="description" content="Test the real signup flow in Playwright. A fixture gives every test its own disposable inbox, and expect.poll waits for the verification email. Full code included." />
+  <link rel="canonical" href="https://emptyinbox.me/use-cases/playwright-email-testing.html" />
+  <meta property="og:title" content="Playwright Email Verification Testing with Disposable Inboxes | EmptyInbox" />
+  <meta property="og:description" content="Test the real signup flow in Playwright. A fixture gives every test its own disposable inbox, and expect.poll waits for the verification email. Full code included." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/og/playwright-email-testing.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://emptyinbox.me/use-cases/playwright-email-testing.html" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Playwright Email Verification Testing with Disposable Inboxes | EmptyInbox" />
+  <meta name="twitter:description" content="Test the real signup flow in Playwright. A fixture gives every test its own disposable inbox, and expect.poll waits for the verification email. Full code included." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/og/playwright-email-testing.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://emptyinbox.me/" },
+      { "@type": "ListItem", "position": 2, "name": "Use Cases", "item": "https://emptyinbox.me/use-cases/" },
+      { "@type": "ListItem", "position": 3, "name": "Playwright Email Testing", "item": "https://emptyinbox.me/use-cases/playwright-email-testing.html" }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Does this work with Playwright's parallel workers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Each test gets its own inbox from the fixture, so workers never contend for the same address and no cleanup is required between runs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long does a verification email usually take to arrive?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Delivery is normally a few seconds, but it depends on the sending service rather than on EmptyInbox. Poll with a 30 second ceiling and short early intervals so fast deliveries finish fast."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I filter messages to a single inbox?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The messages endpoint returns every message on the account, each carrying an inbox field, so filter on that field as the fixture does."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many credits does a Playwright test suite consume?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "One per inbox created. Scoping the fixture to a describe block instead of a single test is the simplest way to cut that count when several assertions can share an address."
+        }
+      }
+    ]
+  }
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+  <link rel="stylesheet" href="/css/compare.css" />
+  <link rel="stylesheet" href="/css/faq.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-article-page compare-page">
+
+    <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>&rsaquo;</span>
+      <a href="/use-cases/">Use Cases</a>
+      <span>&rsaquo;</span>
+      <span>Playwright Email Testing</span>
+    </nav>
+
+    <header>
+      <span class="blog-case-tag">Use Case</span>
+      <h1>Email Verification Testing in Playwright</h1>
+      <p class="post-meta">Updated September 9, 2026 · 6 min read</p>
+    </header>
+
+    <div class="blog-tldr">
+      <strong>TL;DR</strong>
+      <ul>
+        <li>Signup tests stall at the verification email, so most suites stub it out and stop testing it</li>
+        <li>A disposable inbox per test run keeps the real path under test without a shared mailbox</li>
+        <li>Create the inbox in a fixture, poll <code>/api/messages</code> with <code>expect.poll</code>, extract the code</li>
+        <li>Each inbox costs one credit, so a suite of 40 signup tests costs about $4 a month at daily runs</li>
+      </ul>
+    </div>
+
+    <div class="blog-verdict">
+      <strong>Verdict</strong>
+      A Playwright fixture that hands each test its own address turns email verification from the reason your signup test is skipped into three lines of setup.
+    </div>
+
+    <div class="blog-body">
+
+      <h2>Why signup tests get skipped</h2>
+      <p>The flow is easy right up to the point where the application sends mail. Then the test needs an inbox, and every option is awkward. A shared Gmail account leaks state between runs and between engineers. Plus-addressing gets filtered by some providers and collides under parallel runs. Reading the code out of your own database works, but at that point the test no longer covers the thing that breaks in production, which is delivery.</p>
+      <p>A disposable inbox per test sidesteps all three. The address is fresh, nothing else writes to it, and the assertion happens against a real delivered message.</p>
+
+      <h2>A fixture that hands each test its own inbox</h2>
+      <p>Playwright fixtures are the natural home for this. The inbox is created once per test and the address is injected wherever the test needs it.</p>
+
+      <pre><code>// fixtures.ts
+import { test as base } from '@playwright/test';
+
+const API = 'https://emptyinbox.me/api';
+const KEY = process.env.EMPTYINBOX_API_KEY!;
+const auth = { Authorization: `Bearer ${KEY}` };
+
+type Inbox = {
+  address: string;
+  messages: () => Promise&lt;any[]&gt;;
+};
+
+export const test = base.extend&lt;{ inbox: Inbox }&gt;({
+  inbox: async ({}, use) =&gt; {
+    const res = await fetch(`${API}/inbox`, { method: 'POST', headers: auth });
+    const address = (await res.text()).trim();
+
+    await use({
+      address,
+      messages: async () =&gt; {
+        const r = await fetch(`${API}/messages`, { headers: auth });
+        const all = await r.json();
+        return all.filter((m: any) =&gt; m.inbox === address);
+      },
+    });
+  },
+});
+
+export { expect } from '@playwright/test';</code></pre>
+
+      <p>The API returns the new address as plain text, not JSON, which is why the fixture reads the body with <code>text()</code>.</p>
+
+      <h2>Waiting for the message</h2>
+      <p>Do not reach for a fixed sleep. <code>expect.poll</code> retries until the message lands or the timeout expires, so a fast delivery does not pay for the slowest case.</p>
+
+      <pre><code>import { test, expect } from './fixtures';
+
+test('new user can verify their email', async ({ page, inbox }) =&gt; {
+  await page.goto('/signup');
+  await page.getByLabel('Email').fill(inbox.address);
+  await page.getByLabel('Password').fill('correct horse battery staple');
+  await page.getByRole('button', { name: 'Create account' }).click();
+
+  // Wait for delivery rather than guessing at a sleep duration.
+  let message: any;
+  await expect
+    .poll(
+      async () =&gt; {
+        message = (await inbox.messages())[0];
+        return message !== undefined;
+      },
+      {
+        message: 'verification email never arrived',
+        timeout: 30_000,
+        intervals: [1_000, 2_000, 5_000],
+      },
+    )
+    .toBe(true);
+
+  expect(message.subject).toContain('Verify');
+
+  const code = message.text_body.match(/\b\d{6}\b/)?.[0];
+  expect(code, 'no 6-digit code in the email body').toBeDefined();
+
+  await page.getByLabel('Verification code').fill(code!);
+  await page.getByRole('button', { name: 'Confirm' }).click();
+  await expect(page.getByText('Welcome')).toBeVisible();
+});</code></pre>
+
+      <p>If the email carries a link rather than a code, pull the URL out of <code>text_body</code> and navigate straight to it with <code>page.goto</code>. The <code>html_body</code> field is there when the link only appears in the HTML part.</p>
+
+      <h2>Running tests in parallel</h2>
+      <p>Because the fixture creates an inbox per test, parallel workers never share an address and there is nothing to reset between runs. Messages delete themselves after 7 days, so no teardown step is needed either.</p>
+      <p>One thing to watch: each inbox creation consumes one credit. A suite with 40 signup tests running daily uses about 1,200 credits a month, which is roughly $4 at bulk rates. If that matters, scope the fixture to <code>test.describe</code> rather than to each test, so a group of related assertions shares one address.</p>
+
+      <h2>Keeping the key out of the repository</h2>
+      <p>Register once, then store the key as a CI secret and read it from the environment, as the fixture above does.</p>
+
+      <pre><code>curl -X POST https://emptyinbox.me/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "ci-playwright"}'
+
+# {"api_key": "ei...", "inbox_quota": 5}</code></pre>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h3>Does this work with Playwright's parallel workers?</h3>
+          <p>Yes. Each test gets its own inbox from the fixture, so workers never contend for the same address and no cleanup is required between runs.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How long does a verification email usually take to arrive?</h3>
+          <p>Delivery is normally a few seconds, but it depends on the sending service rather than on EmptyInbox. Poll with a 30 second ceiling and short early intervals so fast deliveries finish fast.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Can I filter messages to a single inbox?</h3>
+          <p>Yes. The messages endpoint returns every message on the account, each carrying an <code>inbox</code> field, so filter on that field as the fixture does.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How many credits does a test suite consume?</h3>
+          <p>One per inbox created. Scoping the fixture to a describe block instead of a single test is the simplest way to cut that count when several assertions can share an address.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="blog-internal-link">
+      Using Cypress instead? <a href="/use-cases/cypress-email-testing.html">The same flow in Cypress &rarr;</a>
+    </div>
+
+    <div class="blog-internal-link">
+      Full endpoint reference with request and response examples: <a href="/docs.html">API Documentation &rarr;</a>
+    </div>
+
+    <div class="blog-cta">
+      <h3>Put a real inbox in your test suite</h3>
+      <p>Free tier includes 5 inboxes. No credit card required.</p>
+      <a href="/login.html" class="btn">Get API Key</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">Disposable email infrastructure for AI agents and developers.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+            <a href="/use-cases/" class="footer-link">Use Cases</a>
+            <a href="/compare/" class="footer-link">Comparisons</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

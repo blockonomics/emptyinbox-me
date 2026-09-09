@@ -328,6 +328,15 @@ a.trust-item:hover { color: var(--color-primary); }
   transform: translateY(0);
 }
 
+/* Reduced motion: the reveal transition is suppressed, so the cards must
+   already be on screen rather than waiting for a class that animates them in */
+@media (prefers-reduced-motion: reduce) {
+  .feature-card {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .feature-card::before { display: none; }
 
 /* Feature number indicator */

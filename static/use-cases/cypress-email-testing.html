@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cypress Email Verification Testing with Disposable Inboxes | EmptyInbox</title>
+  <meta name="description" content="Two custom Cypress commands put a real verification email in your end-to-end run. No plugin, no Node task, just cy.request and a recursive retry." />
+  <link rel="canonical" href="https://emptyinbox.me/use-cases/cypress-email-testing.html" />
+  <meta property="og:title" content="Cypress Email Verification Testing with Disposable Inboxes | EmptyInbox" />
+  <meta property="og:description" content="Two custom Cypress commands put a real verification email in your end-to-end run. No plugin, no Node task, just cy.request and a recursive retry." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/og/cypress-email-testing.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://emptyinbox.me/use-cases/cypress-email-testing.html" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Cypress Email Verification Testing with Disposable Inboxes | EmptyInbox" />
+  <meta name="twitter:description" content="Two custom Cypress commands put a real verification email in your end-to-end run. No plugin, no Node task, just cy.request and a recursive retry." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/og/cypress-email-testing.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://emptyinbox.me/" },
+      { "@type": "ListItem", "position": 2, "name": "Use Cases", "item": "https://emptyinbox.me/use-cases/" },
+      { "@type": "ListItem", "position": 3, "name": "Cypress Email Testing", "item": "https://emptyinbox.me/use-cases/cypress-email-testing.html" }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Do I need a Cypress plugin to test email verification?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The API is plain REST over HTTPS, so cy.request reaches it directly. There is no Node task, no plugin install, and nothing to keep in step with Cypress releases."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does createInbox call trim on the response?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The inbox endpoint returns the new address as plain text rather than JSON, so the body is the address itself and trailing whitespace should be removed before use."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I test a link in the email rather than a code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Pull the URL out of text_body with a regular expression and hand it to cy.visit. If your template only puts the link in the HTML part, read html_body instead."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Will parallel Cypress runs interfere with each other?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No, as long as each test creates its own inbox. Addresses are randomly generated and messages are filtered by the inbox field, so runs stay isolated."
+        }
+      }
+    ]
+  }
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+  <link rel="stylesheet" href="/css/compare.css" />
+  <link rel="stylesheet" href="/css/faq.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-article-page compare-page">
+
+    <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>&rsaquo;</span>
+      <a href="/use-cases/">Use Cases</a>
+      <span>&rsaquo;</span>
+      <span>Cypress Email Testing</span>
+    </nav>
+
+    <header>
+      <span class="blog-case-tag">Use Case</span>
+      <h1>Email Verification Testing in Cypress</h1>
+      <p class="post-meta">Updated September 9, 2026 · 5 min read</p>
+    </header>
+
+    <div class="blog-tldr">
+      <strong>TL;DR</strong>
+      <ul>
+        <li>Two custom commands cover the whole flow: create an inbox, wait for its first message</li>
+        <li><code>cy.request</code> talks to the API directly, so no plugin or Node task is needed</li>
+        <li>Recursive retry beats <code>cy.wait</code> with a fixed number, which is either flaky or slow</li>
+        <li>Store the API key in <code>CYPRESS_EMPTYINBOX_API_KEY</code> and read it from <code>Cypress.env</code></li>
+      </ul>
+    </div>
+
+    <div class="blog-verdict">
+      <strong>Verdict</strong>
+      Cypress needs no special integration here. The API is plain REST, so two custom commands in <code>commands.js</code> put a real verification email inside your end-to-end run.
+    </div>
+
+    <div class="blog-body">
+
+      <h2>Two custom commands</h2>
+      <p>The first creates an inbox. The second waits for a message to land in it. Everything else is your normal test.</p>
+
+      <pre><code>// cypress/support/commands.js
+const API = 'https://emptyinbox.me/api';
+
+const auth = () =&gt; ({
+  Authorization: `Bearer ${Cypress.env('EMPTYINBOX_API_KEY')}`,
+});
+
+Cypress.Commands.add('createInbox', () =&gt; {
+  return cy
+    .request({ method: 'POST', url: `${API}/inbox`, headers: auth() })
+    .then((res) =&gt; res.body.trim()); // plain text, not JSON
+});
+
+// Recursive retry: each attempt re-queries, so a fast delivery returns fast
+// and a slow one still gets the full budget.
+Cypress.Commands.add('waitForEmail', (address, attempts = 15) =&gt; {
+  const poll = (left) =&gt;
+    cy.request({ url: `${API}/messages`, headers: auth() }).then((res) =&gt; {
+      const hit = res.body.find((m) =&gt; m.inbox === address);
+      if (hit) return hit;
+      if (left === 0) throw new Error(`no email for ${address} in time`);
+      return cy.wait(2000).then(() =&gt; poll(left - 1));
+    });
+
+  return poll(attempts);
+});</code></pre>
+
+      <h2>Using them in a signup test</h2>
+
+      <pre><code>describe('signup', () =&gt; {
+  it('verifies a new account with a real email', () =&gt; {
+    cy.createInbox().then((address) =&gt; {
+      cy.visit('/signup');
+      cy.get('[name=email]').type(address);
+      cy.get('[name=password]').type('correct horse battery staple');
+      cy.contains('button', 'Create account').click();
+
+      cy.waitForEmail(address).then((message) =&gt; {
+        expect(message.subject).to.contain('Verify');
+
+        const code = message.text_body.match(/\b\d{6}\b/)[0];
+        cy.get('[name=code]').type(code);
+        cy.contains('button', 'Confirm').click();
+      });
+
+      cy.contains('Welcome').should('be.visible');
+    });
+  });
+});</code></pre>
+
+      <p>If the mail carries a link instead of a code, extract the URL from <code>text_body</code> and pass it to <code>cy.visit</code>. Use <code>html_body</code> when the link only exists in the HTML part of the message.</p>
+
+      <h2>Why not cy.wait with a fixed delay</h2>
+      <p>A fixed wait is a guess about the slowest delivery you will ever see. Set it low and the suite is flaky; set it high and every run pays the worst case even when the mail arrived in two seconds. The recursive retry above returns as soon as the message exists and only spends the full budget when something is genuinely wrong.</p>
+
+      <h2>Configuration</h2>
+      <p>Register once and put the key in the environment. Cypress picks up any variable prefixed with <code>CYPRESS_</code>, so <code>CYPRESS_EMPTYINBOX_API_KEY</code> is readable as <code>Cypress.env('EMPTYINBOX_API_KEY')</code> with no config file change.</p>
+
+      <pre><code>curl -X POST https://emptyinbox.me/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "ci-cypress"}'
+
+# {"api_key": "ei...", "inbox_quota": 5}</code></pre>
+
+      <p>One credit is spent per inbox, and messages delete themselves after 7 days, so there is no teardown step and no storage to manage.</p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h3>Do I need a Cypress plugin for this?</h3>
+          <p>No. The API is plain REST over HTTPS, so <code>cy.request</code> reaches it directly. There is no Node task, no plugin install, and nothing to keep in step with Cypress releases.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Why does createInbox call trim on the response?</h3>
+          <p>The inbox endpoint returns the new address as plain text rather than JSON, so the body is the address itself and trailing whitespace should be removed before use.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How do I test a link in the email rather than a code?</h3>
+          <p>Pull the URL out of <code>text_body</code> with a regular expression and hand it to <code>cy.visit</code>. If your template only puts the link in the HTML part, read <code>html_body</code> instead.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Will parallel Cypress runs interfere with each other?</h3>
+          <p>No, as long as each test creates its own inbox. Addresses are randomly generated and messages are filtered by the <code>inbox</code> field, so runs stay isolated.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="blog-internal-link">
+      Using Playwright instead? <a href="/use-cases/playwright-email-testing.html">The same flow as a Playwright fixture &rarr;</a>
+    </div>
+
+    <div class="blog-internal-link">
+      Full endpoint reference with request and response examples: <a href="/docs.html">API Documentation &rarr;</a>
+    </div>
+
+    <div class="blog-cta">
+      <h3>Put a real inbox in your Cypress run</h3>
+      <p>Free tier includes 5 inboxes. No credit card required.</p>
+      <a href="/login.html" class="btn">Get API Key</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">Disposable email infrastructure for AI agents and developers.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+            <a href="/use-cases/" class="footer-link">Use Cases</a>
+            <a href="/compare/" class="footer-link">Comparisons</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

@@ -10,13 +10,13 @@
   <link rel="canonical" href="https://emptyinbox.me/pricing.html" />
   <meta property="og:title" content="Pricing — Disposable Email API | EmptyInbox" />
   <meta property="og:description" content="Start free with 5 inbox credits. Bitcoin and USDT bundles from $5 for 50 inboxes. No subscriptions, no credit card." />
-  <meta property="og:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <meta property="og:image" content="https://emptyinbox.me/assets/og/pricing.png" />
   <meta property="og:url" content="https://emptyinbox.me/pricing.html" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Pricing — Disposable Email API | EmptyInbox" />
   <meta name="twitter:description" content="Start free with 5 inbox credits. Bitcoin and USDT bundles from $5 for 50 inboxes. No subscriptions, no credit card." />
-  <meta name="twitter:image" content="https://emptyinbox.me/assets/opengraph-image.png" />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/og/pricing.png" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -65,10 +65,75 @@
     ]
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Do EmptyInbox credits expire?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. A credit sits on the account until an inbox is created with it. There is no monthly reset and no subscription to keep alive, so bursty use never pays for idle months."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What exactly consumes a credit?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Creating an inbox. Receiving messages, listing them and reading them are all free, so one inbox that receives fifty emails still costs a single credit."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do Bitcoin bundles start at $5?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On-chain fees make dollar-sized Bitcoin payments impractical. Paying in USDT instead removes that floor: send any amount and $1 buys 10 credits."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I pay with a credit card?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Payment is in Bitcoin or USDT through Blockonomics, with no card on file and no KYC step."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are purchases refundable?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Quota purchases are non-refundable, which is why the free tier exists: 5 inbox credits are enough to test the whole flow before spending anything."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens when I run out of credits?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Inbox creation starts failing while existing inboxes keep receiving mail. Buying another bundle restores creation immediately, and unused credits carry over."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long are messages kept?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Seven days, then they are deleted automatically. There is no storage tier to buy and no cleanup job to run."
+        }
+      }
+    ]
+  }
+  </script>
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/navbar.css" />
   <link rel="stylesheet" href="css/footer.css" />
   <link rel="stylesheet" href="css/pricing.css" />
+  <link rel="stylesheet" href="css/faq.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body>
@@ -234,6 +299,40 @@
         <span class="payment-icon"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>No credit card</span></span>
       </p>
 
+      <section class="pricing-faq-section">
+        <h2 class="pricing-faq-title">Pricing questions</h2>
+        <div class="faq-list">
+          <div class="faq-item">
+            <h3>Do credits expire?</h3>
+            <p>No. A credit sits on the account until an inbox is created with it. There is no monthly reset and no subscription to keep alive, so bursty use never pays for idle months.</p>
+          </div>
+          <div class="faq-item">
+            <h3>What exactly consumes a credit?</h3>
+            <p>Creating an inbox. Receiving messages, listing them and reading them are all free, so one inbox that receives fifty emails still costs a single credit.</p>
+          </div>
+          <div class="faq-item">
+            <h3>Why do Bitcoin bundles start at $5?</h3>
+            <p>On-chain fees make dollar-sized Bitcoin payments impractical. Paying in USDT instead removes that floor: send any amount and $1 buys 10 credits.</p>
+          </div>
+          <div class="faq-item">
+            <h3>Can I pay with a credit card?</h3>
+            <p>No. Payment is in Bitcoin or USDT through Blockonomics, with no card on file and no KYC step.</p>
+          </div>
+          <div class="faq-item">
+            <h3>Are purchases refundable?</h3>
+            <p>No. Quota purchases are non-refundable, which is why the free tier exists: 5 inbox credits are enough to test the whole flow before spending anything.</p>
+          </div>
+          <div class="faq-item">
+            <h3>What happens when I run out of credits?</h3>
+            <p>Inbox creation starts failing while existing inboxes keep receiving mail. Buying another bundle restores creation immediately, and unused credits carry over.</p>
+          </div>
+          <div class="faq-item">
+            <h3>How long are messages kept?</h3>
+            <p>Seven days, then they are deleted automatically. There is no storage tier to buy and no cleanup job to run.</p>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 
@@ -252,6 +351,8 @@
           <nav class="footer-nav">
             <a href="/pricing.html" class="footer-link">Pricing</a>
             <a href="/docs.html" class="footer-link">API Docs</a>
+            <a href="/use-cases/" class="footer-link">Use Cases</a>
+            <a href="/compare/" class="footer-link">Comparisons</a>
           </nav>
         </div>
         <div class="footer-connect">

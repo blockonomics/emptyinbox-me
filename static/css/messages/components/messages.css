@@ -151,7 +151,7 @@
   padding: var(--space-3) var(--space-3);
 }
 
-@media (min-width: 480px) {
+@media (min-width: 640px) {
   .msg-code-display {
     flex-direction: row;
     align-items: center;

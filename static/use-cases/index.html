@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disposable Email API Use Cases and Setup Guides | EmptyInbox</title>
+  <meta name="description" content="Working code for putting a disposable inbox into Playwright, Cypress, n8n and LangChain, so tests and agents can read verification emails without a shared mailbox." />
+  <link rel="canonical" href="https://emptyinbox.me/use-cases/" />
+  <meta property="og:title" content="Disposable Email API Use Cases and Setup Guides | EmptyInbox" />
+  <meta property="og:description" content="Working code for putting a disposable inbox into Playwright, Cypress, n8n and LangChain." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/og/use-cases.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://emptyinbox.me/use-cases/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Disposable Email API Use Cases and Setup Guides | EmptyInbox" />
+  <meta name="twitter:description" content="Working code for putting a disposable inbox into Playwright, Cypress, n8n and LangChain." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/og/use-cases.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "EmptyInbox Use Cases",
+    "description": "Setup guides for using disposable email inboxes in test suites, workflow automation and AI agents.",
+    "url": "https://emptyinbox.me/use-cases/",
+    "publisher": {
+      "@type": "Organization",
+      "name": "EmptyInbox",
+      "url": "https://emptyinbox.me",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://emptyinbox.me/assets/emptyinboxlogo.png"
+      }
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Email Verification Testing in Playwright",
+          "url": "https://emptyinbox.me/use-cases/playwright-email-testing.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Email Verification Testing in Cypress",
+          "url": "https://emptyinbox.me/use-cases/cypress-email-testing.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Email Verification in an n8n Workflow",
+          "url": "https://emptyinbox.me/use-cases/n8n-email-verification.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Giving a LangChain Agent an Email Inbox",
+          "url": "https://emptyinbox.me/use-cases/langchain-agent-email.html"
+        }
+      ]
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://emptyinbox.me/" },
+      { "@type": "ListItem", "position": 2, "name": "Use Cases", "item": "https://emptyinbox.me/use-cases/" }
+    ]
+  }
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+  <link rel="stylesheet" href="/css/compare.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-index-page compare-page">
+
+    <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>&rsaquo;</span>
+      <span>Use Cases</span>
+    </nav>
+
+    <div class="hub-header">
+      <h1>Use Cases</h1>
+      <p>Each guide is the working version of one integration: what to write, where the sharp edges are, and what it costs in credits. All of them use the same three moves, which are creating an inbox, waiting for mail, and reading the body.</p>
+    </div>
+
+    <ul class="hub-grid">
+      <li class="hub-card">
+        <h2><a href="/use-cases/playwright-email-testing.html">Playwright email testing</a></h2>
+        <p>A fixture that hands every test its own address, and expect.poll instead of a fixed sleep. Safe under parallel workers.</p>
+      </li>
+      <li class="hub-card">
+        <h2><a href="/use-cases/cypress-email-testing.html">Cypress email testing</a></h2>
+        <p>Two custom commands built on cy.request. No plugin, no Node task, and a recursive retry that returns as soon as the mail lands.</p>
+      </li>
+      <li class="hub-card">
+        <h2><a href="/use-cases/n8n-email-verification.html">n8n email verification</a></h2>
+        <p>Three HTTP Request nodes plus a Wait node. Includes the response-format setting that trips up the first node.</p>
+      </li>
+      <li class="hub-card">
+        <h2><a href="/use-cases/langchain-agent-email.html">LangChain agent inbox</a></h2>
+        <p>Three tools in Python, with the polling loop inside the tool so the model does not spend a turn on every retry.</p>
+      </li>
+      <li class="hub-card">
+        <h2><a href="/blog/how-to-give-your-claude-agent-an-email-inbox.html">Claude agent inbox via MCP</a></h2>
+        <p>One config line, no wrapper code. The MCP server auto-registers and exposes create, wait and read as tools.</p>
+      </li>
+      <li class="hub-card">
+        <h2><a href="/blog/how-to-connect-emptyinbox-to-chatgpt-with-gpt-actions.html">ChatGPT via GPT Actions</a></h2>
+        <p>Import the OpenAPI spec into a custom GPT and give it an inbox in about five minutes.</p>
+      </li>
+    </ul>
+
+    <div class="blog-internal-link">
+      Deciding between providers first? <a href="/compare/">Read the comparisons &rarr;</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">Disposable email infrastructure for AI agents and developers.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+            <a href="/use-cases/" class="footer-link">Use Cases</a>
+            <a href="/compare/" class="footer-link">Comparisons</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

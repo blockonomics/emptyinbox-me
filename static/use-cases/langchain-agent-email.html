@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giving a LangChain Agent an Email Inbox | EmptyInbox</title>
+  <meta name="description" content="Three LangChain tools give an agent a disposable inbox: create, blocking wait, read. Full Python code, plus why the polling loop belongs in the tool." />
+  <link rel="canonical" href="https://emptyinbox.me/use-cases/langchain-agent-email.html" />
+  <meta property="og:title" content="Giving a LangChain Agent an Email Inbox | EmptyInbox" />
+  <meta property="og:description" content="Three LangChain tools give an agent a disposable inbox: create, blocking wait, read. Full Python code, plus why the polling loop belongs in the tool." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/og/langchain-agent-email.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://emptyinbox.me/use-cases/langchain-agent-email.html" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Giving a LangChain Agent an Email Inbox | EmptyInbox" />
+  <meta name="twitter:description" content="Three LangChain tools give an agent a disposable inbox: create, blocking wait, read. Full Python code, plus why the polling loop belongs in the tool." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/og/langchain-agent-email.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://emptyinbox.me/" },
+      { "@type": "ListItem", "position": 2, "name": "Use Cases", "item": "https://emptyinbox.me/use-cases/" },
+      { "@type": "ListItem", "position": 3, "name": "LangChain Agent Email", "item": "https://emptyinbox.me/use-cases/langchain-agent-email.html" }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Should a LangChain agent poll for email itself?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Put the retry loop inside the tool so a single call blocks until the message arrives. Model-driven polling spends a turn per attempt and adds latency without adding reliability."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I load the API as an OpenAPI toolkit instead?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The spec at /openapi.yaml covers every endpoint. The trade is a larger tool surface and no blocking wait, since that behaviour lives in your wrapper rather than in the REST API."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should the tool extract the verification code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Usually not. Return the full text body and let the model find the code. Formats vary between services, and a regular expression tuned to one of them fails quietly on the rest."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this work with CrewAI or a custom agent loop?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The tools are ordinary Python functions wrapping HTTP calls, so any framework that accepts callables works the same way."
+        }
+      }
+    ]
+  }
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+  <link rel="stylesheet" href="/css/compare.css" />
+  <link rel="stylesheet" href="/css/faq.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-article-page compare-page">
+
+    <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>&rsaquo;</span>
+      <a href="/use-cases/">Use Cases</a>
+      <span>&rsaquo;</span>
+      <span>LangChain Agent Email</span>
+    </nav>
+
+    <header>
+      <span class="blog-case-tag">Use Case</span>
+      <h1>Giving a LangChain Agent an Email Inbox</h1>
+      <p class="post-meta">Updated September 9, 2026 · 6 min read</p>
+    </header>
+
+    <div class="blog-tldr">
+      <strong>TL;DR</strong>
+      <ul>
+        <li>Three tools are enough: create an inbox, wait for a message, read it</li>
+        <li>Write the waiting loop inside the tool, not in the prompt, so the model cannot busy-poll</li>
+        <li>The OpenAPI spec at /openapi.yaml loads directly if you prefer a generated toolkit</li>
+        <li>Return the message body as text and let the model extract the code itself</li>
+      </ul>
+    </div>
+
+    <div class="blog-verdict">
+      <strong>Verdict</strong>
+      An agent that cannot receive email cannot finish a signup. Three <code>@tool</code> functions close that gap, and putting the retry loop inside the tool keeps the model from burning tokens on polling.
+    </div>
+
+    <div class="blog-body">
+
+      <h2>Why the loop belongs in the tool</h2>
+      <p>The obvious design gives the model a <code>list_messages</code> tool and lets it decide when to check again. It works, and it is wasteful. The model spends a full turn on every poll, reasoning about whether to wait, and a thirty second delivery can cost a dozen round trips.</p>
+      <p>Put the wait inside the tool instead. One call blocks until the message lands or the timeout expires. The model makes a single decision, and the polling happens in Python where it costs nothing.</p>
+
+      <h2>Three tools</h2>
+
+      <pre><code>import os, re, time, requests
+from langchain_core.tools import tool
+
+API = "https://emptyinbox.me/api"
+HEADERS = {"Authorization": f"Bearer {os.environ['EMPTYINBOX_API_KEY']}"}
+
+
+@tool
+def create_inbox() -&gt; str:
+    """Create a fresh disposable email address and return it."""
+    r = requests.post(f"{API}/inbox", headers=HEADERS, timeout=10)
+    r.raise_for_status()
+    return r.text.strip()  # plain text, not JSON
+
+
+@tool
+def wait_for_message(address: str, timeout_seconds: int = 60) -&gt; str:
+    """Block until an email arrives at the address, then return its text body.
+
+    Poll inside the tool rather than asking the model to retry: one call, one
+    decision, no tokens spent on waiting.
+    """
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() &lt; deadline:
+        r = requests.get(f"{API}/messages", headers=HEADERS, timeout=10)
+        r.raise_for_status()
+        for m in r.json():
+            if m["inbox"] == address:
+                return f"From: {m['sender']}\nSubject: {m['subject']}\n\n{m['text_body']}"
+        time.sleep(3)
+    return f"No email arrived at {address} within {timeout_seconds} seconds."
+
+
+@tool
+def list_inboxes() -&gt; list:
+    """List every inbox this account owns, with creation timestamps."""
+    r = requests.get(f"{API}/inboxes", headers=HEADERS, timeout=10)
+    r.raise_for_status()
+    return r.json()</code></pre>
+
+      <p>Bind them the usual way and the agent handles the rest.</p>
+
+      <pre><code>from langchain.chat_models import init_chat_model
+from langgraph.prebuilt import create_react_agent
+
+model = init_chat_model("claude-sonnet-5", model_provider="anthropic")
+agent = create_react_agent(model, [create_inbox, wait_for_message, list_inboxes])
+
+result = agent.invoke({"messages": [
+    ("user", "Sign up for the service at example.com with a throwaway address "
+             "and confirm the verification code.")
+]})</code></pre>
+
+      <h2>Let the model do the extraction</h2>
+      <p>It is tempting to parse the code out with a regular expression and return only that. Resist it. Verification emails vary: six digits here, an eight character token there, sometimes only a link. A parser tuned to one service breaks silently on the next.</p>
+      <p>Returning the whole text body and letting the model find the code is more robust, and it is the thing language models are unambiguously good at. Keep the regular expression as a fallback in your own code if a downstream step needs the bare value.</p>
+
+      <h2>The OpenAPI route</h2>
+      <p>If you would rather not hand-write tools, the spec at <a href="/openapi.yaml">/openapi.yaml</a> describes every endpoint and loads into an OpenAPI toolkit directly. You get full coverage, including the payment endpoints, at the cost of a larger tool surface for the model to reason about.</p>
+      <p>For most agents the three hand-written tools are the better trade. Fewer tools, clearer names, and the blocking wait that the raw REST API does not provide.</p>
+
+      <h2>Timeouts and cost</h2>
+      <p>Sixty seconds is a reasonable default for the wait. Most verification mail arrives in a few seconds, and anything past a minute usually means the signup failed rather than that the mail is slow. Returning a clear message on timeout, as the tool above does, lets the agent report the failure instead of hanging.</p>
+      <p>Each <code>create_inbox</code> call consumes one credit. An agent that creates an inbox per task run through a few hundred tasks a month sits comfortably inside a $5 bundle.</p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h3>Should the agent poll for email itself?</h3>
+          <p>No. Put the retry loop inside the tool so a single call blocks until the message arrives. Model-driven polling spends a turn per attempt and adds latency without adding reliability.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Can I load the API as an OpenAPI toolkit instead?</h3>
+          <p>Yes. The spec at /openapi.yaml covers every endpoint. The trade is a larger tool surface and no blocking wait, since that behaviour lives in your wrapper rather than in the REST API.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Should the tool extract the verification code?</h3>
+          <p>Usually not. Return the full text body and let the model find the code. Formats vary between services, and a regular expression tuned to one of them fails quietly on the rest.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Does this work with CrewAI or a custom agent loop?</h3>
+          <p>Yes. The tools are ordinary Python functions wrapping HTTP calls, so any framework that accepts callables works the same way.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="blog-internal-link">
+      Using Claude with MCP rather than LangChain? <a href="/blog/how-to-give-your-claude-agent-an-email-inbox.html">One config line, no wrapper code &rarr;</a>
+    </div>
+
+    <div class="blog-internal-link">
+      Full endpoint reference with request and response examples: <a href="/docs.html">API Documentation &rarr;</a>
+    </div>
+
+    <div class="blog-cta">
+      <h3>Give your agent an inbox</h3>
+      <p>Free tier includes 5 inboxes. No credit card required.</p>
+      <a href="/login.html" class="btn">Get API Key</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">Disposable email infrastructure for AI agents and developers.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+            <a href="/use-cases/" class="footer-link">Use Cases</a>
+            <a href="/compare/" class="footer-link">Comparisons</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

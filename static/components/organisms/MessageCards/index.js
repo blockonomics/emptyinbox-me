@@ -49,10 +49,10 @@ function buildEmptyHTML() {
   return `
     <div class="msg-state-container">
       <svg class="msg-empty-svg" width="88" height="72" viewBox="0 0 88 72" fill="none" aria-hidden="true">
-        <rect x="8" y="22" width="72" height="46" rx="6" fill="oklch(0.975 0.012 162.5)" stroke="oklch(0.73 0.13 162.5)" stroke-width="1.5"/>
-        <path d="M8 32L44 54L80 32" stroke="oklch(0.73 0.13 162.5)" stroke-width="1.5" stroke-linejoin="round"/>
-        <path d="M32 8L56 8" stroke="oklch(0.82 0.08 162.5)" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M40 2L48 2" stroke="oklch(0.82 0.08 162.5)" stroke-width="1.5" stroke-linecap="round"/>
+        <rect class="msg-empty-envelope" x="8" y="22" width="72" height="46" rx="6" stroke-width="1.5"/>
+        <path class="msg-empty-flap" d="M8 32L44 54L80 32" stroke-width="1.5" stroke-linejoin="round"/>
+        <path class="msg-empty-tick" d="M32 8L56 8" stroke-width="1.5" stroke-linecap="round"/>
+        <path class="msg-empty-tick" d="M40 2L48 2" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
       <p class="msg-state-title">No messages yet</p>
       <p class="msg-state-sub">Share an inbox address to start receiving mail.</p>

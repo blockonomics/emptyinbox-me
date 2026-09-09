@@ -376,6 +376,24 @@
 
 .msg-empty-svg {
   margin-bottom: var(--space-2);
+  color: var(--color-primary);
+}
+
+/* Empty-state envelope: tinted from tokens so it survives the theme flip */
+.msg-empty-envelope {
+  fill: var(--color-primary-soft);
+  stroke: currentColor;
+}
+
+.msg-empty-flap {
+  fill: none;
+  stroke: currentColor;
+}
+
+.msg-empty-tick {
+  fill: none;
+  stroke: currentColor;
+  opacity: 0.55;
 }
 
 .msg-state-title {

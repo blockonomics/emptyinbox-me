@@ -1,0 +1,29 @@
+/* Question and answer blocks. Extracted from compare.css because the pricing
+   and docs pages carry an FAQ too, and one definition beats four that drift
+   apart. Every page using these classes also emits FAQPage structured data,
+   so the markup and the schema must keep saying the same thing. */
+
+/* FAQ, mirrored by FAQPage structured data in the head of each page. */
+.faq-list {
+  margin: 1.5rem 0 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--color-border);
+  padding: 1.1rem 0;
+}
+
+.faq-item h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.faq-item p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+}

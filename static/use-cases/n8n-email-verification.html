@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Verification in an n8n Workflow | EmptyInbox</title>
+  <meta name="description" content="Three HTTP Request nodes and a Wait node give an n8n workflow its own disposable inbox, so automations can read verification codes without a shared mailbox." />
+  <link rel="canonical" href="https://emptyinbox.me/use-cases/n8n-email-verification.html" />
+  <meta property="og:title" content="Email Verification in an n8n Workflow | EmptyInbox" />
+  <meta property="og:description" content="Three HTTP Request nodes and a Wait node give an n8n workflow its own disposable inbox, so automations can read verification codes without a shared mailbox." />
+  <meta property="og:image" content="https://emptyinbox.me/assets/og/n8n-email-verification.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://emptyinbox.me/use-cases/n8n-email-verification.html" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Email Verification in an n8n Workflow | EmptyInbox" />
+  <meta name="twitter:description" content="Three HTTP Request nodes and a Wait node give an n8n workflow its own disposable inbox, so automations can read verification codes without a shared mailbox." />
+  <meta name="twitter:image" content="https://emptyinbox.me/assets/og/n8n-email-verification.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://emptyinbox.me/" },
+      { "@type": "ListItem", "position": 2, "name": "Use Cases", "item": "https://emptyinbox.me/use-cases/" },
+      { "@type": "ListItem", "position": 3, "name": "n8n Email Verification", "item": "https://emptyinbox.me/use-cases/n8n-email-verification.html" }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is there an official n8n node for EmptyInbox?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No, and none is needed. Every endpoint is reachable from the built-in HTTP Request node with a Header Auth credential."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does the create inbox node fail with a JSON parse error?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "That endpoint returns the address as plain text. Set the node's response format to String rather than JSON."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I stop an email polling loop in n8n from running forever?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Set an execution timeout on the workflow, or keep an attempt counter in workflow static data and route to an error branch once it passes your limit."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need a new inbox for every workflow run?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Only if each run needs a distinct identity. Creating one inbox and reusing the address costs a single credit, and old messages still expire after 7 days."
+        }
+      }
+    ]
+  }
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+  <link rel="stylesheet" href="/css/compare.css" />
+  <link rel="stylesheet" href="/css/faq.css" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+  <header class="site-navbar">
+    <div class="navbar-container">
+      <a href="/" class="logo-link">
+        <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="site-logo" width="140" height="36">
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/login.html" class="nav-link"><span>Login</span></a>
+        <a href="/pricing.html" class="nav-link"><span>Pricing</span></a>
+        <a href="/docs.html" class="nav-link"><span>Docs</span></a>
+        <a href="/blog/" class="nav-link"><span>Blog</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-article-page compare-page">
+
+    <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>&rsaquo;</span>
+      <a href="/use-cases/">Use Cases</a>
+      <span>&rsaquo;</span>
+      <span>n8n Email Verification</span>
+    </nav>
+
+    <header>
+      <span class="blog-case-tag">Use Case</span>
+      <h1>Email Verification in an n8n Workflow</h1>
+      <p class="post-meta">Updated September 9, 2026 · 5 min read</p>
+    </header>
+
+    <div class="blog-tldr">
+      <strong>TL;DR</strong>
+      <ul>
+        <li>Three HTTP Request nodes cover it: create inbox, list messages, read the code</li>
+        <li>A Wait node plus an If node makes the polling loop, with no code node required</li>
+        <li>Store the API key as an n8n Header Auth credential rather than in the node</li>
+        <li>Each run consumes one inbox credit, so a scheduled workflow needs a credit budget</li>
+      </ul>
+    </div>
+
+    <div class="blog-verdict">
+      <strong>Verdict</strong>
+      n8n has no disposable email node, and it does not need one. The REST API is three HTTP Request nodes, and the polling loop is a Wait node wired back into an If node.
+    </div>
+
+    <div class="blog-body">
+
+      <h2>The shape of the workflow</h2>
+      <p>Any automation that signs up for something on your behalf hits the same wall: a code arrives by email and the workflow has no inbox to read. The fix is to create the address inside the workflow, so the run owns it end to end.</p>
+      <ol>
+        <li><strong>Create inbox</strong> — HTTP Request, POST, returns the address as plain text</li>
+        <li><strong>Do the thing</strong> — whatever your workflow already did, using that address</li>
+        <li><strong>List messages</strong> — HTTP Request, GET, returns everything on the account</li>
+        <li><strong>If</strong> — did a message for this address arrive yet?</li>
+        <li><strong>Wait</strong> — 5 seconds on the false branch, then back to step 3</li>
+        <li><strong>Extract</strong> — pull the code or link out of the message body</li>
+      </ol>
+
+      <h2>Credentials</h2>
+      <p>Register once, then create a Header Auth credential in n8n rather than pasting the key into each node. Name it something like <em>EmptyInbox API</em> and reuse it across every HTTP Request node in the workflow.</p>
+
+      <pre><code>curl -X POST https://emptyinbox.me/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "n8n-automation"}'
+
+# {"api_key": "ei...", "inbox_quota": 5}</code></pre>
+
+      <p>In the credential, set the header name to <code>Authorization</code> and the value to <code>Bearer ei...</code> with your key.</p>
+
+      <h2>Node 1: create the inbox</h2>
+      <p>Method POST, URL <code>https://emptyinbox.me/api/inbox</code>, your Header Auth credential, and response format set to <strong>String</strong>. That last setting matters: the endpoint returns the address as plain text, and leaving the format on JSON makes the node fail on a body that is not JSON.</p>
+      <p>Reference the result downstream as <code>{{ $json.data.trim() }}</code>, or whatever field name you gave the string output.</p>
+
+      <h2>Nodes 3 to 5: the polling loop</h2>
+      <p>The list endpoint returns every message on the account, so filter to the address this run created.</p>
+
+      <pre><code>// If node, condition (JavaScript expression)
+{{ $json.some(m =&gt; m.inbox === $('Create inbox').item.json.data.trim()) }}</code></pre>
+
+      <p>True branch continues to extraction. False branch goes to a Wait node set to 5 seconds, whose output connects back to the List messages node. That backward connection is the loop.</p>
+      <p>Give the loop a ceiling. n8n will happily cycle forever if the mail never arrives, so either cap the workflow with an execution timeout or keep a counter in static data and fail the run past a threshold.</p>
+
+      <h2>Node 6: extract the code</h2>
+      <p>A Set node with an expression is usually enough. For a six digit code:</p>
+
+      <pre><code>{{ $json.find(m =&gt; m.inbox === $('Create inbox').item.json.data.trim())
+     .text_body.match(/\b\d{6}\b/)[0] }}</code></pre>
+
+      <p>For a confirmation link, match on a URL pattern instead and feed the result into an HTTP Request node that visits it. Messages also carry <code>html_body</code>, <code>subject</code>, <code>sender</code> and <code>timestamp</code> if you need to assert on more than the body text.</p>
+
+      <h2>Cost of a scheduled workflow</h2>
+      <p>One inbox credit is consumed per inbox created, not per message received. A workflow that runs hourly and creates one inbox per run spends about 720 credits a month, which is roughly $38 at bulk rates. If the runs do not each need a fresh identity, create one inbox and reuse the address across runs, which costs a single credit.</p>
+      <p>Messages are deleted after 7 days, so a long-lived reused inbox does not accumulate storage.</p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h3>Is there an official n8n node for EmptyInbox?</h3>
+          <p>No, and none is needed. Every endpoint is reachable from the built-in HTTP Request node with a Header Auth credential.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Why does the create inbox node fail with a JSON parse error?</h3>
+          <p>That endpoint returns the address as plain text. Set the node's response format to String rather than JSON.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How do I stop the polling loop from running forever?</h3>
+          <p>Set an execution timeout on the workflow, or keep an attempt counter in workflow static data and route to an error branch once it passes your limit.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Do I need a new inbox for every workflow run?</h3>
+          <p>Only if each run needs a distinct identity. Creating one inbox and reusing the address costs a single credit, and old messages still expire after 7 days.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="blog-internal-link">
+      Driving this from an AI agent instead of a workflow? <a href="/use-cases/langchain-agent-email.html">Give a LangChain agent an inbox &rarr;</a>
+    </div>
+
+    <div class="blog-internal-link">
+      Full endpoint reference with request and response examples: <a href="/docs.html">API Documentation &rarr;</a>
+    </div>
+
+    <div class="blog-cta">
+      <h3>Unblock your automation</h3>
+      <p>Free tier includes 5 inboxes. No credit card required.</p>
+      <a href="/login.html" class="btn">Get API Key</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link">
+            <img src="/assets/emptyinboxlogo.png" alt="EmptyInbox Logo" class="footer-logo" width="120" height="31">
+          </a>
+          <p class="footer-brand-text">Disposable email infrastructure for AI agents and developers.</p>
+        </div>
+        <div class="footer-links">
+          <h3 class="footer-section-title">Product</h3>
+          <nav class="footer-nav">
+            <a href="/pricing.html" class="footer-link">Pricing</a>
+            <a href="/docs.html" class="footer-link">API Docs</a>
+            <a href="/use-cases/" class="footer-link">Use Cases</a>
+            <a href="/compare/" class="footer-link">Comparisons</a>
+          </nav>
+        </div>
+        <div class="footer-connect">
+          <h3 class="footer-section-title">Company</h3>
+          <nav class="footer-nav">
+            <a href="/about.html" class="footer-link">About</a>
+            <a href="/blog/" class="footer-link">Blog</a>
+            <a href="https://github.com/blockonomics/emptyinbox-me" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copyright">&copy; 2026 EmptyInbox.me. All rights reserved.</p>
+        <div class="footer-meta">
+          <a href="/privacy.html" class="footer-meta-link">Privacy</a>
+          <a href="/terms.html" class="footer-meta-link">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

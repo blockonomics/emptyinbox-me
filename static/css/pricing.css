@@ -363,3 +363,22 @@
   padding-top: var(--space-2);
   margin-top: var(--space-1);
 }
+
+/* Pricing FAQ. The question and answer styling itself lives in faq.css,
+   shared with the comparison and use-case pages; only the section framing
+   is here. Mirrored by FAQPage structured data in the page head. */
+.pricing-faq-section {
+  margin-top: var(--space-16);
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  animation: fadeInUp 0.7s var(--ease-out) 0.2s both;
+}
+
+.pricing-faq-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+}
