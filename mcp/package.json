@@ -1,6 +1,6 @@
 {
   "name": "emptyinbox-mcp",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "MCP server for EmptyInbox — disposable email inboxes for AI agents. Zero config: auto-registers on first run, no API key needed.",
   "keywords": ["mcp", "email", "disposable", "temporary", "ai-agent", "claude", "openai", "langchain", "inbox", "verification"],
   "license": "MIT",

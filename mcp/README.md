@@ -19,7 +19,7 @@ MCP server for [EmptyInbox](https://emptyinbox.me) — create disposable email i
 
 On first use, the agent calls `register_account` to create a free account automatically. The API key is saved to `~/.emptyinbox.json` for future sessions.
 
-**Bring your own account** (optional — for more than 1 inbox quota):
+**Bring your own account** (optional — to reuse an existing key):
 ```json
 {
   "mcpServers": {
@@ -45,6 +45,9 @@ Get an API key at https://emptyinbox.me/settings.html
 | `list_messages` | List received messages (optionally filter by inbox) |
 | `get_message` | Get full content of a message by ID |
 | `wait_for_message` | **Block until an email arrives** — perfect for signup/OTP flows |
+| `list_bundles` | List quota bundles and prices |
+| `buy_quota` | Get a Bitcoin address and amount to buy more inboxes |
+| `check_payment` | Check whether a payment landed and quota was credited |
 
 ## Example agent workflow
 
@@ -57,4 +60,12 @@ Get an API key at https://emptyinbox.me/settings.html
 
 ## Payment
 
-Free accounts include 5 inboxes. Buy more quota with BTC or USDT at https://emptyinbox.me/inboxes.html
+Every account starts with 5 inboxes. When they run out, `create_inbox` reports
+that quota is exhausted and the agent can buy more without leaving the session:
+
+1. `buy_quota` returns a Bitcoin address, the exact amount, and a BIP21 URI
+2. pay it from any wallet — or hand the BIP21 URI to a human to pay
+3. `check_payment` confirms the credit, usually within seconds of broadcast
+
+Quota is granted as soon as the payment is seen on the network, so there is no
+waiting for confirmations. Humans can also buy at https://emptyinbox.me/inboxes.html

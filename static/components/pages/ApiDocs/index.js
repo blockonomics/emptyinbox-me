@@ -77,7 +77,7 @@ export function renderApiDocsPage() {
           <span style="margin-left: auto; font-size: 0.75rem; color: #6b7280; font-family: monospace;">No auth required</span>
         </div>
         <div class="endpoint-body">
-          <p class="endpoint-description">Create a new account and get an API key. Agent accounts start with 1 inbox quota. Rate limited to 3 registrations per IP per 24 hours.</p>
+          <p class="endpoint-description">Create a new account and get an API key. Agent accounts start with 5 inbox quota, the same as human accounts. Rate limited to 3 registrations per IP per 24 hours.</p>
 
           <h4>Request Body</h4>
           <table class="parameter-table">
@@ -107,7 +107,7 @@ export function renderApiDocsPage() {
               <button class="copy-button" onclick="copyCode(this)">Copy</button>{
   "api_key": "eiXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   "username": "my-agent",
-  "inbox_quota": 1
+  "inbox_quota": 5
 }</div>
             <p><span class="status-code status-400">400 Bad Request</span> – Invalid or taken username</p>
             <p><span class="status-code status-429">429 Too Many Requests</span> – Rate limit exceeded</p>
@@ -137,7 +137,7 @@ export function renderApiDocsPage() {
             <div class="code-block" data-lang="json">
               <button class="copy-button" onclick="copyCode(this)">Copy</button>{
   "username": "my-agent",
-  "inbox_quota": 1
+  "inbox_quota": 5
 }</div>
           </div>
         </div>
@@ -158,7 +158,7 @@ export function renderApiDocsPage() {
           <span class="endpoint-path">/inbox</span>
         </div>
         <div class="endpoint-body">
-          <p class="endpoint-description">Creates a new disposable email inbox. Returns the email address as plain text. Each inbox consumes 1 from your quota. Agent accounts start with 1 inbox; human accounts start with 5. Buy more at <a href="/inboxes.html" style="color:#10b981;">emptyinbox.me/inboxes.html</a>.</p>
+          <p class="endpoint-description">Creates a new disposable email inbox. Returns the email address as plain text. Each inbox consumes 1 from your quota. All accounts start with 5 inboxes. When quota runs out this returns <strong>402</strong> with links for buying more with Bitcoin. Humans can also buy at <a href="/inboxes.html" style="color:#10b981;">emptyinbox.me/inboxes.html</a>.</p>
 
           <div class="response-example">
             <h4>Example Request</h4>
@@ -172,7 +172,7 @@ export function renderApiDocsPage() {
             <p><span class="status-code status-201">201 Created</span> – Returns the email address as plain text</p>
             <div class="code-block" data-lang="text">
               <button class="copy-button" onclick="copyCode(this)">Copy</button>clever.sunny.butterfly@emptyinbox.me</div>
-            <p><span class="status-code status-403">403 Forbidden</span> – Insufficient inbox quota</p>
+            <p><span class="status-code status-402">402 Payment Required</span> – Inbox quota exhausted; body carries <code>bundles_url</code> and <code>quote_url</code></p>
           </div>
         </div>
       </div>
@@ -348,9 +348,9 @@ export function renderApiDocsPage() {
             <td>Missing or invalid API key</td>
           </tr>
           <tr>
-            <td><span class="status-code status-403">403</span></td>
-            <td>Forbidden</td>
-            <td>Insufficient inbox quota</td>
+            <td><span class="status-code status-402">402</span></td>
+            <td>Payment Required</td>
+            <td>Inbox quota exhausted &mdash; buy more via POST /payments/quote</td>
           </tr>
           <tr>
             <td><span class="status-code status-404">404</span></td>
@@ -374,8 +374,8 @@ export function renderApiDocsPage() {
       </h2>
       <div class="auth-info">
         <ul style="margin-left: 1.5rem; color: #6b7280;">
-          <li style="margin-bottom: 0.5rem;">Agent accounts start with <strong>1 inbox quota</strong>; human accounts start with <strong>5</strong></li>
-          <li style="margin-bottom: 0.5rem;">Creating an inbox consumes 1 quota unit — buy more at <a href="/inboxes.html" style="color:#10b981;">emptyinbox.me/inboxes.html</a></li>
+          <li style="margin-bottom: 0.5rem;">All accounts start with <strong>5 inbox quota</strong></li>
+          <li style="margin-bottom: 0.5rem;">Creating an inbox consumes 1 quota unit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html" style="color:#10b981;">emptyinbox.me/inboxes.html</a></li>
           <li style="margin-bottom: 0.5rem;">Messages are automatically deleted after <strong>7 days</strong></li>
           <li style="margin-bottom: 0.5rem;">Registration is limited to <strong>3 new accounts per IP per 24 hours</strong></li>
           <li>Full OpenAPI 3.1 spec available at <a href="/openapi.yaml" style="color:#10b981;">/openapi.yaml</a></li>

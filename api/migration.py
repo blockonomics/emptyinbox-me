@@ -32,5 +32,53 @@ def migrate_passkey_challenges():
     conn.close()
     print("Migration completed: passkey_challenges table updated.")
 
+
+def migrate_btc_payments():
+    """Create the BTC payment tables. Additive - the USDT payment_intents
+    table is left alone."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS btc_payment_intents (
+            address           VARCHAR(64) NOT NULL,
+            user_id           VARCHAR(255) NOT NULL,
+            bundle            VARCHAR(32) NOT NULL,
+            quota             INTEGER NOT NULL,
+            usd_amount        INTEGER NOT NULL,
+            expected_satoshis BIGINT NOT NULL,
+            received_satoshis BIGINT NOT NULL DEFAULT 0,
+            status            VARCHAR(1) NOT NULL DEFAULT '0',
+            credited          BOOLEAN NOT NULL DEFAULT 0,
+            settled           BOOLEAN NOT NULL DEFAULT 0,
+            revoked           BOOLEAN NOT NULL DEFAULT 0,
+            txid              VARCHAR(66),
+            created_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+            expires_at        DATETIME NOT NULL,
+            credited_at       DATETIME,
+            PRIMARY KEY (address)
+        );
+    """)
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_btc_intents_user ON btc_payment_intents(user_id);")
+
+    # Composite key: one transaction can pay several of our addresses, and each
+    # (txid, addr, status) is delivered once on success plus retries.
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS payment_callbacks (
+            txid     VARCHAR(66) NOT NULL,
+            addr     VARCHAR(64) NOT NULL,
+            status   VARCHAR(1) NOT NULL,
+            value    BIGINT,
+            crypto   VARCHAR(8),
+            seen_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (txid, addr, status)
+        );
+    """)
+
+    conn.commit()
+    conn.close()
+    print("Migration completed: btc_payment_intents and payment_callbacks created.")
+
+
 if __name__ == "__main__":
-    migrate_passkey_challenges()
+    migrate_btc_payments()

@@ -11,7 +11,7 @@ import traceback
 from auth_utils import auth_required
 
 from db_models import AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus, PasskeyCredential, PasskeyChallenge
-from constants import USER_STARTING_QUOTA
+from constants import USER_STARTING_QUOTA, AGENT_STARTING_QUOTA
 
 # Add these imports for passkey functionality
 from cryptography.hazmat.primitives import hashes
@@ -630,7 +630,6 @@ def auth_logout(token):
 
 # In-memory rate limit store: {ip: [timestamp, ...]}
 _register_attempts: dict = {}
-AGENT_STARTING_QUOTA = 1
 REGISTER_LIMIT = 3       # max registrations
 REGISTER_WINDOW = 86400  # per 24 hours
 
@@ -671,7 +670,8 @@ def agent_register():
         db.session.add(user)
         db.session.commit()
 
-        app.logger.info(f"Agent registration: {username} from {ip}")
+        client_id = request.headers.get('X-Client', 'unknown')
+        app.logger.info(f"Agent registration: {username} from {ip} client={client_id}")
 
         return jsonify({
             'api_key': api_key,

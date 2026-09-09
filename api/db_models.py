@@ -113,6 +113,41 @@ class PaymentIntent(db.Model):
     status = db.Column(db.String(1), nullable=False, default="0")
 
 
+class BtcPaymentIntent(db.Model):
+    """A BTC quota purchase. Keyed by the per-order address, which is the only
+    join key the Blockonomics callback carries."""
+    __tablename__ = 'btc_payment_intents'
+
+    address = db.Column(db.String(64), primary_key=True)
+    user_id = db.Column(db.String(255), nullable=False, index=True)
+    bundle = db.Column(db.String(32), nullable=False)
+    quota = db.Column(db.Integer, nullable=False)
+    usd_amount = db.Column(db.Integer, nullable=False)          # whole USD
+    expected_satoshis = db.Column(db.BigInteger, nullable=False)
+    received_satoshis = db.Column(db.BigInteger, nullable=False, default=0)
+    status = db.Column(db.String(1), nullable=False, default=PaymentStatus.PENDING.value)
+    credited = db.Column(db.Boolean, nullable=False, default=False)   # quota granted (may be zero-conf)
+    settled = db.Column(db.Boolean, nullable=False, default=False)    # reached status >= 2
+    revoked = db.Column(db.Boolean, nullable=False, default=False)    # provisional credit clawed back
+    txid = db.Column(db.String(66))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    credited_at = db.Column(db.DateTime)
+
+
+class PaymentCallback(db.Model):
+    """Idempotency ledger. Blockonomics sends roughly one callback per status
+    per address, plus retries; the composite key collapses replays."""
+    __tablename__ = 'payment_callbacks'
+
+    txid = db.Column(db.String(66), primary_key=True)
+    addr = db.Column(db.String(64), primary_key=True)
+    status = db.Column(db.String(1), primary_key=True)
+    value = db.Column(db.BigInteger)
+    crypto = db.Column(db.String(8))
+    seen_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 def main():
     from config import app, db
     with app.app_context():

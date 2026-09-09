@@ -38,6 +38,40 @@ components:
         Usage: `Authorization: Bearer <your_api_key>`
 
   schemas:
+    PaymentQuote:
+      type: object
+      properties:
+        address:
+          type: string
+          description: Bitcoin address to pay. Unique to this quote.
+          example: bc1qexampleaddress
+        bundle:
+          type: string
+          example: starter
+        quota:
+          type: integer
+          description: Inboxes granted once payment is seen
+          example: 50
+        usd:
+          type: integer
+          example: 5
+        amount_satoshis:
+          type: integer
+          example: 5300
+        amount_btc:
+          type: string
+          example: "0.00005300"
+        bip21:
+          type: string
+          description: Wallet URI with address and amount prefilled
+          example: "bitcoin:bc1qexampleaddress?amount=0.00005300"
+        expires_at:
+          type: string
+          example: "2026-09-09T12:15:00Z"
+        status_url:
+          type: string
+          example: /api/payments/status/bc1qexampleaddress
+
     MessageSummary:
       type: object
       properties:
@@ -128,7 +162,7 @@ paths:
       summary: Register a new agent account
       description: |
         Creates a new account and returns an API key. No passkey or browser required.
-        Agent accounts start with 1 inbox quota. Rate limited to 3 registrations per IP per 24 hours.
+        Agent accounts start with 5 inbox quota, the same as human accounts. Rate limited to 3 registrations per IP per 24 hours.
         Save the returned `api_key` for all subsequent requests.
       security: []
       requestBody:
@@ -186,8 +220,9 @@ paths:
       summary: Create a new disposable email inbox
       description: |
         Creates a new inbox and returns its email address as plain text.
-        Each inbox consumes 1 from your quota. Agent accounts start with 1 inbox; human accounts start with 5.
-        Buy more quota at https://emptyinbox.me/inboxes.html
+        Each inbox consumes 1 from your quota. All accounts start with 5 inboxes.
+        When quota runs out this returns 402 with a link to POST /payments/quote,
+        which sells more quota for Bitcoin. Humans can also buy at https://emptyinbox.me/inboxes.html
       responses:
         "201":
           description: Inbox created — returns the email address
@@ -198,8 +233,25 @@ paths:
               example: clever.sunny.butterfly@emptyinbox.me
         "401":
           description: Missing or invalid API key
-        "403":
-          description: Insufficient inbox quota
+        "402":
+          description: |
+            Inbox quota exhausted. The body carries the URLs for buying more.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: insufficient_quota
+                  message:
+                    type: string
+                  bundles_url:
+                    type: string
+                    example: /api/payments/bundles
+                  quote_url:
+                    type: string
+                    example: /api/payments/quote
 
   /inboxes:
     get:
@@ -261,3 +313,141 @@ paths:
           description: Missing or invalid API key
         "404":
           description: Message not found
+
+  /payments/bundles:
+    get:
+      operationId: listBundles
+      summary: List quota bundles for sale
+      description: |
+        Public price list. Bundles are priced in USD and quoted in BTC at
+        purchase time. No authentication required.
+      security: []
+      responses:
+        "200":
+          description: Available bundles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  currency:
+                    type: string
+                    example: USD
+                  default:
+                    type: string
+                    example: starter
+                  bundles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: starter
+                        quota:
+                          type: integer
+                          example: 50
+                        usd:
+                          type: integer
+                          example: 5
+
+  /payments/quote:
+    post:
+      operationId: createQuote
+      summary: Quote a Bitcoin price for a quota bundle
+      description: |
+        Returns a payment address, the exact amount to send, and a BIP21 URI.
+        Send the amount from any Bitcoin wallet, then poll
+        GET /payments/status/{address}.
+
+        Quota is credited as soon as the transaction is seen on the network,
+        without waiting for confirmations, unless the transaction signals
+        Replace-By-Fee. That credit is provisional: if the transaction has not
+        confirmed within 6 hours it is reversed.
+
+        Idempotent per account. Calling it again while a quote is open returns
+        the same address rather than issuing a new one.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bundle:
+                  type: string
+                  description: Bundle id from /payments/bundles
+                  example: starter
+      responses:
+        "201":
+          description: Quote created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentQuote"
+        "200":
+          description: An open quote already existed and was returned unchanged
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentQuote"
+        "400":
+          description: Unknown bundle id
+        "401":
+          description: Missing or invalid API key
+        "409":
+          description: A previous payment is still awaiting confirmation
+        "502":
+          description: Payment provider unreachable
+
+  /payments/status/{address}:
+    get:
+      operationId: getPaymentStatus
+      summary: Check whether a Bitcoin payment has landed
+      description: |
+        `quota_credited` is what matters for creating inboxes; it can be true
+        while `settled` is still false, because credit is granted at zero
+        confirmations. `revoked` means a provisional credit was reversed after
+        the transaction failed to confirm.
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          example: bc1qexampleaddress
+      responses:
+        "200":
+          description: Payment state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  address:
+                    type: string
+                  status:
+                    type: integer
+                    description: 0 unconfirmed, 1 one confirmation, 2 confirmed
+                    example: 0
+                  expected_satoshis:
+                    type: integer
+                  received_satoshis:
+                    type: integer
+                  quota:
+                    type: integer
+                  quota_credited:
+                    type: boolean
+                  settled:
+                    type: boolean
+                  revoked:
+                    type: boolean
+                  txid:
+                    type: string
+                    nullable: true
+                  expires_at:
+                    type: string
+        "401":
+          description: Missing or invalid API key
+        "404":
+          description: No such quote for this account

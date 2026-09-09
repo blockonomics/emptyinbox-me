@@ -5,7 +5,7 @@ import { z } from "zod";
 import { readFileSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
-import { EmptyInboxClient, registerAgent } from "./client.js";
+import { EmptyInboxClient, registerAgent, QuotaExhaustedError } from "./client.js";
 
 const CONFIG_PATH = join(homedir(), ".emptyinbox.json");
 
@@ -45,7 +45,7 @@ const client = new EmptyInboxClient(apiKey);
 
 const server = new McpServer({
   name: "emptyinbox",
-  version: "1.0.0",
+  version: "1.1.0",
 });
 
 server.registerTool("register_account", {
@@ -90,8 +90,19 @@ server.registerTool("get_quota", {
 server.registerTool("create_inbox", {
   description: "Create a new disposable email inbox. Returns the email address. Use this before triggering any signup or email verification flow.",
 }, async () => {
-  const email = await client.createInbox();
-  return { content: [{ type: "text" as const, text: email.trim() }] };
+  try {
+    const email = await client.createInbox();
+    return { content: [{ type: "text" as const, text: email.trim() }] };
+  } catch (err) {
+    if (err instanceof QuotaExhaustedError) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({
+        error: "insufficient_quota",
+        message: "Out of inbox quota. Call buy_quota to purchase more with Bitcoin.",
+        ...err.detail,
+      }, null, 2) }] };
+    }
+    throw err;
+  }
 });
 
 server.registerTool("list_inboxes", {
@@ -153,6 +164,51 @@ server.registerTool("wait_for_message", {
   }
 
   return { content: [{ type: "text" as const, text: JSON.stringify({ result: "timeout", inbox, timeout_seconds }) }] };
+});
+
+server.registerTool("buy_quota", {
+  description: "Buy more inbox quota with Bitcoin. Returns a payment address, the exact amount, and a BIP21 URI. Pay from a Bitcoin wallet, or give the BIP21 URI to the user to pay. Quota is granted as soon as the payment is seen on the network - no need to wait for confirmations. Call check_payment afterwards.",
+  inputSchema: {
+    bundle: z.string().optional().describe("Bundle id from list_bundles (default: the cheapest)"),
+  },
+}, async ({ bundle }) => {
+  const quote = await client.createQuote(bundle);
+  return { content: [{ type: "text" as const, text: JSON.stringify({
+    ...quote,
+    instructions: `Send exactly ${quote.amount_btc} BTC to ${quote.address}. ` +
+      `Grants ${quote.quota} inboxes. Quote expires ${quote.expires_at}.`,
+  }, null, 2) }] };
+});
+
+server.registerTool("list_bundles", {
+  description: "List the quota bundles available for purchase and their USD prices.",
+}, async () => {
+  const bundles = await client.getBundles();
+  return { content: [{ type: "text" as const, text: JSON.stringify(bundles, null, 2) }] };
+});
+
+server.registerTool("check_payment", {
+  description: "Check whether a Bitcoin payment from buy_quota has landed. Optionally waits until the quota is credited. Credit usually arrives within seconds of broadcast, well before confirmation.",
+  inputSchema: {
+    address: z.string().describe("Payment address returned by buy_quota"),
+    wait_seconds: z.number().default(0).describe("Seconds to keep polling for credit (default: 0, check once)"),
+    poll_interval_seconds: z.number().default(5).describe("Seconds between checks (default: 5)"),
+  },
+}, async ({ address, wait_seconds, poll_interval_seconds }) => {
+  const deadline = Date.now() + wait_seconds * 1000;
+
+  let state = await client.getPaymentStatus(address);
+  while (!state.quota_credited && Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, poll_interval_seconds * 1000));
+    state = await client.getPaymentStatus(address);
+  }
+
+  return { content: [{ type: "text" as const, text: JSON.stringify({
+    ...state,
+    message: state.quota_credited
+      ? `${state.quota} inboxes credited. create_inbox will now succeed.`
+      : "Payment not yet detected. Send the exact amount, then check again.",
+  }, null, 2) }] };
 });
 
 const transport = new StdioServerTransport();

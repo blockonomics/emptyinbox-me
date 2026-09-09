@@ -106,6 +106,18 @@
             </a>
           </div>
           <div class="nav-group">
+            <span class="nav-group-label">Payments</span>
+            <a href="#payments-bundles" class="nav-link">
+              <span class="nav-method nav-get">GET</span>/payments/bundles
+            </a>
+            <a href="#payments-quote" class="nav-link">
+              <span class="nav-method nav-post">POST</span>/payments/quote
+            </a>
+            <a href="#payments-status" class="nav-link">
+              <span class="nav-method nav-get">GET</span>/payments/status/{address}
+            </a>
+          </div>
+          <div class="nav-group">
             <span class="nav-group-label">Reference</span>
             <a href="#error-codes" class="nav-link">Error Codes</a>
             <a href="#limits" class="nav-link">Limits &amp; Notes</a>
@@ -211,7 +223,7 @@
             <span class="endpoint-tag">No auth required</span>
           </div>
           <div class="endpoint-body">
-            <p class="endpoint-description">Create a new account and get an API key. Agent accounts start with 1 inbox quota. Rate limited to 3 registrations per IP per 24 hours.</p>
+            <p class="endpoint-description">Create a new account and get an API key. Agent accounts start with 5 inbox quota, the same as human accounts. Rate limited to 3 registrations per IP per 24 hours.</p>
 
             <h4>Request Body</h4>
             <table class="parameter-table">
@@ -250,7 +262,7 @@
                 <pre><code>{
   "api_key": "eiXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   "username": "my-agent",
-  "inbox_quota": 1
+  "inbox_quota": 5
 }</code></pre>
               </div>
               <p><span class="status-code status-400">400 Bad Request</span> — Invalid or taken username</p>
@@ -289,7 +301,7 @@
                 </div>
                 <pre><code>{
   "username": "my-agent",
-  "inbox_quota": 1
+  "inbox_quota": 5
 }</code></pre>
               </div>
             </div>
@@ -307,7 +319,7 @@
             <code class="endpoint-path">/inbox</code>
           </div>
           <div class="endpoint-body">
-            <p class="endpoint-description">Creates a new disposable email inbox. Returns the email address as plain text. Each inbox consumes 1 from your quota. Agent accounts start with 1 inbox; human accounts start with 5. Buy more at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a>.</p>
+            <p class="endpoint-description">Creates a new disposable email inbox. Returns the email address as plain text. Each inbox consumes 1 from your quota. All accounts start with 5 inboxes. When quota runs out this returns <strong>402</strong> with links for buying more with Bitcoin. Humans can also buy at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a>.</p>
 
             <div class="response-example">
               <h4>Example Request</h4>
@@ -331,7 +343,7 @@
                 </div>
                 <pre><code>clever.sunny.butterfly@emptyinbox.me</code></pre>
               </div>
-              <p><span class="status-code status-403">403 Forbidden</span> — Insufficient inbox quota</p>
+              <p><span class="status-code status-402">402 Payment Required</span> — Inbox quota exhausted; body carries <code>bundles_url</code> and <code>quote_url</code></p>
             </div>
           </div>
         </div>
@@ -511,6 +523,142 @@
         </div>
       </section>
 
+      <!-- Payments -->
+      <section class="docs-section" id="payments">
+        <h2>Payments</h2>
+        <p>Agents buy inbox quota with Bitcoin without leaving the API. Quota is credited as soon as the payment is seen on the network &mdash; there is no wait for confirmations, unless the transaction signals Replace-By-Fee.</p>
+
+        <div class="endpoint" id="payments-bundles">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <code class="endpoint-path">/payments/bundles</code>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description">Public price list. No authentication required.</p>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl "https://emptyinbox.me/api/payments/bundles"</code></pre>
+              </div>
+            </div>
+
+            <div class="response-example">
+              <h4>Response</h4>
+              <p><span class="status-code status-200">200 OK</span></p>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">json</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>{
+  "currency": "USD",
+  "default": "starter",
+  "bundles": [
+    { "id": "starter",  "quota": 50,  "usd": 5 },
+    { "id": "standard", "quota": 200, "usd": 15 },
+    { "id": "bulk",     "quota": 750, "usd": 40 }
+  ]
+}</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" id="payments-quote">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-post">POST</span>
+            <code class="endpoint-path">/payments/quote</code>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description">Returns a Bitcoin address, the exact amount to send, and a BIP21 URI. Idempotent per account: calling it again while a quote is open returns the same address rather than issuing a new one. Quotes expire after 15 minutes.</p>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl -X POST "https://emptyinbox.me/api/payments/quote"   -H "Authorization: Bearer YOUR_API_KEY"   -H "Content-Type: application/json"   -d '{"bundle": "starter"}'</code></pre>
+              </div>
+            </div>
+
+            <div class="response-example">
+              <h4>Response</h4>
+              <p><span class="status-code status-201">201 Created</span></p>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">json</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>{
+  "address": "bc1qexampleaddress",
+  "bundle": "starter",
+  "quota": 50,
+  "usd": 5,
+  "amount_satoshis": 5300,
+  "amount_btc": "0.00005300",
+  "bip21": "bitcoin:bc1qexampleaddress?amount=0.00005300",
+  "expires_at": "2026-09-09T12:15:00Z",
+  "status_url": "/api/payments/status/bc1qexampleaddress"
+}</code></pre>
+              </div>
+              <p><span class="status-code status-409">409 Conflict</span> &mdash; a previous payment is still awaiting confirmation</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" id="payments-status">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <code class="endpoint-path">/payments/status/{address}</code>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description"><code>quota_credited</code> is what matters for creating inboxes &mdash; it can be true while <code>settled</code> is still false, because credit is granted at zero confirmations. <code>revoked</code> means a provisional credit was reversed after the transaction failed to confirm within 6 hours.</p>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl "https://emptyinbox.me/api/payments/status/bc1qexampleaddress"   -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+              </div>
+            </div>
+
+            <div class="response-example">
+              <h4>Response</h4>
+              <p><span class="status-code status-200">200 OK</span></p>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">json</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>{
+  "address": "bc1qexampleaddress",
+  "status": 0,
+  "expected_satoshis": 5300,
+  "received_satoshis": 5300,
+  "quota": 50,
+  "quota_credited": true,
+  "settled": false,
+  "revoked": false,
+  "txid": "aed36253434b90e45ded86ccf1729f5d",
+  "expires_at": "2026-09-09T12:15:00Z"
+}</code></pre>
+              </div>
+              <p><span class="status-code status-404">404 Not Found</span> &mdash; no such quote for this account</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Error Codes -->
       <section class="docs-section" id="error-codes">
         <h2>Error Codes</h2>
@@ -523,9 +671,14 @@
               <td>Missing or invalid API key</td>
             </tr>
             <tr>
-              <td><span class="status-code status-403">403</span></td>
-              <td>Forbidden</td>
-              <td>Insufficient inbox quota</td>
+              <td><span class="status-code status-402">402</span></td>
+              <td>Payment Required</td>
+              <td>Inbox quota exhausted &mdash; buy more via POST /payments/quote</td>
+            </tr>
+            <tr>
+              <td><span class="status-code status-409">409</span></td>
+              <td>Conflict</td>
+              <td>A previous Bitcoin payment is still awaiting confirmation</td>
             </tr>
             <tr>
               <td><span class="status-code status-404">404</span></td>
@@ -546,8 +699,8 @@
         <h2>Limits &amp; Notes</h2>
         <div class="info-block">
           <ul class="limits-list">
-            <li>Agent accounts start with <strong>1 inbox quota</strong>; human accounts start with <strong>5</strong></li>
-            <li>Creating an inbox consumes 1 quota unit — buy more at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a></li>
+            <li>All accounts start with <strong>5 inbox quota</strong></li>
+            <li>Creating an inbox consumes 1 quota unit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a></li>
             <li>Messages are automatically deleted after <strong>7 days</strong></li>
             <li>Registration is limited to <strong>3 new accounts per IP per 24 hours</strong></li>
             <li>Full OpenAPI 3.1 spec available at <a href="/openapi.yaml">/openapi.yaml</a></li>

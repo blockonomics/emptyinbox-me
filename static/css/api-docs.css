@@ -531,7 +531,7 @@
   color: oklch(0.42 0.13 162);
 }
 
-.status-400, .status-401, .status-403, .status-404, .status-429 {
+.status-400, .status-401, .status-402, .status-403, .status-404, .status-409, .status-429 {
   background: oklch(0.965 0.04 25);
   color: oklch(0.45 0.16 25);
 }

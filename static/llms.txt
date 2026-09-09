@@ -33,6 +33,9 @@ npm package: `emptyinbox-mcp`
 - `GET /api/inboxes` — list all inboxes `[{inbox, created_at}]`
 - `GET /api/messages` — list all messages `[{id, inbox, subject, text_body, html_body, sender, timestamp}]`
 - `GET /api/message/{id}` — get full message content
+- `GET /api/payments/bundles` — quota bundles for sale, no auth required
+- `POST /api/payments/quote` — get a Bitcoin address and amount to buy quota `{bundle}`
+- `GET /api/payments/status/{address}` — check whether a payment landed and quota was credited
 
 ## Typical Agent Workflow
 
@@ -43,11 +46,22 @@ npm package: `emptyinbox-mcp`
 
 The MCP `wait_for_message` tool handles the polling loop automatically.
 
+## Buying More Quota
+
+When quota runs out, `POST /api/inbox` returns `402` with `bundles_url` and `quote_url`.
+
+1. `POST /api/payments/quote` → returns a Bitcoin address, exact amount, and BIP21 URI
+2. Pay from any Bitcoin wallet, or hand the BIP21 URI to a human to pay
+3. `GET /api/payments/status/{address}` → poll until `quota_credited` is true
+
+Quota is credited as soon as the payment is seen on the network, without waiting
+for confirmations. The MCP tools `buy_quota` and `check_payment` wrap this flow.
+
 ## Pricing
 
-- Free: 5 inboxes per account
-- Paid: 1 USDT or equivalent BTC per 10 additional inboxes
-- Payments via Blockonomics (USDT) — no credit card, no KYC
+- Free: 5 inboxes per account, agents included
+- Paid: 10 inboxes per USD — bundles at $5 / 50, $15 / 200, $40 / 750
+- Payments via Blockonomics: Bitcoin for agents, BTC or USDT for humans — no credit card, no KYC
 
 ## Pages
 

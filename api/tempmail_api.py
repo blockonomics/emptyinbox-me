@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, jsonify
 from config import app,db
 from db_models import Message, Inbox, User
 from email.parser import Parser
@@ -132,7 +132,14 @@ def create_mailbox(token):
     '''Creates new inbox'''
     api_key = get_api_key_from_token(token)
     if not is_quota_available(api_key):
-        return "Insufficient Inbox quota", 403
+        # 402 so an agent can tell "out of quota, here is how to buy more"
+        # apart from "not allowed".
+        return jsonify({
+            'error': 'insufficient_quota',
+            'message': 'Inbox quota exhausted. Buy more with Bitcoin.',
+            'bundles_url': '/api/payments/bundles',
+            'quote_url': '/api/payments/quote',
+        }), 402
     email_address = f'{get_mailboxname()}@{DOMAIN}'
     db.session.add(Inbox(api_key=api_key, inbox=email_address))
     #We used one inbox, decrease quota
