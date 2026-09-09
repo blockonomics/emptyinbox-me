@@ -42,9 +42,9 @@ Get an API key at https://emptyinbox.me/settings.html
 |------|-------------|
 | `create_inbox` | Create a new disposable email address |
 | `list_inboxes` | List all inboxes on your account |
-| `list_messages` | List received messages (optionally filter by inbox) |
-| `get_message` | Get full content of a message by ID |
-| `wait_for_message` | **Block until an email arrives** — perfect for signup/OTP flows |
+| `list_messages` | List received messages, each with its extracted code, action link and text preview |
+| `get_message` | Get one message parsed (code, links, plain text), or `format="text"` for a flat rendering |
+| `wait_for_message` | **Block until an email arrives** — perfect for signup/OTP flows; returns the extracted code with it |
 | `list_bundles` | List quota bundles and prices |
 | `buy_quota` | Get a Bitcoin address and amount to buy more inboxes |
 | `check_payment` | Check whether a payment landed and quota was credited |

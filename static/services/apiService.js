@@ -30,7 +30,8 @@ export async function fetchUserData() {
 
 // 📬 Fetch messages
 export async function fetchMessages() {
-  const response = await fetch(`${API_BASE_URL}/api/messages`, {
+  // The endpoint pages by default; the list view shows the whole history.
+  const response = await fetch(`${API_BASE_URL}/api/messages?limit=200`, {
     credentials: "include",
   });
   if (!response.ok) throw new Error("Failed to fetch messages");

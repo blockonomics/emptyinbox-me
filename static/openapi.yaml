@@ -12,7 +12,7 @@ info:
     2. `POST /inbox` — create a disposable address
     3. Trigger an external signup/verification using that address
     4. `GET /messages` — poll until the email arrives
-    5. Read the verification code or link from the message body
+    5. Read `code` or `action_url` off the message — the API extracts both for you
 
     Or use the [emptyinbox-mcp](https://www.npmjs.com/package/emptyinbox-mcp) package — auto-registers on first run, no setup needed.
 
@@ -72,8 +72,12 @@ components:
           type: string
           example: /api/payments/status/bc1qexampleaddress
 
-    MessageSummary:
+    Message:
       type: object
+      description: |
+        A received email, already parsed. `code`, `action_url`, `links` and
+        `text` are extracted server-side, so no HTML parsing is needed to act
+        on a verification mail.
       properties:
         id:
           type: string
@@ -81,40 +85,80 @@ components:
         inbox:
           type: string
           example: "clever.sunny.butterfly@emptyinbox.me"
+        to:
+          type: array
+          description: Envelope recipients
+          items:
+            type: string
         subject:
           type: string
           example: "Confirm your email address"
-        text_body:
-          type: string
-          example: "Your verification code is 482910"
-        html_body:
-          type: string
-          example: "<p>Your verification code is <strong>482910</strong></p>"
         sender:
+          type: string
+          description: Raw From header
+          example: "Example App <noreply@example.com>"
+        from_name:
+          type: string
+          example: "Example App"
+        from_email:
           type: string
           example: "noreply@example.com"
         timestamp:
           type: integer
           description: Unix timestamp
           example: 1711234567
-
-    MessageFull:
-      type: object
-      properties:
-        recipients:
+        received_at:
+          type: string
+          format: date-time
+          example: "2024-03-23T21:36:07Z"
+        type:
+          type: string
+          description: What the mail is asking for
+          enum: [verification, password_reset, login_link, general]
+          example: verification
+        code:
+          type: [string, "null"]
+          description: Best one-time code found in the body, or null
+          example: "482910"
+        codes:
           type: array
+          description: All code candidates, most confident first
           items:
             type: string
-        headers:
-          type: object
-          additionalProperties:
-            type: string
+        action_url:
+          type: [string, "null"]
+          description: The single link worth opening for this message type
+          example: "https://example.com/verify?token=abc123"
+        links:
+          type: array
+          description: Every link in the mail, with its anchor text
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+              text:
+                type: string
+              unsubscribe:
+                type: boolean
+                description: Present and true for list-management links
+        preview:
+          type: string
+          description: First 200 characters of the plain-text body
+          example: "Your verification code is 482910. It expires in 10 minutes."
+        has_html:
+          type: boolean
+        text:
+          type: string
+          description: Body as plain text — the HTML part flattened when there is no text part. Omitted when `include_body=false`.
+          example: "Your verification code is 482910. It expires in 10 minutes."
         text_body:
           type: string
+          description: Raw text/plain MIME part (may be empty). Omitted when `include_body=false`.
         html_body:
           type: string
-        sender:
-          type: string
+          description: Raw text/html MIME part (may be empty). Omitted when `include_body=false`.
+          example: "<p>Your verification code is <strong>482910</strong></p>"
 
     Inbox:
       type: object
@@ -273,11 +317,41 @@ paths:
   /messages:
     get:
       operationId: listMessages
-      summary: List all received messages
+      summary: List received messages
       description: |
-        Returns all messages across all inboxes, newest first.
-        Poll this endpoint after triggering a signup or verification flow to wait for the email.
+        Messages across all inboxes, newest first, each one already parsed into
+        `code`, `action_url`, `links` and plain `text`.
+
+        Poll this after triggering a signup or verification flow. Pass `inbox`
+        and `since` so a poll returns only what is new instead of the whole
+        history, and `include_body=false` to leave the raw bodies out.
         Messages are automatically deleted after 7 days.
+      parameters:
+        - name: inbox
+          in: query
+          description: Only messages delivered to this inbox address
+          schema:
+            type: string
+          example: clever.sunny.butterfly@emptyinbox.me
+        - name: since
+          in: query
+          description: Only messages received after this Unix timestamp
+          schema:
+            type: integer
+          example: 1711234567
+        - name: limit
+          in: query
+          description: Maximum messages to return (default 50, max 200)
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+        - name: include_body
+          in: query
+          description: Include `text`, `text_body` and `html_body` (default true)
+          schema:
+            type: boolean
+            default: true
       responses:
         "200":
           description: Array of messages
@@ -286,15 +360,18 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/MessageSummary"
+                  $ref: "#/components/schemas/Message"
         "401":
           description: Missing or invalid API key
 
   /message/{msgid}:
     get:
       operationId: getMessage
-      summary: Get full content of a specific message
-      description: Returns the raw parsed email content including all headers and body parts.
+      summary: Get one message
+      description: |
+        Returns the parsed message. `format=text` returns the whole mail as
+        flat text, ready to drop into a prompt; `format=raw` returns the
+        untouched stored MIME parts and headers.
       parameters:
         - name: msgid
           in: path
@@ -302,13 +379,32 @@ paths:
           schema:
             type: string
           example: a1b2c3d4
+        - name: format
+          in: query
+          description: Response shape
+          schema:
+            type: string
+            enum: [json, text, raw]
+            default: json
       responses:
         "200":
-          description: Full message content
+          description: Message content
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MessageFull"
+                $ref: "#/components/schemas/Message"
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  From: Example App <noreply@example.com>
+                  To: clever.sunny.butterfly@emptyinbox.me
+                  Date: 2024-03-23T21:36:07Z
+                  Subject: Confirm your email address
+                  Code: 482910
+                  Action URL: https://example.com/verify?token=abc123
+
+                  Your verification code is 482910. It expires in 10 minutes.
         "401":
           description: Missing or invalid API key
         "404":

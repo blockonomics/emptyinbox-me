@@ -13,6 +13,7 @@ import re
 import logging
 from words import adjectives, nouns
 from auth_utils import auth_required, get_api_key_from_token
+import message_parse
 
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
 IS_DEV = FLASK_ENV == 'development'
@@ -42,78 +43,132 @@ DOMAIN = os.getenv('DOMAIN')
 app.register_blueprint(auth_bp, url_prefix=url_prefix + '/auth')
 app.register_blueprint(payments_bp, url_prefix=url_prefix + '/payments')
 
+MAX_MESSAGE_LIMIT = 200
+DEFAULT_MESSAGE_LIMIT = 50
+
+
+def decode_content(blob):
+    '''The stored blob as a dict, or None when it can't be read.'''
+    if not blob:
+        return {}
+    try:
+        return json.loads(blob.decode('utf-8'))
+    except (json.JSONDecodeError, UnicodeDecodeError, AttributeError):
+        return None
+
+
+def bool_arg(name, default=True):
+    raw = request.args.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() not in ('0', 'false', 'no', 'off')
+
+
+def int_arg(name, default=None, minimum=None, maximum=None):
+    raw = request.args.get(name)
+    if raw is None or raw == '':
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        return default
+    if minimum is not None:
+        value = max(minimum, value)
+    if maximum is not None:
+        value = min(maximum, value)
+    return value
+
+
 @app.route(f'{url_prefix}/messages', methods=['GET'])
 @auth_required
 def get_messages(token):
-    '''Returns message list(id, inbox, subject, content, timestamp, sender)'''
+    '''List messages newest first, already parsed into code/links/text.
+
+    Filters (inbox, since, limit) run in SQL rather than in the caller, so an
+    agent polling for one verification email doesn't have to pull down every
+    message it has ever received to find it.
+    '''
     api_key = get_api_key_from_token(token)
-    messages = db.session.query(
-        Message.id, 
-        Message.inbox, 
-        Message.subject, 
+    include_body = bool_arg('include_body', True)
+    limit = int_arg('limit', DEFAULT_MESSAGE_LIMIT, minimum=1, maximum=MAX_MESSAGE_LIMIT)
+    since = int_arg('since')
+    inbox_filter = request.args.get('inbox')
+
+    query = db.session.query(
+        Message.id,
+        Message.inbox,
+        Message.subject,
         Message.content,
         Message.timestamp
     ).join(
         Inbox, Message.inbox == Inbox.inbox
     ).filter(
-        Inbox.api_key==api_key
-    ).order_by(
-        Message.timestamp.desc()
-    ).all()
-    
-    if not messages:
-        messages = []
-    else:
-        result_messages = []
-        for row in messages:
-            try:
-                # Parse the JSON content blob
-                content_json = json.loads(row.content.decode('utf-8')) if row.content else {}
-                
-                # Extract relevant fields
-                html_body = content_json.get('html_body', '')
-                text_body = content_json.get('text_body', '')
-                sender = content_json.get('sender', 'Unknown')
-                
-                # Get sender from headers if available
-                headers = content_json.get('headers', {})
-                from_header = headers.get('From', sender)
-                
-                result_messages.append(dict(
-                    id=row.id,
-                    inbox=row.inbox, 
-                    subject=row.subject,
-                    html_body=html_body,
-                    text_body=text_body,
-                    sender=from_header,
-                    timestamp=row.timestamp
-                ))
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                # Fallback for malformed content
-                result_messages.append(dict(
-                    id=row.id,
-                    inbox=row.inbox, 
-                    subject=row.subject,
-                    html_body='',
-                    text_body='',
-                    sender='Unknown',
-                    timestamp=row.timestamp
-                ))
-        
-        messages = result_messages
-        
-    return messages
+        Inbox.api_key == api_key
+    )
+
+    if inbox_filter:
+        query = query.filter(Message.inbox == inbox_filter)
+    if since is not None:
+        query = query.filter(Message.timestamp > since)
+
+    rows = query.order_by(Message.timestamp.desc()).limit(limit).all()
+
+    result_messages = []
+    for row in rows:
+        content_json = decode_content(row.content)
+        if content_json is None:
+            # Malformed blob: still list the message so the id stays reachable.
+            result_messages.append(message_parse.normalize(
+                row.id, row.inbox, row.subject, row.timestamp, {}, include_body
+            ))
+            continue
+        result_messages.append(message_parse.normalize(
+            row.id, row.inbox, row.subject, row.timestamp, content_json, include_body
+        ))
+
+    return result_messages
 
 @app.route(f'{url_prefix}/message/<msgid>', methods=['GET'])
 @auth_required
 def get_message(token, msgid):
-    '''Returns message content for the given message id'''
+    '''One message. `format=json` (default), `text` for a flat prompt-ready
+    rendering, or `raw` for the untouched stored MIME parts.'''
     api_key = get_api_key_from_token(token)
-    row = db.session.query(Message.content).join(Inbox, Message.inbox == Inbox.inbox).filter(Inbox.api_key==api_key).filter(Message.id==msgid).first()
+    row = db.session.query(
+        Message.id,
+        Message.inbox,
+        Message.subject,
+        Message.content,
+        Message.timestamp
+    ).join(
+        Inbox, Message.inbox == Inbox.inbox
+    ).filter(
+        Inbox.api_key == api_key
+    ).filter(
+        Message.id == msgid
+    ).first()
+
     if not row:
-        return "msgid doesn't exist", 404
-        
-    return row.content, 200
+        return jsonify({'error': 'not_found', 'message': "msgid doesn't exist"}), 404
+
+    fmt = (request.args.get('format') or 'json').lower()
+    if fmt == 'raw':
+        return row.content or b'{}', 200, {'Content-Type': 'application/json'}
+
+    content_json = decode_content(row.content)
+    if content_json is None:
+        return jsonify({'error': 'unreadable_content', 'id': row.id}), 500
+
+    message = message_parse.normalize(
+        row.id, row.inbox, row.subject, row.timestamp, content_json
+    )
+
+    if fmt == 'text':
+        return message_parse.to_plain_text(message), 200, {
+            'Content-Type': 'text/plain; charset=utf-8'
+        }
+
+    return jsonify(message), 200
 
 def get_mailboxname():
     adjective_part = '.'.join(random.choices(adjectives, k=2))

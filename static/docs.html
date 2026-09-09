@@ -54,7 +54,7 @@
         "name": "Is there an endpoint that waits for a message to arrive?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Not over REST. Poll GET /messages and filter on the inbox field. The MCP server exposes wait_for_message, which does that polling for you and blocks until the mail lands."
+          "text": "Not over REST. Poll GET /messages?inbox=...&since=<last timestamp> so each call returns only what has arrived since the previous one. The MCP server exposes wait_for_message, which does that polling for you and blocks until the mail lands."
         }
       },
       {
@@ -70,7 +70,7 @@
         "name": "Does listing messages return mail from every inbox?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes. GET /messages returns everything on the account, with each message carrying the inbox it arrived at. Filter client-side when a test or agent owns several inboxes at once."
+          "text": "By default yes, with each message carrying the inbox it arrived at. Pass ?inbox=<address> to narrow the listing server-side when a test or agent owns several inboxes at once."
         }
       },
       {
@@ -254,7 +254,7 @@
             <li><span class="workflow-step">2</span>Call <code>POST /inbox</code> to create a disposable address</li>
             <li><span class="workflow-step">3</span>Trigger signup or verification using that address</li>
             <li><span class="workflow-step">4</span>Poll <code>GET /messages</code> until the email arrives</li>
-            <li><span class="workflow-step">5</span>Read the code or link from <code>text_body</code></li>
+            <li><span class="workflow-step">5</span>Read <code>code</code> or <code>action_url</code> straight off the message — no parsing needed</li>
           </ol>
         </div>
       </section>

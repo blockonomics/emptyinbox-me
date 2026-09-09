@@ -4,22 +4,45 @@ export const BASE_URL = process.env.EMPTYINBOX_BASE_URL ?? "https://emptyinbox.m
 // REST clients. Without it, registrations are indistinguishable in the logs.
 export const CLIENT_ID = "emptyinbox-mcp/1.1.0";
 
-export interface MessageSummary {
-  id: string;
-  inbox: string;
-  subject: string;
-  text_body: string;
-  html_body: string;
-  sender: string;
-  timestamp: number;
+export interface MessageLink {
+  url: string;
+  text: string;
+  unsubscribe?: boolean;
 }
 
-export interface MessageFull {
-  recipients: string[];
-  headers: Record<string, string>;
-  text_body: string;
-  html_body: string;
+/** The parsed shape the API returns for every message. */
+export interface Message {
+  id: string;
+  inbox: string;
+  to: string[];
+  subject: string;
   sender: string;
+  from_name: string;
+  from_email: string;
+  timestamp: number;
+  received_at: string | null;
+  /** What the mail wants: verification | password_reset | login_link | general */
+  type: string;
+  /** Best one-time code found in the body, if any. */
+  code: string | null;
+  codes: string[];
+  /** The one link worth opening for this message type, if any. */
+  action_url: string | null;
+  links: MessageLink[];
+  preview: string;
+  has_html: boolean;
+  /** Body fields are omitted when a listing is fetched with include_body=false. */
+  text?: string;
+  text_body?: string;
+  html_body?: string;
+}
+
+export interface ListMessagesOptions {
+  inbox?: string;
+  limit?: number;
+  /** Unix seconds; only messages received after this are returned. */
+  since?: number;
+  includeBody?: boolean;
 }
 
 export interface Inbox {
@@ -106,16 +129,33 @@ export class EmptyInboxClient {
     return res.json();
   }
 
-  async listMessages(): Promise<MessageSummary[]> {
-    const res = await fetch(`${BASE_URL}/messages`, { headers: this.headers });
+  async listMessages(options: ListMessagesOptions = {}): Promise<Message[]> {
+    // Filtering server-side keeps a poll from dragging down every message on
+    // the account just to notice one new arrival.
+    const params = new URLSearchParams();
+    if (options.inbox) params.set("inbox", options.inbox);
+    if (options.limit !== undefined) params.set("limit", String(options.limit));
+    if (options.since !== undefined) params.set("since", String(options.since));
+    if (options.includeBody === false) params.set("include_body", "false");
+    const query = params.toString();
+    const res = await fetch(`${BASE_URL}/messages${query ? `?${query}` : ""}`, {
+      headers: this.headers,
+    });
     if (!res.ok) throw new Error(`listMessages failed: ${res.status} ${await res.text()}`);
     return res.json();
   }
 
-  async getMessage(msgid: string): Promise<MessageFull> {
+  async getMessage(msgid: string): Promise<Message> {
     const res = await fetch(`${BASE_URL}/message/${msgid}`, { headers: this.headers });
     if (!res.ok) throw new Error(`getMessage failed: ${res.status} ${await res.text()}`);
     return res.json();
+  }
+
+  /** The whole message flattened to text, ready to paste into a prompt. */
+  async getMessageText(msgid: string): Promise<string> {
+    const res = await fetch(`${BASE_URL}/message/${msgid}?format=text`, { headers: this.headers });
+    if (!res.ok) throw new Error(`getMessageText failed: ${res.status} ${await res.text()}`);
+    return res.text();
   }
 
   async getBundles(): Promise<{ currency: string; default: string; bundles: Bundle[] }> {

@@ -72,6 +72,13 @@
   flex-shrink: 0;
 }
 
+.msg-sender-lines {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
 .msg-from-name {
   font-size: var(--text-sm);
   font-weight: 600;
@@ -79,6 +86,24 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.msg-from-addr {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Subject ===== */
+.msg-subject {
+  font-size: var(--text-base, 0.95rem);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .msg-header-right {
@@ -250,7 +275,15 @@
   color: var(--color-text-secondary);
   line-height: 1.55;
   margin: 0;
-  font-style: italic;
+}
+
+.msg-code-section + .msg-preview-text {
+  margin-top: var(--space-3);
+}
+
+/* Expanded, the full body says the same thing as the snippet. */
+.message-preview.is-expanded .msg-preview-text {
+  display: none;
 }
 
 /* ===== Expanded Content (grid-row animation) ===== */
@@ -268,9 +301,10 @@
 
 .msg-meta {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3) 0 var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) 0 var(--space-3);
   border-top: 1px solid var(--color-border-subtle);
   margin-top: var(--space-3);
   font-size: var(--text-xs);
@@ -281,12 +315,31 @@
   font-weight: 500;
 }
 
+.msg-view-toggle {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) ease,
+    color var(--duration-fast) ease;
+}
+.msg-view-toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-darker);
+}
+
 .msg-full-body {
   background: var(--color-bg-subtle);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
-  max-height: 360px;
+  max-height: 420px;
   overflow-y: auto;
   font-size: var(--text-sm);
   line-height: 1.6;
@@ -295,13 +348,29 @@
   word-break: break-word;
 }
 
-/* Sandboxed email iframe */
+.is-hidden { display: none; }
+
+/* Sandboxed email iframe.
+   The mail brings its own light styling, so it is framed as a sheet of paper
+   instead of being left to clash with the card. Height is set from the
+   rendered content in JS — a fixed height left a one-line email sitting in a
+   350px void, with the frame and its wrapper each showing a scrollbar. */
+.msg-frame-wrap {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
 .msg-email-frame {
   width: 100%;
-  height: 360px;
+  height: 220px; /* placeholder until the content is measured */
   border: none;
   display: block;
-  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color-scheme: light;
 }
 
 .msg-text-body {

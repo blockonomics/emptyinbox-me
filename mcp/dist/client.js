@@ -49,8 +49,22 @@ export class EmptyInboxClient {
             throw new Error(`listInboxes failed: ${res.status} ${await res.text()}`);
         return res.json();
     }
-    async listMessages() {
-        const res = await fetch(`${BASE_URL}/messages`, { headers: this.headers });
+    async listMessages(options = {}) {
+        // Filtering server-side keeps a poll from dragging down every message on
+        // the account just to notice one new arrival.
+        const params = new URLSearchParams();
+        if (options.inbox)
+            params.set("inbox", options.inbox);
+        if (options.limit !== undefined)
+            params.set("limit", String(options.limit));
+        if (options.since !== undefined)
+            params.set("since", String(options.since));
+        if (options.includeBody === false)
+            params.set("include_body", "false");
+        const query = params.toString();
+        const res = await fetch(`${BASE_URL}/messages${query ? `?${query}` : ""}`, {
+            headers: this.headers,
+        });
         if (!res.ok)
             throw new Error(`listMessages failed: ${res.status} ${await res.text()}`);
         return res.json();
@@ -60,6 +74,13 @@ export class EmptyInboxClient {
         if (!res.ok)
             throw new Error(`getMessage failed: ${res.status} ${await res.text()}`);
         return res.json();
+    }
+    /** The whole message flattened to text, ready to paste into a prompt. */
+    async getMessageText(msgid) {
+        const res = await fetch(`${BASE_URL}/message/${msgid}?format=text`, { headers: this.headers });
+        if (!res.ok)
+            throw new Error(`getMessageText failed: ${res.status} ${await res.text()}`);
+        return res.text();
     }
     async getBundles() {
         const res = await fetch(`${BASE_URL}/payments/bundles`, { headers: this.headers });

@@ -32,19 +32,44 @@ OpenAPI spec: `https://emptyinbox.me/openapi.yaml`
 # Create an inbox
 curl -X POST -H "Authorization: Bearer YOUR_KEY" https://emptyinbox.me/api/inbox
 
-# List messages
-curl -H "Authorization: Bearer YOUR_KEY" https://emptyinbox.me/api/messages
+# List messages — filter to one inbox, only what arrived since the last poll
+curl -H "Authorization: Bearer YOUR_KEY" \
+  "https://emptyinbox.me/api/messages?inbox=ADDRESS&since=1711234000&include_body=false"
 
 # Read a message
 curl -H "Authorization: Bearer YOUR_KEY" https://emptyinbox.me/api/message/MSG_ID
+
+# ...or as flat text, ready to drop into a prompt
+curl -H "Authorization: Bearer YOUR_KEY" "https://emptyinbox.me/api/message/MSG_ID?format=text"
 ```
+
+Every message comes back parsed, so nothing has to pick through the HTML:
+
+```json
+{
+  "subject": "Confirm your email address",
+  "from_name": "Example App",
+  "from_email": "noreply@example.com",
+  "received_at": "2024-03-23T21:36:07Z",
+  "type": "verification",
+  "code": "482910",
+  "action_url": "https://example.com/verify?token=abc123",
+  "links": [{ "url": "https://example.com/verify?token=abc123", "text": "Verify your email" }],
+  "preview": "Your verification code is 482910. It expires in 10 minutes.",
+  "text": "Your verification code is 482910. It expires in 10 minutes."
+}
+```
+
+`text` is the body flattened to plain text (from the HTML part when there is no text
+part), `code` is the best one-time code found, `action_url` the single link worth
+opening. `?format=raw` still returns the untouched MIME parts.
 
 ## Typical agent workflow
 
 1. `POST /api/inbox` → get a disposable address
 2. Use that address in an external signup or verification flow
-3. `GET /api/messages` → poll until the verification email appears
-4. Read the code or link from `text_body`
+3. `GET /api/messages?inbox=<address>&since=<last timestamp>` → poll until the verification email appears
+4. Read `code` or `action_url` straight off the message — the API extracts both
 
 ## Local Development
 

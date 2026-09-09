@@ -1,20 +1,42 @@
 export declare const BASE_URL: string;
 export declare const CLIENT_ID = "emptyinbox-mcp/1.1.0";
-export interface MessageSummary {
+export interface MessageLink {
+    url: string;
+    text: string;
+    unsubscribe?: boolean;
+}
+/** The parsed shape the API returns for every message. */
+export interface Message {
     id: string;
     inbox: string;
+    to: string[];
     subject: string;
-    text_body: string;
-    html_body: string;
     sender: string;
+    from_name: string;
+    from_email: string;
     timestamp: number;
+    received_at: string | null;
+    /** What the mail wants: verification | password_reset | login_link | general */
+    type: string;
+    /** Best one-time code found in the body, if any. */
+    code: string | null;
+    codes: string[];
+    /** The one link worth opening for this message type, if any. */
+    action_url: string | null;
+    links: MessageLink[];
+    preview: string;
+    has_html: boolean;
+    /** Body fields are omitted when a listing is fetched with include_body=false. */
+    text?: string;
+    text_body?: string;
+    html_body?: string;
 }
-export interface MessageFull {
-    recipients: string[];
-    headers: Record<string, string>;
-    text_body: string;
-    html_body: string;
-    sender: string;
+export interface ListMessagesOptions {
+    inbox?: string;
+    limit?: number;
+    /** Unix seconds; only messages received after this are returned. */
+    since?: number;
+    includeBody?: boolean;
 }
 export interface Inbox {
     inbox: string;
@@ -63,8 +85,10 @@ export declare class EmptyInboxClient {
     constructor(apiKey: string);
     createInbox(): Promise<string>;
     listInboxes(): Promise<Inbox[]>;
-    listMessages(): Promise<MessageSummary[]>;
-    getMessage(msgid: string): Promise<MessageFull>;
+    listMessages(options?: ListMessagesOptions): Promise<Message[]>;
+    getMessage(msgid: string): Promise<Message>;
+    /** The whole message flattened to text, ready to paste into a prompt. */
+    getMessageText(msgid: string): Promise<string>;
     getBundles(): Promise<{
         currency: string;
         default: string;

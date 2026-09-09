@@ -42,7 +42,7 @@ export function renderApiDocsPage() {
           <li>Call <code>POST /inbox</code> to create a disposable address</li>
           <li>Trigger signup/verification using that address</li>
           <li>Poll <code>GET /messages</code> until the email arrives</li>
-          <li>Read the code or link from <code>text_body</code></li>
+          <li>Read <code>code</code> or <code>action_url</code> straight off the message — no parsing needed</li>
         </ol>
       </div>
     </div>
@@ -227,15 +227,30 @@ export function renderApiDocsPage() {
         </div>
         <div class="endpoint-body">
           <p class="endpoint-description">
-            Returns all messages across all inboxes, newest first. Messages are automatically deleted after 7 days. Poll this endpoint after triggering a signup or verification flow.
+            Messages across all inboxes, newest first, each one already parsed: the one-time
+            code, the link to open and the body as plain text come back extracted, so there
+            is no HTML to pick apart. Messages are automatically deleted after 7 days.
           </p>
 
           <div class="response-example">
             <h4>Example Request</h4>
             <div class="code-block" data-lang="curl">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>curl "https://emptyinbox.me/api/messages" \\
+              <button class="copy-button" onclick="copyCode(this)">Copy</button>curl "https://emptyinbox.me/api/messages?inbox=clever.sunny.butterfly@emptyinbox.me&since=1711234000" \\
   -H "Authorization: Bearer YOUR_API_KEY"</div>
           </div>
+
+          <h4>Query Parameters</h4>
+          <table class="parameter-table">
+            <thead>
+              <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>inbox</code></td><td>string</td><td>Only messages delivered to this address</td></tr>
+              <tr><td><code>since</code></td><td>integer</td><td>Only messages received after this Unix timestamp — poll with it so each call returns just what is new</td></tr>
+              <tr><td><code>limit</code></td><td>integer</td><td>Max messages to return (default 50, max 200)</td></tr>
+              <tr><td><code>include_body</code></td><td>boolean</td><td>Set <code>false</code> to drop <code>text</code>, <code>text_body</code> and <code>html_body</code> from the response</td></tr>
+            </tbody>
+          </table>
 
           <h4>Response Fields (per message)</h4>
           <table class="parameter-table">
@@ -246,10 +261,18 @@ export function renderApiDocsPage() {
               <tr><td><code>id</code></td><td>string</td><td>Unique message identifier</td></tr>
               <tr><td><code>inbox</code></td><td>string</td><td>Email address that received the message</td></tr>
               <tr><td><code>subject</code></td><td>string</td><td>Email subject line</td></tr>
-              <tr><td><code>sender</code></td><td>string</td><td>Sender email address</td></tr>
+              <tr><td><code>sender</code></td><td>string</td><td>Raw From header</td></tr>
+              <tr><td><code>from_name</code> / <code>from_email</code></td><td>string</td><td>From header split into display name and address</td></tr>
               <tr><td><code>timestamp</code></td><td>integer</td><td>Unix timestamp</td></tr>
-              <tr><td><code>text_body</code></td><td>string</td><td>Plain text body</td></tr>
-              <tr><td><code>html_body</code></td><td>string</td><td>HTML body</td></tr>
+              <tr><td><code>received_at</code></td><td>string</td><td>Same moment as an ISO 8601 UTC string</td></tr>
+              <tr><td><code>type</code></td><td>string</td><td><code>verification</code>, <code>password_reset</code>, <code>login_link</code> or <code>general</code></td></tr>
+              <tr><td><code>code</code></td><td>string | null</td><td>Extracted one-time code</td></tr>
+              <tr><td><code>codes</code></td><td>array</td><td>All candidates, most confident first</td></tr>
+              <tr><td><code>action_url</code></td><td>string | null</td><td>The one link worth opening for this message type</td></tr>
+              <tr><td><code>links</code></td><td>array</td><td>Every link with its anchor text; list-management links are flagged <code>unsubscribe</code></td></tr>
+              <tr><td><code>preview</code></td><td>string</td><td>First 200 characters of the plain-text body</td></tr>
+              <tr><td><code>text</code></td><td>string</td><td>Body as plain text — the HTML flattened when there is no text part</td></tr>
+              <tr><td><code>text_body</code> / <code>html_body</code></td><td>string</td><td>Raw MIME parts, unchanged</td></tr>
             </tbody>
           </table>
 
@@ -260,9 +283,21 @@ export function renderApiDocsPage() {
     "id": "a1b2c3d4",
     "inbox": "clever.sunny.butterfly@emptyinbox.me",
     "subject": "Confirm your email address",
-    "sender": "noreply@example.com",
+    "sender": "Example App <noreply@example.com>",
+    "from_name": "Example App",
+    "from_email": "noreply@example.com",
     "timestamp": 1711234567,
-    "text_body": "Your verification code is 482910",
+    "received_at": "2024-03-23T21:36:07Z",
+    "type": "verification",
+    "code": "482910",
+    "codes": ["482910"],
+    "action_url": "https://example.com/verify?token=abc123",
+    "links": [
+      { "url": "https://example.com/verify?token=abc123", "text": "Verify your email" }
+    ],
+    "preview": "Your verification code is 482910. It expires in 10 minutes.",
+    "text": "Your verification code is 482910. It expires in 10 minutes.",
+    "text_body": "",
     "html_body": "<p>Your verification code is <strong>482910</strong></p>"
   }
 ]</div>
@@ -277,7 +312,9 @@ export function renderApiDocsPage() {
         </div>
         <div class="endpoint-body">
           <p class="endpoint-description">
-            Returns the full content of a specific message including all headers.
+            One message, in the same parsed shape as the list. <code>format=text</code>
+            returns the whole mail flattened to text, ready to drop straight into a prompt;
+            <code>format=raw</code> returns the untouched stored MIME parts and headers.
           </p>
 
           <table class="parameter-table">
@@ -289,41 +326,40 @@ export function renderApiDocsPage() {
                 <td><span class="param-required">Required</span></td>
                 <td>Message ID from <code>GET /messages</code></td>
               </tr>
+              <tr>
+                <td><code>format</code></td>
+                <td>string</td>
+                <td>Optional</td>
+                <td><code>json</code> (default), <code>text</code> or <code>raw</code></td>
+              </tr>
             </tbody>
           </table>
 
           <div class="response-example">
             <h4>Example Request</h4>
             <div class="code-block" data-lang="curl">
-              <button class="copy-button" onclick="copyCode(this)">Copy</button>curl "https://emptyinbox.me/api/message/a1b2c3d4" \\
+              <button class="copy-button" onclick="copyCode(this)">Copy</button>curl "https://emptyinbox.me/api/message/a1b2c3d4?format=text" \\
   -H "Authorization: Bearer YOUR_API_KEY"</div>
           </div>
 
           <h4>Response Fields</h4>
-          <table class="parameter-table">
-            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
-            <tbody>
-              <tr><td><code>recipients</code></td><td>array</td><td>Recipient email addresses</td></tr>
-              <tr><td><code>headers</code></td><td>object</td><td>Raw email headers (Subject, From, Date, etc.)</td></tr>
-              <tr><td><code>text_body</code></td><td>string</td><td>Plain text body</td></tr>
-              <tr><td><code>html_body</code></td><td>string</td><td>HTML body</td></tr>
-              <tr><td><code>sender</code></td><td>string</td><td>Sender email address</td></tr>
-            </tbody>
-          </table>
+          <p class="endpoint-description">
+            Same fields as <code>GET /messages</code>, plus <code>to</code> — the envelope
+            recipients. <code>format=raw</code> instead returns <code>recipients</code>,
+            <code>headers</code>, <code>text_body</code>, <code>html_body</code> and
+            <code>sender</code> exactly as delivered.
+          </p>
 
-          <h4>Example Response</h4>
-          <div class="code-block" data-lang="json">
-            <button class="copy-button" onclick="copyCode(this)">Copy</button>{
-  "recipients": ["clever.sunny.butterfly@emptyinbox.me"],
-  "headers": {
-    "Subject": "Confirm your email address",
-    "From": "noreply@example.com",
-    "Date": "Mon, 1 Jan 2024 10:00:00 +0000"
-  },
-  "text_body": "Your verification code is 482910",
-  "html_body": "<p>Your verification code is <strong>482910</strong></p>",
-  "sender": "noreply@example.com"
-}</div>
+          <h4>Example Response (format=text)</h4>
+          <div class="code-block" data-lang="text">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>From: Example App &lt;noreply@example.com&gt;
+To: clever.sunny.butterfly@emptyinbox.me
+Date: 2024-03-23T21:36:07Z
+Subject: Confirm your email address
+Code: 482910
+Action URL: https://example.com/verify?token=abc123
+
+Your verification code is 482910. It expires in 10 minutes.</div>
 
           <p><span class="status-code status-404">404 Not Found</span> – Message not found</p>
         </div>
