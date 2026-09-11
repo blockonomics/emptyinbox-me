@@ -691,6 +691,23 @@ def subnet_key(ip: str) -> str:
     return str(ipaddress.ip_network(f'{ip}/{prefix}', strict=False))
 
 
+def is_identifiable(ip: str) -> bool:
+    """Whether this address says anything about who is calling.
+
+    A loopback address here means the proxy did not pass the caller's address
+    on, so every request in the world arrives looking like the same one. It is
+    a deployment fault, not a property of the caller.
+
+    It has to be detected rather than tolerated, because the failure is silent
+    and inverted: instead of one abuser being throttled, every real signup is
+    counted against a single shared bucket, and the free grant collapses for
+    everyone once the day's first few accounts exist."""
+    try:
+        return not ipaddress.ip_address(ip).is_loopback
+    except ValueError:
+        return False
+
+
 def recent_registration_count(subnet: str) -> int:
     """Accounts actually created from this network inside the window.
 
@@ -783,6 +800,17 @@ def agent_register():
         else:
             username = generate_username()
 
+        # Fail open when the address is meaningless. Handing out free credits
+        # that were not earned is recoverable and cheap; quietly refusing every
+        # new account on the service because a header went missing is neither,
+        # and nothing in the product would show it was happening.
+        identifiable = is_identifiable(ip)
+        if not identifiable:
+            app.logger.warning(
+                f"Registration from unidentifiable address {ip!r}: X-Real-IP is missing "
+                f"or loopback, so per-network grading cannot apply and this signup was "
+                f"granted the full quota. Check the proxy sets X-Real-IP.")
+
         recent = recent_registration_count(subnet)
         if recent >= REGISTER_HARD_CAP:
             record_registration(subnet, ip, client_id, username, 'refused')
@@ -801,7 +829,10 @@ def agent_register():
                 'docs_url': 'https://emptyinbox.me/docs.html',
             }), 429
 
-        quota, outcome = grade_registration(recent)
+        quota, outcome = (
+            grade_registration(recent) if identifiable
+            else (AGENT_STARTING_QUOTA, 'granted')
+        )
 
         api_key = create_user_token(username)[:32]
         user = User(
