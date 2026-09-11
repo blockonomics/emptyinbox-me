@@ -8,7 +8,7 @@ info:
     No browser required. Authenticate with a static API key.
 
     **Zero-config agent workflow:**
-    1. `POST /auth/register` — create a free account and get an API key (no passkey needed)
+    1. `POST /auth/register` — create a free account and get an API key (no passkey, no username, no email)
     2. `POST /inbox` — create a disposable address
     3. Trigger an external signup/verification using that address
     4. `GET /messages` — poll until the email arrives
@@ -16,7 +16,8 @@ info:
 
     Or use the [emptyinbox-mcp](https://www.npmjs.com/package/emptyinbox-mcp) package — auto-registers on first run, no setup needed.
 
-    Human accounts: get your API key at https://emptyinbox.me/settings.html
+    Humans who want the web inbox can create a passkey account instead and read the key
+    at https://emptyinbox.me/settings.html. That is not required for API use.
   version: 1.2.0
   contact:
     url: https://emptyinbox.me
@@ -189,7 +190,17 @@ components:
           example: "agent-k3j9f2ab"
         inbox_quota:
           type: integer
-          example: 1
+          description: |
+            Free credits on the new account. Usually 5, but lower, or 0, when the
+            network has already registered several accounts today. Read it rather
+            than assuming.
+          example: 5
+        message:
+          type: string
+          description: Present only when inbox_quota is 0, explaining why.
+        bundles_url:
+          type: string
+          description: Present only when inbox_quota is 0. Where to buy credits.
 
     QuotaResult:
       type: object
@@ -214,38 +225,60 @@ paths:
       summary: Register a new agent account
       description: |
         Creates a new account and returns an API key. No passkey or browser required.
-        Agent accounts start with 5 inbox quota, the same as human accounts. Rate limited to 3 registrations per IP per 24 hours.
-        Save the returned `api_key` for all subsequent requests.
+        Save the returned `api_key` for all subsequent requests: it is the account.
+
+        `username` is optional. Omit it, or send an empty body, and the server
+        allocates one.
+
+        Free quota is graded rather than refused. An account normally starts with
+        5 inbox credits. A network that has already registered several accounts in
+        the last 24 hours gets fewer, and past that gets an account with no free
+        credits, which is still a working key: `POST /inbox` returns 402 with
+        purchase links instead of creating an inbox. Only extreme volume from a
+        single network is refused with 429.
+
+        Always read `inbox_quota` off the response rather than assuming 5.
       security: []
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
               type: object
-              required: [username]
               properties:
                 username:
                   type: string
                   minLength: 3
                   maxLength: 32
-                  description: Letters, numbers, hyphens, and underscores only
+                  description: |
+                    Optional. Letters, numbers, hyphens, and underscores only.
+                    Omit to have one allocated.
                   example: "agent-k3j9f2ab"
       responses:
-        "200":
-          description: Account created
+        "201":
+          description: |
+            Account created. `inbox_quota` may be lower than the usual 5, or 0,
+            depending on how many accounts this network has taken today.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/RegisterResult"
         "400":
-          description: Invalid or taken username
+          description: Invalid username
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Username already taken
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
         "429":
-          description: Rate limit exceeded (3 registrations per IP per 24 hours)
+          description: |
+            Too many accounts created from this network. An API key already held
+            still works.
           content:
             application/json:
               schema:
@@ -272,7 +305,8 @@ paths:
       summary: Create a new disposable email inbox
       description: |
         Creates a new inbox and returns its email address as plain text.
-        Each inbox consumes 1 from your quota. All accounts start with 5 inboxes.
+        Each inbox consumes 1 from your quota. Accounts normally start with 5;
+        read `inbox_quota` from registration or `GET /auth/me` rather than assuming.
         When quota runs out this returns 402 with a link to POST /payments/quote,
         which sells more quota for Bitcoin. Humans can also buy at https://emptyinbox.me/inboxes.html
       responses:

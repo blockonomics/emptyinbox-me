@@ -88,10 +88,60 @@ def migrate_btc_payments():
     print("Migration completed: btc_payment_intents and payment_callbacks created.")
 
 
+def migrate_registration_tracking():
+    """Signup provenance on users, plus the registration ledger.
+
+    Additive in both directions: the columns are nullable, and the counters
+    default to zero, so rows written before this migration keep working and
+    simply carry no origin."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    cur.execute("PRAGMA table_info(users);")
+    columns = {row[1] for row in cur.fetchall()}
+
+    additions = [
+        ("signup_method", "VARCHAR(16)"),
+        ("signup_ip", "VARCHAR(64)"),
+        ("signup_client", "VARCHAR(64)"),
+        ("quota_blocks", "INTEGER NOT NULL DEFAULT 0"),
+        ("last_quota_block_at", "DATETIME"),
+    ]
+    for name, ddl in additions:
+        if name not in columns:
+            cur.execute(f"ALTER TABLE users ADD COLUMN {name} {ddl};")
+
+    # Drives the free-quota grading on POST /auth/register and is the only
+    # place a refused registration is recorded - those never become a row in
+    # users, so no other table can show they happened.
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS registration_attempts (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            subnet        VARCHAR(64) NOT NULL,
+            ip            VARCHAR(64),
+            client        VARCHAR(64),
+            username      VARCHAR(255),
+            outcome       VARCHAR(16) NOT NULL,
+            granted_quota INTEGER NOT NULL DEFAULT 0,
+            created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
+    # The grading query filters on both columns together on every registration.
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_registration_attempts_subnet "
+                "ON registration_attempts(subnet, created_at);")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_registration_attempts_created "
+                "ON registration_attempts(created_at);")
+
+    conn.commit()
+    conn.close()
+    print("Migration completed: signup tracking columns and registration_attempts.")
+
+
 def main():
     """Every migration is idempotent, so a deploy runs the whole set."""
     migrate_passkey_challenges()
     migrate_btc_payments()
+    migrate_registration_tracking()
 
 
 if __name__ == "__main__":

@@ -6,7 +6,12 @@ import { readFileSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 import { EmptyInboxClient, registerAgent, QuotaExhaustedError } from "./client.js";
-const CONFIG_PATH = join(homedir(), ".emptyinbox.json");
+// A container gets a fresh home directory on every run, so a key saved there
+// is gone by the next one and the server is asked for another account. That is
+// how a CI job burns through a network's registration allowance without anyone
+// intending to. EMPTYINBOX_CONFIG lets such a setup point at a mounted path,
+// and EMPTYINBOX_API_KEY skips the file entirely, which is what CI should do.
+const CONFIG_PATH = process.env.EMPTYINBOX_CONFIG ?? join(homedir(), ".emptyinbox.json");
 function loadStoredKey() {
     try {
         const data = JSON.parse(readFileSync(CONFIG_PATH, "utf8"));
@@ -21,19 +26,29 @@ function storeKey(api_key, username) {
 }
 let apiKey = process.env.EMPTYINBOX_API_KEY ?? loadStoredKey();
 if (!apiKey) {
-    // Auto-register with a generated username
-    const username = `agent-${Math.random().toString(36).slice(2, 10)}`;
     try {
-        process.stderr.write(`[emptyinbox] No API key found. Registering as "${username}"...\n`);
-        const result = await registerAgent(username);
+        process.stderr.write(`[emptyinbox] No API key found. Registering...\n`);
+        // The server names the account. Inventing one here risked colliding with
+        // an existing username and failing the very first call.
+        const result = await registerAgent();
         apiKey = result.api_key;
-        storeKey(apiKey, username);
-        process.stderr.write(`[emptyinbox] Registered! API key saved to ${CONFIG_PATH}\n`);
-        process.stderr.write(`[emptyinbox] Starting quota: ${result.inbox_quota} inbox\n`);
+        storeKey(apiKey, result.username);
+        process.stderr.write(`[emptyinbox] Registered as "${result.username}". Key saved to ${CONFIG_PATH}\n`);
+        if (result.inbox_quota > 0) {
+            process.stderr.write(`[emptyinbox] Starting quota: ${result.inbox_quota} inbox(es)\n`);
+        }
+        else {
+            // Still a working account. Saying so stops this reading as a failure.
+            process.stderr.write(`[emptyinbox] No free credits on this account: ${result.message ?? "free allowance used up for this network today"}\n`);
+            process.stderr.write(`[emptyinbox] The key works. Use buy_quota to add credits.\n`);
+        }
     }
     catch (err) {
         process.stderr.write(`[emptyinbox] Registration failed: ${err}\n`);
-        process.stderr.write(`[emptyinbox] Set EMPTYINBOX_API_KEY or visit https://emptyinbox.me/login.html\n`);
+        process.stderr.write(`[emptyinbox] Reuse a key instead of registering again: set EMPTYINBOX_API_KEY.\n`);
+        process.stderr.write(`[emptyinbox] In CI or containers, set it from a secret - a fresh container\n`);
+        process.stderr.write(`[emptyinbox] has no saved key and will register on every run.\n`);
+        process.stderr.write(`[emptyinbox] Docs: https://emptyinbox.me/docs.html\n`);
         process.exit(1);
     }
 }
@@ -43,14 +58,14 @@ const server = new McpServer({
     version: "1.2.0",
 });
 server.registerTool("register_account", {
-    description: "Register a new EmptyInbox account and get an API key. Use this if there is no account configured yet, or if authentication is failing. Saves the key locally for future sessions.",
+    description: "Register a new EmptyInbox account and get an API key. Use this only if there is no account configured yet, or if authentication is failing. Prefer reusing an existing key: repeatedly registering from one network reduces the free credits each new account receives. Saves the key locally for future sessions.",
     inputSchema: {
-        username: z.string().min(3).max(32).describe("Desired username (3-32 chars, letters/numbers/hyphens/underscores)"),
+        username: z.string().min(3).max(32).optional().describe("Optional username (3-32 chars, letters/numbers/hyphens/underscores). Omit to have one allocated."),
     },
 }, async ({ username }) => {
     try {
         const result = await registerAgent(username);
-        storeKey(result.api_key, username);
+        storeKey(result.api_key, result.username);
         // Update the running client with the new key
         client.headers["Authorization"] = `Bearer ${result.api_key}`;
         return { content: [{ type: "text", text: JSON.stringify({
@@ -58,6 +73,10 @@ server.registerTool("register_account", {
                         username: result.username,
                         api_key: result.api_key,
                         inbox_quota: result.inbox_quota,
+                        ...(result.inbox_quota === 0 ? {
+                            note: result.message ?? "Account created without free credits. The key works; buy quota to create inboxes.",
+                            bundles_url: result.bundles_url,
+                        } : {}),
                         message: `Account created. API key saved to ${CONFIG_PATH}`,
                     }, null, 2) }] };
     }

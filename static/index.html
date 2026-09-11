@@ -138,16 +138,39 @@
           </div>
           <h1>Disposable Email<br>for <span class="hero-accent">AI Agents</span></h1>
           <p>Create inboxes and read email via REST API or MCP.<br>No browser. No passwords. Just an API key.</p>
-          <div class="hero-cta-group">
-            <a href="/login.html" class="btn btn-primary" role="button">Get API Key</a>
-            <a href="/docs.html" class="btn btn-secondary" role="button">View Docs</a>
+          <!-- The fastest path to a key sits above the buttons, because it is
+               the one the page is claiming exists: no browser, no passwords.
+               Sending a developer to a passkey prompt to try a headless
+               product was the contradiction this replaces. -->
+          <div class="hero-snippet">
+            <div class="snippet-tabs" role="tablist" aria-label="Get started">
+              <button class="snippet-tab is-active" role="tab" aria-selected="true" aria-controls="snippet-curl" id="tab-curl" type="button">curl</button>
+              <button class="snippet-tab" role="tab" aria-selected="false" aria-controls="snippet-mcp" id="tab-mcp" type="button">MCP</button>
+            </div>
+
+            <div class="snippet-panel" role="tabpanel" id="snippet-curl" aria-labelledby="tab-curl"
+                 data-copy="curl -sX POST https://emptyinbox.me/api/auth/register -H 'Content-Type: application/json' -d '{}'">
+              <button class="copy-btn" title="Copy" aria-label="Copy command">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+              <pre class="snippet-code"><span class="snippet-prompt">$</span> curl -sX POST https://emptyinbox.me/api/auth/register \
+    -H 'Content-Type: application/json' -d '{}'
+<span class="snippet-out">{ "api_key": "...", "inbox_quota": 5 }</span></pre>
+            </div>
+
+            <div class="snippet-panel" role="tabpanel" id="snippet-mcp" aria-labelledby="tab-mcp" hidden
+                 data-copy="npx emptyinbox-mcp">
+              <button class="copy-btn" title="Copy" aria-label="Copy command">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+              <pre class="snippet-code"><span class="snippet-prompt">$</span> npx emptyinbox-mcp
+<span class="snippet-out">Registers on first run. No API key to paste.</span></pre>
+            </div>
           </div>
-          <div class="npm-snippet">
-            <span class="npm-prompt">$</span>
-            <code>npx emptyinbox-mcp</code>
-            <button class="copy-btn" title="Copy">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            </button>
+
+          <div class="hero-cta-group">
+            <a href="/docs.html" class="btn btn-primary" role="button">Read the docs</a>
+            <a href="/login.html" class="btn btn-secondary" role="button">Open the web inbox</a>
           </div>
 
           <div class="hero-trust">

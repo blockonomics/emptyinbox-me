@@ -17,14 +17,31 @@ export function renderHomePageHero() {
         </div>
         <h1>Disposable Email<br>for <span class="hero-accent">AI Agents</span></h1>
         <p>Create inboxes and read email via REST API or MCP.<br>No browser. No passwords. Just an API key.</p>
-        <div class="hero-cta-group">
-          <a href="${ROUTES.LOGIN}" class="btn btn-primary" role="button">Get API Key</a>
-          <a href="/docs.html" class="btn btn-secondary" role="button">View Docs</a>
+        <div class="hero-snippet">
+          <div class="snippet-tabs" role="tablist" aria-label="Get started">
+            <button class="snippet-tab is-active" role="tab" aria-selected="true" aria-controls="snippet-curl" id="tab-curl" type="button">curl</button>
+            <button class="snippet-tab" role="tab" aria-selected="false" aria-controls="snippet-mcp" id="tab-mcp" type="button">MCP</button>
+          </div>
+
+          <div class="snippet-panel" role="tabpanel" id="snippet-curl" aria-labelledby="tab-curl"
+               data-copy="curl -sX POST https://emptyinbox.me/api/auth/register -H 'Content-Type: application/json' -d '{}'">
+            <button class="copy-btn" title="Copy" aria-label="Copy command">${COPY_ICON}</button>
+            <pre class="snippet-code"><span class="snippet-prompt">$</span> curl -sX POST https://emptyinbox.me/api/auth/register \
+    -H 'Content-Type: application/json' -d '{}'
+<span class="snippet-out">{ "api_key": "...", "inbox_quota": 5 }</span></pre>
+          </div>
+
+          <div class="snippet-panel" role="tabpanel" id="snippet-mcp" aria-labelledby="tab-mcp" hidden
+               data-copy="npx emptyinbox-mcp">
+            <button class="copy-btn" title="Copy" aria-label="Copy command">${COPY_ICON}</button>
+            <pre class="snippet-code"><span class="snippet-prompt">$</span> npx emptyinbox-mcp
+<span class="snippet-out">Registers on first run. No API key to paste.</span></pre>
+          </div>
         </div>
-        <div class="npm-snippet">
-          <span class="npm-prompt">$</span>
-          <code>npx emptyinbox-mcp</code>
-          <button class="copy-btn" title="Copy">${COPY_ICON}</button>
+
+        <div class="hero-cta-group">
+          <a href="/docs.html" class="btn btn-primary" role="button">Read the docs</a>
+          <a href="${ROUTES.LOGIN}" class="btn btn-secondary" role="button">Open the web inbox</a>
         </div>
       </div>
 

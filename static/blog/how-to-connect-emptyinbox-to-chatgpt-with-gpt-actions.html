@@ -146,7 +146,10 @@
       </ul>
 
       <h2>Step 1 — Get an API Key</h2>
-      <p>Go to <a href="/login.html">emptyinbox.me</a> and click <strong>Get API Key</strong>. Register with a username. You'll receive an API key that starts with <code>ei</code>. Copy it — you'll paste it into ChatGPT in a moment.</p>
+      <p>Get a key with one request. No account form, no passkey, no username to choose:</p>
+      <pre><code>curl -sX POST https://emptyinbox.me/api/auth/register \
+  -H 'Content-Type: application/json' -d '{}'</code></pre>
+      <p>Copy the <code>api_key</code> from the response — you'll paste it into ChatGPT in a moment. If you would rather use the web inbox, you can create a passkey account at <a href="/login.html">emptyinbox.me</a> and read the key from Settings instead.</p>
       <p>Human accounts start with 5 inboxes on the free tier. That's more than enough to test the full flow.</p>
 
       <h2>Step 2 — Create a Custom GPT</h2>
@@ -215,7 +218,7 @@ GPT: Created inbox: rapid.cedar.moon@emptyinbox.me
     <div class="blog-cta">
       <h3>Ready to give your GPT an inbox?</h3>
       <p>Free tier includes 5 inboxes. No credit card required.</p>
-      <a href="/login.html" class="btn">Get API Key</a>
+      <a href="/docs.html#register" class="btn">Get an API key</a>
     </div>
 
   </main>

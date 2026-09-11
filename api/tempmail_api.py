@@ -2,6 +2,7 @@ from flask import request, jsonify
 from config import app,db
 from db_models import Message, Inbox, User
 from email.parser import Parser
+from datetime import datetime
 from uuid import uuid4
 from functools import wraps
 from flask import abort
@@ -188,12 +189,38 @@ def consume_quota(api_key):
     ).update({"inbox_quota": User.inbox_quota - 1}, synchronize_session=False)
     return spent > 0
 
+def record_quota_block(api_key):
+    """Note that this account asked for an inbox it could not afford.
+
+    Counted rather than stamped alone, because how many times an account came
+    back and hit the wall says more about intent than the fact it happened
+    once. Failure here is swallowed: losing a funnel datapoint must never turn
+    into a failed API call for the user."""
+    try:
+        db.session.query(User).filter(User.api_key == api_key).update(
+            {
+                "quota_blocks": User.quota_blocks + 1,
+                "last_quota_block_at": datetime.utcnow(),
+            },
+            synchronize_session=False,
+        )
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Could not record quota block: {e}")
+
+
 @app.route(f'{url_prefix}/inbox', methods=['POST']) 
 @auth_required
 def create_mailbox(token):
     '''Creates new inbox'''
     api_key = get_api_key_from_token(token)
     if not consume_quota(api_key):
+        # Hitting the paywall is the only moment a free account states that it
+        # wants something it has to pay for, so it is worth recording. Without
+        # this the accounts table cannot distinguish an account that ran out
+        # and stopped from one that never tried.
+        record_quota_block(api_key)
         # 402 so an agent can tell "out of quota, here is how to buy more"
         # apart from "not allowed".
         return jsonify({

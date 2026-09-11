@@ -62,7 +62,7 @@
         "name": "How do I get an EmptyInbox API key?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Call POST /auth/register once and keep the key it returns, or install the MCP server, which registers on first run. Registration is limited to 3 new accounts per IP per 24 hours."
+          "text": "Call POST /auth/register once and keep the key it returns, or install the MCP server, which registers on first run. No passkey, browser or email address is involved, and a username is optional. Free starting quota is reduced for networks that have already created several accounts in the last 24 hours, so read inbox_quota off the response rather than assuming 5."
         }
       },
       {
@@ -273,8 +273,8 @@
             </div>
             <pre><code>Authorization: Bearer YOUR_API_KEY</code></pre>
           </div>
-          <p><strong>Agents:</strong> call <code>POST /auth/register</code> below to get a key programmatically.<br>
-          <strong>Humans:</strong> get your key at <a href="/settings.html">Settings</a>.</p>
+          <p><strong>Agents and scripts:</strong> call <code>POST /auth/register</code> below to get a key programmatically. No browser, no passkey, no email address.<br>
+          <strong>Humans who want the web inbox:</strong> create a passkey account and read the key at <a href="/settings.html">Settings</a>. Not required for API use.</p>
         </div>
       </section>
 
@@ -289,7 +289,8 @@
             <span class="endpoint-tag">No auth required</span>
           </div>
           <div class="endpoint-body">
-            <p class="endpoint-description">Create a new account and get an API key. Agent accounts start with 5 inbox quota, the same as human accounts. Rate limited to 3 registrations per IP per 24 hours.</p>
+            <p class="endpoint-description">Create a new account and get an API key. The key is the account: keep it and no other credential is needed.</p>
+            <p class="endpoint-description">Accounts normally start with 5 inbox credits. Rather than refusing frequent registrations, the free grant is graded down: a network that has already taken several accounts in the last 24 hours gets fewer credits, and past that gets a working key with none, where <code>POST /inbox</code> answers <span class="status-code status-402">402</span> with purchase links. Only extreme volume from one network is refused. Always read <code>inbox_quota</code> from the response.</p>
 
             <h4>Request Body</h4>
             <table class="parameter-table">
@@ -298,8 +299,8 @@
                 <tr>
                   <td><code>username</code></td>
                   <td>string</td>
-                  <td><span class="param-required">Required</span></td>
-                  <td>3–32 chars, letters/numbers/hyphens/underscores</td>
+                  <td><span class="param-optional">Optional</span></td>
+                  <td>3–32 chars, letters/numbers/hyphens/underscores. Omit it, or send an empty body, and one is allocated for you.</td>
                 </tr>
               </tbody>
             </table>
@@ -311,7 +312,12 @@
                   <span class="code-lang">curl</span>
                   <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
-                <pre><code>curl -X POST "https://emptyinbox.me/api/auth/register" \
+                <pre><code># Simplest form: the server picks the username
+curl -X POST "https://emptyinbox.me/api/auth/register" \
+  -H "Content-Type: application/json" -d '{}'
+
+# Or choose your own
+curl -X POST "https://emptyinbox.me/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{"username": "my-agent"}'</code></pre>
               </div>
@@ -319,7 +325,7 @@
 
             <div class="response-example">
               <h4>Response</h4>
-              <p><span class="status-code status-200">200 OK</span></p>
+              <p><span class="status-code status-201">201 Created</span></p>
               <div class="code-block">
                 <div class="code-header">
                   <span class="code-lang">json</span>
@@ -331,8 +337,12 @@
   "inbox_quota": 5
 }</code></pre>
               </div>
-              <p><span class="status-code status-400">400 Bad Request</span> — Invalid or taken username</p>
-              <p><span class="status-code status-429">429 Too Many Requests</span> — Rate limit exceeded</p>
+              <p><span class="status-code status-400">400 Bad Request</span> — Invalid username</p>
+              <p><span class="status-code status-409">409 Conflict</span> — Username already taken</p>
+              <p><span class="status-code status-429">429 Too Many Requests</span> — Too many accounts from this network. A key you already hold still works.</p>
+              <p class="endpoint-description">A registration granted no free credits still returns
+              <span class="status-code status-201">201</span>, with <code>inbox_quota</code> set to 0 and a
+              <code>message</code> explaining why.</p>
             </div>
           </div>
         </div>
@@ -806,7 +816,7 @@
           </div>
           <div class="faq-item">
             <h3>How do I get an API key?</h3>
-            <p>Call <code>POST /auth/register</code> once and keep the key it returns, or install the MCP server, which registers on first run. Registration is limited to 3 new accounts per IP per 24 hours.</p>
+            <p>Call <code>POST /auth/register</code> once and keep the key it returns, or install the MCP server, which registers on first run. No passkey, browser or email address is involved, and a username is optional. Free starting quota is reduced for networks that have already created several accounts in the last 24 hours, so read <code>inbox_quota</code> off the response rather than assuming 5.</p>
           </div>
           <div class="faq-item">
             <h3>Does listing messages return mail from every inbox?</h3>

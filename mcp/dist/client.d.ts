@@ -76,11 +76,25 @@ export declare class QuotaExhaustedError extends Error {
     readonly detail: Record<string, unknown>;
     constructor(detail: Record<string, unknown>);
 }
-export declare function registerAgent(username: string): Promise<{
+export interface RegisterResult {
     api_key: string;
     username: string;
     inbox_quota: number;
-}>;
+    /** Present when the account was created with no free credits. */
+    message?: string;
+    bundles_url?: string;
+}
+/**
+ * Create an account and return its key.
+ *
+ * `username` is optional. Leaving it to the server removes the only way this
+ * call can fail for a reason the caller could not have predicted: a name
+ * collision on a value nothing downstream ever reads.
+ *
+ * An account with `inbox_quota: 0` is a success, not a failure. The key works;
+ * the first inbox costs money. Callers must not treat it as a broken signup.
+ */
+export declare function registerAgent(username?: string): Promise<RegisterResult>;
 export declare class EmptyInboxClient {
     private headers;
     constructor(apiKey: string);

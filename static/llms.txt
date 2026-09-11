@@ -6,8 +6,33 @@
 
 - Base URL: https://emptyinbox.me/api
 - Auth: `Authorization: Bearer <api_key>`
-- Get your API key: https://emptyinbox.me/settings.html
 - OpenAPI spec: https://emptyinbox.me/openapi.yaml
+
+### Getting an API key
+
+Agents and scripts should register programmatically. No browser, no passkey,
+no email address, no human in the loop:
+
+```bash
+curl -X POST https://emptyinbox.me/api/auth/register -H "Content-Type: application/json" -d '{}'
+```
+
+```json
+{ "api_key": "...", "username": "agent-3f9c1a2b7d04", "inbox_quota": 5 }
+```
+
+`username` is optional. Send `{"username": "my-agent"}` to choose one, or an
+empty body and the server allocates it. Keep the returned key: it is the
+account, and it is the only credential the API needs.
+
+Free quota is graded rather than refused. A network that has already created
+several accounts today gets a smaller grant, and past that a key with no free
+credits, which still works and buys credits normally. Registration is only
+turned away at extreme volume from one network.
+
+Humans who want the web inbox instead can create a passkey account at
+https://emptyinbox.me/login.html and read the key from
+https://emptyinbox.me/settings.html. This is not required for API use.
 
 ## MCP Server
 
@@ -29,6 +54,7 @@ npm package: `emptyinbox-mcp`
 
 ## REST API Endpoints
 
+- `POST /api/auth/register` — create an account and get an API key, no auth required
 - `POST /api/inbox` — create a new disposable inbox, returns email address as plain text
 - `GET /api/inboxes` — list all inboxes `[{inbox, created_at}]`
 - `GET /api/messages` — list all messages `[{id, inbox, subject, text_body, html_body, sender, timestamp}]`
@@ -66,6 +92,7 @@ private domains and no SMS.
 
 ## Typical Agent Workflow
 
+0. `POST /api/auth/register` → get an API key, once, and store it
 1. `POST /api/inbox` → get a disposable address
 2. Use that address in an external signup or verification flow
 3. `GET /api/messages` → poll until the verification email appears
@@ -96,7 +123,7 @@ for confirmations. The MCP tools `buy_quota` and `check_payment` wrap this flow.
 - [Home](https://emptyinbox.me/): Overview and quickstart
 - [API Docs](https://emptyinbox.me/docs.html): REST API documentation
 - [Pricing](https://emptyinbox.me/pricing.html): Free and paid tiers
-- [Login](https://emptyinbox.me/login.html): Get your API key
+- [Login](https://emptyinbox.me/login.html): Passkey account for the web inbox (agents use POST /api/auth/register instead)
 - [Blog](https://emptyinbox.me/blog/): Tutorials and guides
 - [Use Cases](https://emptyinbox.me/use-cases/): Framework setup guides
 - [Comparisons](https://emptyinbox.me/compare/): How this compares to other disposable email APIs

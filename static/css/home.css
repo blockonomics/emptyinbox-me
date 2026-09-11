@@ -174,6 +174,84 @@
   margin-bottom: var(--space-5);
 }
 
+/* === Hero snippet ===
+   Two panels, one visible at a time: the API path and the MCP path. Tabs
+   rather than two stacked blocks, because the hero has one job above the
+   fold and two code blocks compete for it. */
+.hero-snippet {
+  width: 100%;
+  max-width: 42rem;
+  margin-bottom: var(--space-5);
+  text-align: left;
+}
+
+.snippet-tabs {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.snippet-tab {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  transition: color var(--duration-fast) ease, background var(--duration-fast) ease;
+}
+
+.snippet-tab:hover { color: var(--color-text); }
+
+.snippet-tab.is-active {
+  color: var(--color-code-text);
+  background: var(--color-code-bg);
+}
+
+.snippet-panel {
+  position: relative;
+  background: var(--color-code-bg);
+  border-radius: 0 var(--radius-md) var(--radius-md) var(--radius-md);
+  padding: var(--space-4);
+  /* A long command must scroll inside its own box rather than widening the
+     page, which on a phone would push the whole hero sideways. */
+  overflow-x: auto;
+}
+
+.snippet-code {
+  margin: 0;
+  font-family: "Monaco", "Consolas", monospace;
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  color: var(--color-code-text);
+  white-space: pre;
+  /* Room for the copy button, which is positioned over the top right. */
+  padding-right: var(--space-6);
+}
+
+.snippet-prompt {
+  color: var(--color-primary);
+  font-weight: 700;
+  user-select: none;
+}
+
+.snippet-out {
+  color: var(--color-code-text);
+  opacity: 0.6;
+}
+
+.snippet-panel .copy-btn {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+}
+
+@media (max-width: 640px) {
+  .hero-snippet { max-width: 100%; }
+  .snippet-code { font-size: 0.68rem; }
+}
+
 /* Terminal snippet */
 .npm-snippet {
   display: inline-flex;

@@ -517,6 +517,21 @@
   border-radius: 3px;
 }
 
+/* Optional reads as the absence of a requirement, so it is deliberately
+   quieter than .param-required rather than a second colour competing with it. */
+.param-optional {
+  display: inline-block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  background: var(--color-surface-alt, transparent);
+  border: 1px solid var(--color-border);
+  padding: 0.2em 0.5em;
+  border-radius: 3px;
+}
+
 .status-code {
   display: inline-block;
   font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;

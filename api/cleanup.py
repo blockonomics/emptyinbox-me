@@ -12,13 +12,15 @@ import argparse
 import sys
 import time
 import os
+from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.dirname(__file__))
 
 from sqlalchemy import text
 
 from config import app, db
-from db_models import Message
+from db_models import Message, RegistrationAttempt
+from constants import REGISTRATION_LOG_DAYS
 
 BATCH_SIZE = 1000
 
@@ -80,6 +82,25 @@ def delete_old_messages(days=7, do_vacuum=True):
                 print(f"Vacuum failed: {e}", file=sys.stderr)
 
 
+def prune_registration_attempts(days=REGISTRATION_LOG_DAYS):
+    """Drop registration ledger rows past their useful life.
+
+    The grading window is a day, so anything older only exists to answer
+    questions about where signups come from. A few months covers that, and
+    keeps a table that grows with every bot sweep from growing forever."""
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    with app.app_context():
+        try:
+            deleted = db.session.query(RegistrationAttempt).filter(
+                RegistrationAttempt.created_at < cutoff
+            ).delete(synchronize_session=False)
+            db.session.commit()
+            print(f"Deleted {deleted} registration attempts older than {days} days")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Registration prune failed: {e}", file=sys.stderr)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--days', type=int, default=7,
@@ -88,3 +109,4 @@ if __name__ == '__main__':
                         help='skip VACUUM after deleting')
     args = parser.parse_args()
     delete_old_messages(days=args.days, do_vacuum=not args.no_vacuum)
+    prune_registration_attempts()

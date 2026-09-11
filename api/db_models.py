@@ -34,6 +34,43 @@ class User(db.Model):
     inbox_quota = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)  # New field
 
+    # Where the account came from. Until these existed the only record of a
+    # signup was a line on stdout, so nothing could be asked of the database
+    # afterwards: which client registered, whether a network was farming
+    # accounts, how many accounts a release brought in.
+    signup_method = db.Column(db.String(16))     # 'agent' or 'passkey'
+    signup_ip = db.Column(db.String(64))
+    signup_client = db.Column(db.String(64))     # X-Client header, e.g. the MCP server
+
+    # Paywall contact. An account that has hit 402 wanted an inbox it could not
+    # have, which is the one moment a free user has declared intent to buy.
+    # Counting it here keeps the funnel answerable from the accounts table
+    # rather than from log scraping.
+    quota_blocks = db.Column(db.Integer, default=0, nullable=False)
+    last_quota_block_at = db.Column(db.DateTime)
+
+
+class RegistrationAttempt(db.Model):
+    """Every call to POST /auth/register, refused ones included.
+
+    Two jobs in one table. It is the store the free-quota grading counts
+    against, which the previous in-memory dict could not be: that dict lived
+    per worker process and emptied on every deploy, so the daily cap it
+    advertised was really one cap per worker since the last restart. And it is
+    the only record that a registration was ever turned away - the failures are
+    exactly the ones that never become a row in users, and so the ones no other
+    table can show."""
+    __tablename__ = 'registration_attempts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    subnet = db.Column(db.String(64), nullable=False, index=True)
+    ip = db.Column(db.String(64))
+    client = db.Column(db.String(64))
+    username = db.Column(db.String(255))
+    outcome = db.Column(db.String(16), nullable=False)  # granted | reduced | zero | refused | rejected
+    granted_quota = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
 class PasskeyCredential(db.Model):
     __tablename__ = 'passkey_credentials'
 

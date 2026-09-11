@@ -2,7 +2,7 @@
 
 from flask import Blueprint, request, jsonify, make_response
 from datetime import datetime, timedelta
-import os, random, time, hashlib, base64, json
+import os, random, time, hashlib, base64, json, ipaddress
 from eth_account.messages import encode_defunct
 from eth_account import Account
 from config import db, app
@@ -10,8 +10,12 @@ from urllib.parse import urlparse
 import traceback
 from auth_utils import auth_required
 
-from db_models import AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus, PasskeyCredential, PasskeyChallenge, BtcPaymentIntent
-from constants import USER_STARTING_QUOTA, AGENT_STARTING_QUOTA, QUOTA_PER_USDT
+from db_models import (AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus,
+                       PasskeyCredential, PasskeyChallenge, BtcPaymentIntent,
+                       RegistrationAttempt)
+from constants import (USER_STARTING_QUOTA, AGENT_STARTING_QUOTA, QUOTA_PER_USDT,
+                       REGISTER_WINDOW, REGISTER_GRADES, REGISTER_HARD_CAP,
+                       REGISTER_V4_PREFIX, REGISTER_V6_PREFIX)
 
 # Add these imports for passkey functionality
 from cryptography.hazmat.primitives import hashes
@@ -371,7 +375,10 @@ def passkey_register_complete():
                     user_id=user_id,
                     username=username,
                     api_key=api_key,
-                    inbox_quota=USER_STARTING_QUOTA
+                    inbox_quota=USER_STARTING_QUOTA,
+                    signup_method='passkey',
+                    signup_ip=client_ip(),
+                    signup_client='web',
                 )
                 db.session.add(user)
                 db.session.flush()  # ensure user_id is available
@@ -653,12 +660,6 @@ def auth_logout(token):
         db.session.rollback()
         return error_response('Logout failed', 500)
 
-# In-memory rate limit store: {ip: [timestamp, ...]}
-_register_attempts: dict = {}
-REGISTER_LIMIT = 3       # max registrations
-REGISTER_WINDOW = 86400  # per 24 hours
-
-
 def client_ip() -> str:
     """The address the request actually came from.
 
@@ -670,62 +671,171 @@ def client_ip() -> str:
     return request.headers.get('X-Real-IP') or request.remote_addr or 'unknown'
 
 
-def prune_register_attempts(now: float) -> None:
-    """Drop addresses whose attempts have all aged out.
+def subnet_key(ip: str) -> str:
+    """The network a registration is counted against.
 
-    Without this the store keeps one entry per address ever seen, for the life
-    of the process."""
-    stale = [ip for ip, times in _register_attempts.items()
-             if all(now - t >= REGISTER_WINDOW for t in times)]
-    for ip in stale:
-        del _register_attempts[ip]
+    An address on its own is the wrong unit on both sides. A CI fleet, a CGNAT
+    subscriber and an office all present one address for many legitimate
+    callers, so per-address counting punishes precisely the users this product
+    is aimed at. An abuser renting proxies gets a new address per request, so
+    per-address counting barely inconveniences them. The surrounding block is
+    what actually costs something to acquire in quantity.
+
+    An unparseable value keeps a bucket of its own rather than joining a shared
+    one, so a malformed address can never dilute a real network's count."""
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return f'raw:{ip}'
+    prefix = REGISTER_V4_PREFIX if addr.version == 4 else REGISTER_V6_PREFIX
+    return str(ipaddress.ip_network(f'{ip}/{prefix}', strict=False))
+
+
+def recent_registration_count(subnet: str) -> int:
+    """Accounts actually created from this network inside the window.
+
+    Refused and rejected attempts are excluded on purpose. Counting them would
+    let a caller sending invalid usernames talk itself down through the grades
+    without ever receiving anything."""
+    cutoff = datetime.utcnow() - timedelta(seconds=REGISTER_WINDOW)
+    return db.session.query(RegistrationAttempt).filter(
+        RegistrationAttempt.subnet == subnet,
+        RegistrationAttempt.created_at >= cutoff,
+        RegistrationAttempt.outcome.in_(('granted', 'reduced', 'zero')),
+    ).count()
+
+
+def grade_registration(count: int) -> tuple:
+    """How much free quota this registration gets, and what to call it.
+
+    Returns (quota, outcome). A quota of zero is still a successful
+    registration: the caller receives a working key and meets the paywall on
+    its first POST /inbox instead, which carries the purchase links. That is
+    the point of grading rather than refusing. The failure mode for a suspected
+    abuser becomes a sales page, and the failure mode for a false positive is a
+    product that still works as soon as it is paid for."""
+    for threshold, quota in REGISTER_GRADES:
+        if count < threshold:
+            return quota, ('granted' if quota == REGISTER_GRADES[0][1] else 'reduced')
+    return 0, 'zero'
+
+
+def record_registration(subnet, ip, client, username, outcome, quota=0) -> None:
+    """Append to the registration ledger.
+
+    Committed separately from the account, so that a refused attempt - which
+    creates no account at all - is still durable. Never allowed to raise: an
+    audit row failing to write is not a reason to fail a signup."""
+    try:
+        db.session.add(RegistrationAttempt(
+            subnet=subnet, ip=ip, client=client,
+            username=username or None, outcome=outcome, granted_quota=quota,
+        ))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Could not record registration attempt: {e}")
+
+
+def generate_username() -> str:
+    """A username for callers that did not ask for one.
+
+    Requiring the caller to invent one costs a round trip through
+    /check-username and can fail on a collision, both on the very first request
+    anyone makes against the service. The value carries no meaning for an
+    agent, so letting the server pick removes a failure mode for nothing."""
+    for _ in range(5):
+        candidate = f"agent-{os.urandom(6).hex()}"
+        if not db.session.query(User).filter_by(username=candidate).first():
+            return candidate
+    raise RuntimeError('could not allocate a username')
+
 
 @auth_bp.route('/register', methods=['POST'])
 def agent_register():
-    """Programmatic registration for agents. Returns api_key directly."""
+    """Programmatic registration for agents. Returns api_key directly.
+
+    Registration is not refused for being frequent. The free quota attached to
+    the new account is graded down instead, and only extreme volume from one
+    network is turned away outright. See the REGISTER_* constants for why.
+
+    username is optional: omit it and the server allocates one."""
+    ip = client_ip()
+    subnet = subnet_key(ip)
+    client_id = request.headers.get('X-Client', 'unknown')[:64]
+    username = ''
+
     try:
-        # Rate limit by IP
-        ip = client_ip()
-        now = time.time()
-        prune_register_attempts(now)
-        attempts = [t for t in _register_attempts.get(ip, []) if now - t < REGISTER_WINDOW]
-        if len(attempts) >= REGISTER_LIMIT:
-            return error_response('Rate limit exceeded. Max 3 registrations per IP per day.', 429)
-        _register_attempts[ip] = attempts + [now]
+        data = request.get_json(silent=True) or {}
+        username = (data.get('username') or '').strip()
 
-        data = request.get_json() or {}
-        username = data.get('username', '').strip()
+        if username:
+            if len(username) < 3 or len(username) > 32:
+                record_registration(subnet, ip, client_id, username, 'rejected')
+                return error_response('username must be 3-32 characters', 400)
+            if not username.replace('-', '').replace('_', '').isalnum():
+                record_registration(subnet, ip, client_id, username, 'rejected')
+                return error_response(
+                    'username may only contain letters, numbers, hyphens and underscores', 400)
+            if db.session.query(User).filter_by(username=username).first():
+                record_registration(subnet, ip, client_id, username, 'rejected')
+                return error_response('username already taken', 409)
+        else:
+            username = generate_username()
 
-        if not username:
-            return error_response('username is required', 400)
-        if len(username) < 3 or len(username) > 32:
-            return error_response('username must be 3-32 characters', 400)
-        if not username.replace('-', '').replace('_', '').isalnum():
-            return error_response('username may only contain letters, numbers, hyphens and underscores', 400)
+        recent = recent_registration_count(subnet)
+        if recent >= REGISTER_HARD_CAP:
+            record_registration(subnet, ip, client_id, username, 'refused')
+            app.logger.info(
+                f"Registration refused: subnet={subnet} recent={recent} client={client_id}")
+            # A body rather than a bare error string. The caller is usually a
+            # program that prints whatever it is handed to a developer who has
+            # no other way to find out what went wrong.
+            return jsonify({
+                'error': 'registration_limited',
+                'message': (
+                    'Too many accounts have been created from this network today. '
+                    'An API key you already hold still works. If you need more '
+                    'accounts than this, get in touch.'
+                ),
+                'docs_url': 'https://emptyinbox.me/docs.html',
+            }), 429
 
-        # Check uniqueness
-        if db.session.query(User).filter_by(username=username).first():
-            return error_response('username already taken', 409)
+        quota, outcome = grade_registration(recent)
 
         api_key = create_user_token(username)[:32]
-        user_id = generate_user_id()
         user = User(
-            user_id=user_id,
+            user_id=generate_user_id(),
             username=username,
             api_key=api_key,
-            inbox_quota=AGENT_STARTING_QUOTA,
+            inbox_quota=quota,
+            signup_method='agent',
+            signup_ip=ip,
+            signup_client=client_id,
         )
         db.session.add(user)
         db.session.commit()
 
-        client_id = request.headers.get('X-Client', 'unknown')
-        app.logger.info(f"Agent registration: {username} from {ip} client={client_id}")
+        record_registration(subnet, ip, client_id, username, outcome, quota)
+        app.logger.info(
+            f"Agent registration: {username} from {ip} client={client_id} "
+            f"quota={quota} outcome={outcome} recent={recent}")
 
-        return jsonify({
+        body = {
             'api_key': api_key,
             'username': username,
-            'inbox_quota': AGENT_STARTING_QUOTA,
-        }), 201
+            'inbox_quota': quota,
+        }
+        if quota == 0:
+            # Say why the account arrived empty, and where to fix it. Silence
+            # here reads as a broken signup rather than a completed one.
+            body['message'] = (
+                'Account created without free credits: this network has already '
+                'used its free allowance today. The key works. Buy credits to '
+                'create inboxes.'
+            )
+            body['bundles_url'] = '/api/payments/bundles'
+        return jsonify(body), 201
 
     except Exception as e:
         app.logger.error(f"Agent registration failed: {e}")

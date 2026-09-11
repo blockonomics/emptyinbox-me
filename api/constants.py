@@ -69,3 +69,41 @@ PROVISIONAL_TTL_HOURS = 6
 # the count cap survives only to keep the outstanding set small enough to scan.
 MAX_PROVISIONAL_USD = max(MAX_CUSTOM_USD, *(b['usd'] for b in QUOTA_BUNDLES.values()))
 MAX_PROVISIONAL_INTENTS = 5
+
+
+# --- Registration ---
+#
+# Free quota is graded by how much of it the caller's network has already taken
+# today, rather than refused outright once a threshold is passed. A refusal is
+# a dead end: the caller meets a 429 on its very first request, before it has
+# seen the product work, and nothing about that failure tells us it happened.
+# A reduced grant still returns a working key, so the account exists, the
+# quickstart runs, and the paywall on POST /inbox handles the rest. An abuser
+# throttled down to zero lands on a 402 carrying purchase links, which is a
+# sales page; the same abuser refused at registration is simply gone.
+REGISTER_WINDOW = 86400  # seconds the counts below are measured over
+
+# (accounts already taken from this subnet in the window, credits to grant).
+# The first bucket covers what one developer or one CI project legitimately
+# needs. The second still grants enough to run the quickstart end to end and
+# watch a real message land. Past the last bucket the grant is zero.
+REGISTER_GRADES = ((3, AGENT_STARTING_QUOTA), (10, 2))
+
+# Past this many accounts from one subnet in the window, registration is
+# refused. The row itself is the only remaining cost, so this is a bound on
+# table growth rather than a product decision, which is why it sits an order of
+# magnitude above the grades.
+REGISTER_HARD_CAP = 200
+
+# Registrations are counted per subnet, not per address. A single developer
+# behind CGNAT, a CI fleet and a datacenter NAT all share an address, while an
+# abuser renting residential proxies has a fresh one per request. Counting the
+# surrounding block is the cheapest way to stop punishing the former without
+# handing the latter a free pass.
+REGISTER_V4_PREFIX = 24
+REGISTER_V6_PREFIX = 64
+
+# Retention for the registration ledger. It exists to drive the grading above
+# and to answer how many accounts arrive, from where, and through which client.
+# Neither needs history beyond a few months.
+REGISTRATION_LOG_DAYS = 90
