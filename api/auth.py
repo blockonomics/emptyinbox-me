@@ -552,6 +552,9 @@ def passkey_authenticate_complete():
 @auth_required 
 def auth_me(token):
     try:
+        # auth_required admits a session token or a raw API key. Resolving the
+        # user through the session table alone rejected every API key caller,
+        # which is all of them over MCP - the agent has no session to present.
         session = (
             db.session.query(UserSession)
             .filter_by(token=token)
@@ -559,12 +562,13 @@ def auth_me(token):
             .first()
         )
 
-        if not session:
-            return error_response('Invalid or expired authentication token', 401)
+        if session:
+            user = db.session.query(User).filter_by(user_id=session.user_id).first()
+        else:
+            user = db.session.query(User).filter_by(api_key=token).first()
 
-        user = db.session.query(User).filter_by(user_id=session.user_id).first()
         if not user:
-            return error_response('User not found', 404)
+            return error_response('Invalid or expired authentication token', 401)
 
         payments = (
             db.session.query(PaymentIntent)
@@ -610,8 +614,9 @@ def auth_me(token):
             'username': user.username,  # Include username in response
             'api_key': user.api_key,
             'inbox_quota': user.inbox_quota,
-            'login_time': session.login_time,
-            'session_expires_at': session.expires_at.isoformat(),
+            # Null for an API key caller: there is no session behind it.
+            'login_time': session.login_time if session else None,
+            'session_expires_at': session.expires_at.isoformat() if session else None,
             'payments': payment_data,
             'auth_method': auth_method
         }
