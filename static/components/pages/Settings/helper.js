@@ -26,9 +26,11 @@ function _renderQuota(payments, inboxQuota) {
     (sum, p) => sum + (typeof p.amount === "number" ? p.amount : 0),
     USER_STARTING_QUOTA
   );
-  const usedQuota = typeof inboxQuota === "number" ? inboxQuota : 0;
-  const remaining = Math.max(0, maxQuota - usedQuota);
-  const pct = maxQuota > 0 ? Math.min(100, (usedQuota / maxQuota) * 100) : 0;
+  // inbox_quota is the credit balance left, not the count consumed.
+  const remaining = Math.max(0, typeof inboxQuota === "number" ? inboxQuota : 0);
+  const totalQuota = Math.max(maxQuota, remaining);
+  const usedQuota = Math.max(0, totalQuota - remaining);
+  const pct = totalQuota > 0 ? Math.min(100, (usedQuota / totalQuota) * 100) : 0;
 
   const remainingEl = document.getElementById("quota-remaining-display");
   const suffixEl = document.getElementById("quota-suffix");
@@ -36,7 +38,7 @@ function _renderQuota(payments, inboxQuota) {
   const lowCta = document.getElementById("quota-low-cta");
 
   if (remainingEl) remainingEl.textContent = remaining;
-  if (suffixEl) suffixEl.textContent = `of ${maxQuota} inboxes available`;
+  if (suffixEl) suffixEl.textContent = `of ${totalQuota} inboxes available`;
 
   if (fillEl) {
     fillEl.style.width = `${pct}%`;
@@ -83,10 +85,11 @@ function _renderBilling(payments) {
     const shortHash = txhash
       ? txhash.slice(0, 10) + "…" + txhash.slice(-6)
       : "—";
+    const addr = payment.address || "";
     const txLink = isBtc
-      ? `https://mempool.space/tx/${txhash}`
+      ? `https://www.blockonomics.co/#/search?q=${txhash}${addr ? `&addr=${addr}` : ""}`
       : `https://etherscan.io/tx/${txhash}`;
-    const explorer = isBtc ? "mempool.space" : "Etherscan";
+    const explorer = isBtc ? "Blockonomics" : "Etherscan";
     // Zero-conf credit: quota is already granted, confirmation still pending.
     const pending = isBtc && payment.settled === false;
 

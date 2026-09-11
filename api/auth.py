@@ -597,6 +597,7 @@ def auth_me(token):
         )
         payment_data.extend({
             'txhash': p.txid,
+            'address': p.address,
             'amount': p.quota,
             'currency': 'BTC',
             'usd': p.usd_amount,
