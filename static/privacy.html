@@ -79,35 +79,42 @@
   <main>
     <div class="legal-page">
       <h1>Privacy Policy</h1>
-      <p class="legal-updated">Last updated: May 23, 2026</p>
+      <p class="legal-updated">Last updated: September 11, 2026</p>
 
       <h2>What we collect</h2>
       <p>EmptyInbox.me collects only what is necessary to operate the service:</p>
       <ul>
-        <li><strong>Account data:</strong> A passkey credential and a derived user identifier. No email address or password is stored.</li>
+        <li><strong>Account data:</strong> A username and a derived user identifier. Accounts created in a browser also store a passkey credential. Accounts created through the API have no passkey. No email address or password is stored in either case.</li>
         <li><strong>Inbox and message data:</strong> Emails delivered to your disposable inboxes are stored temporarily and automatically deleted after 7 days.</li>
-        <li><strong>Usage data:</strong> Inbox quota usage and API key activity for billing and abuse prevention.</li>
-        <li><strong>Payment data:</strong> Cryptocurrency transaction hashes processed via Blockonomics. No credit card or personal financial data is stored by us.</li>
+        <li><strong>Usage data:</strong> Inbox quota usage and API key activity for billing and abuse prevention, including a count of the times an account reached its quota limit.</li>
+        <li><strong>Network address:</strong> The IP address a registration came from, and the name of the client software that sent it, where one identifies itself. We record this for every attempt to create an account, including attempts we turn away. It is how we tell a developer or a build server apart from someone creating accounts in bulk, and it is the only way we can do so without asking you for an email address or putting a CAPTCHA in front of the service.</li>
+        <li><strong>Payment data:</strong> Cryptocurrency transaction hashes and payment addresses processed via Blockonomics. No credit card or personal financial data is stored by us.</li>
       </ul>
 
       <h2>How we use it</h2>
       <ul>
         <li>To deliver and display email messages to authenticated users.</li>
         <li>To enforce quota limits and prevent abuse.</li>
+        <li>To decide how much free quota a new account receives. Accounts created in bulk from one network receive less, or none.</li>
         <li>To process payments and credit inbox quota.</li>
       </ul>
 
       <h2>Data retention</h2>
       <p>Inbox messages are deleted automatically after 7 days. You can delete individual inboxes at any time. Deleting all inboxes does not delete your account; contact us via <a href="https://github.com/blockonomics/emptyinbox-me" target="_blank" rel="noopener noreferrer">GitHub</a> to request full account deletion.</p>
+      <p>The record of account registrations, including the network address each came from, is deleted automatically after 90 days. The address a surviving account was registered from is kept for as long as the account exists, and goes when the account does.</p>
+
+      <h2>Why we are allowed to hold this</h2>
+      <p>For anyone in the UK or EU: we rely on legitimate interests, specifically keeping a free service from being consumed in bulk by automated signups. We have kept the amount to a minimum deliberately. There is no email address, no name, no payment identity and no tracking across sites, because the service is designed not to need them. If you object to us holding a network address against your account, ask us to delete the account and it goes with it.</p>
 
       <h2>Third parties</h2>
       <ul>
         <li><strong>Blockonomics</strong> — payment processing. Subject to <a href="https://www.blockonomics.co/views/privacy.html" target="_blank" rel="noopener noreferrer">Blockonomics Privacy Policy</a>.</li>
       </ul>
-      <p>Fonts are self-hosted — no third-party font CDN requests are made. We do not sell or share your data with third parties for advertising purposes.</p>
+      <p>We do not sell or share your data with third parties for advertising purposes.</p>
 
       <h2>Cookies and storage</h2>
-      <p>We use <code>localStorage</code> in your browser to store your login state. No tracking cookies are set.</p>
+      <p>Signing in sets one cookie, <code>session_token</code>, which identifies your browser session to the server. It is marked <code>HttpOnly</code>, so scripts on the page cannot read it. We also use <code>localStorage</code> to keep your login state between visits.</p>
+      <p>Both exist only to keep you signed in, which is why the site asks no cookie consent: neither is used to track you, build a profile, or measure anything. We run no analytics, no advertising and no third-party scripts. Fonts are self-hosted, so loading a page contacts nobody but us.</p>
 
       <h2>Contact</h2>
       <p>Questions or deletion requests: open an issue on <a href="https://github.com/blockonomics/emptyinbox-me" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>

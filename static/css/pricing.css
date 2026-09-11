@@ -220,6 +220,16 @@
 .feature-check svg { width: 10px; height: 10px; }
 
 /* CTA */
+/* Qualifier under a plan's feature list. Deliberately quiet: it applies to
+   almost nobody, and a caveat set at the same weight as the features reads as
+   a catch rather than as the small print it is. */
+.card-footnote {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
 .card-cta { margin-top: auto; }
 
 /* Credit clarification note */
