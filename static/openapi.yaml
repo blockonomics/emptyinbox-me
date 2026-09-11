@@ -454,6 +454,20 @@ paths:
                         usd:
                           type: integer
                           example: 5
+                  custom:
+                    type: object
+                    description: |
+                      Bounds for naming your own amount on /payments/quote
+                      instead of picking a bundle.
+                    properties:
+                      min_usd:
+                        type: integer
+                        example: 1
+                      max_usd:
+                        type: integer
+                        example: 100
+                      note:
+                        type: string
 
   /payments/quote:
     post:
@@ -482,6 +496,15 @@ paths:
                   type: string
                   description: Bundle id from /payments/bundles
                   example: starter
+                usd:
+                  type: integer
+                  description: |
+                    Custom whole-dollar amount to spend, between min_usd and
+                    max_usd from /payments/bundles. Takes precedence over
+                    `bundle`. The per-inbox rate is the best bundle rate the
+                    amount qualifies for, so a custom amount never beats the
+                    bundle above it.
+                  example: 1
       responses:
         "201":
           description: Quote created
@@ -496,7 +519,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/PaymentQuote"
         "400":
-          description: Unknown bundle id
+          description: |
+            Unknown bundle id, a `usd` amount outside the allowed range, or an
+            amount that prices below the satoshi floor
         "401":
           description: Missing or invalid API key
         "409":

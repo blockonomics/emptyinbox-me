@@ -290,8 +290,13 @@
   gap: var(--space-4);
 }
 
+/* Four tiles: two-up in the middle range rather than 3 + 1 orphan. */
 @media (min-width: 640px) {
-  .bundle-tiles { grid-template-columns: repeat(3, 1fr); }
+  .bundle-tiles { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 980px) {
+  .bundle-tiles { grid-template-columns: repeat(4, 1fr); }
 }
 
 .bundle-tile {

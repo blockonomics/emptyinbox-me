@@ -34,7 +34,7 @@ npm package: `emptyinbox-mcp`
 - `GET /api/messages` — list all messages `[{id, inbox, subject, text_body, html_body, sender, timestamp}]`
 - `GET /api/message/{id}` — get full message content
 - `GET /api/payments/bundles` — quota bundles for sale, no auth required
-- `POST /api/payments/quote` — get a Bitcoin address and amount to buy quota `{bundle}`
+- `POST /api/payments/quote` — get a Bitcoin address and amount to buy quota `{bundle}` or `{usd}`
 - `GET /api/payments/status/{address}` — check whether a payment landed and quota was credited
 
 ## Guides
@@ -87,7 +87,8 @@ for confirmations. The MCP tools `buy_quota` and `check_payment` wrap this flow.
 ## Pricing
 
 - Free: 5 inboxes per account, agents included
-- Paid: 10 inboxes per USD — bundles at $5 / 50, $15 / 200, $40 / 750
+- Paid: from 10 inboxes per USD — bundles at $1 / 10, $5 / 50, $15 / 200, $40 / 750
+- Or any whole-dollar amount from $1 to $100, at the best bundle rate that amount qualifies for
 - Payments via Blockonomics: Bitcoin for agents, BTC or USDT for humans — no credit card, no KYC
 
 ## Pages

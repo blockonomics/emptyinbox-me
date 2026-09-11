@@ -625,10 +625,16 @@
   "currency": "USD",
   "default": "starter",
   "bundles": [
+    { "id": "micro",    "quota": 10,  "usd": 1 },
     { "id": "starter",  "quota": 50,  "usd": 5 },
     { "id": "standard", "quota": 200, "usd": 15 },
     { "id": "bulk",     "quota": 750, "usd": 40 }
-  ]
+  ],
+  "custom": {
+    "min_usd": 1,
+    "max_usd": 100,
+    "note": "Pass usd instead of bundle to buy a whole-dollar amount."
+  }
 }</code></pre>
               </div>
             </div>
@@ -641,7 +647,7 @@
             <code class="endpoint-path">/payments/quote</code>
           </div>
           <div class="endpoint-body">
-            <p class="endpoint-description">Returns a Bitcoin address, the exact amount to send, and a BIP21 URI. Idempotent per account: calling it again while a quote is open returns the same address rather than issuing a new one. Quotes expire after 15 minutes.</p>
+            <p class="endpoint-description">Returns a Bitcoin address, the exact amount to send, and a BIP21 URI. Pass <code>bundle</code> for a named bundle, or <code>usd</code> for a whole-dollar amount between <code>min_usd</code> and <code>max_usd</code>; <code>usd</code> takes precedence over <code>bundle</code>. Idempotent per purchase: calling it again while a quote for the same bundle and amount is open returns the same address rather than issuing a new one. Quotes expire after 15 minutes.</p>
 
             <div class="response-example">
               <h4>Example Request</h4>

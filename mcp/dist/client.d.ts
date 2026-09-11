@@ -95,7 +95,7 @@ export declare class EmptyInboxClient {
         default: string;
         bundles: Bundle[];
     }>;
-    createQuote(bundle?: string): Promise<Quote>;
+    createQuote(bundle?: string, usd?: number): Promise<Quote>;
     getPaymentStatus(address: string): Promise<PaymentState>;
     getQuota(): Promise<{
         inbox_quota: number;

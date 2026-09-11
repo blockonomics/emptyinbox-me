@@ -67,5 +67,11 @@ that quota is exhausted and the agent can buy more without leaving the session:
 2. pay it from any wallet — or hand the BIP21 URI to a human to pay
 3. `check_payment` confirms the credit, usually within seconds of broadcast
 
+`buy_quota` takes either a `bundle` id from `list_bundles` or a custom whole-dollar
+`usd` amount from $1 to $100, for an agent spending down whatever a wallet holds.
+A custom amount is priced at the best bundle rate it qualifies for. The network
+fee the payer adds on top is the same whatever the size of the payment, so it
+eats a far larger share of a dollar-sized top-up.
+
 Quota is granted as soon as the payment is seen on the network, so there is no
 waiting for confirmations. Humans can also buy at https://emptyinbox.me/inboxes.html

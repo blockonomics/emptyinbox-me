@@ -10,6 +10,7 @@ from config import db, app
 from constants import (
     USDT_DECIMALS, QUOTA_PER_USDT, BTC_DECIMALS, QUOTA_BUNDLES, DEFAULT_BUNDLE,
     QUOTE_TTL_MINUTES, UNDERPAYMENT_TOLERANCE, MAX_PROVISIONAL_INTENTS,
+    MAX_PROVISIONAL_USD, MIN_CUSTOM_USD, MAX_CUSTOM_USD, MIN_PAYMENT_SATS,
 )
 from db_models import (
     User, UserSession, PaymentIntent, PaymentStatus, BtcPaymentIntent, PaymentCallback,
@@ -89,6 +90,18 @@ def get_payment_config():
     })
 
 
+def quota_for_usd(usd):
+    """Quota for an arbitrary whole-dollar amount, at the best bundle rate the
+    amount qualifies for. Never beats the bundle above it, so buying $39 of
+    custom quota stays worse value than the $40 bundle."""
+    # An amount below every bundle has no rate to inherit. That cannot happen
+    # while the cheapest bundle sits at MIN_CUSTOM_USD, but the two are set
+    # independently, so fall back rather than raising out of an empty max().
+    rates = [b['quota'] / b['usd'] for b in QUOTA_BUNDLES.values() if b['usd'] <= usd]
+    cheapest = min(b['quota'] / b['usd'] for b in QUOTA_BUNDLES.values())
+    return int(usd * (max(rates) if rates else cheapest))
+
+
 @payments_bp.route('/bundles', methods=['GET'])
 def get_bundles():
     """Public price list. Agents read this before quoting."""
@@ -97,8 +110,16 @@ def get_bundles():
         'default': DEFAULT_BUNDLE,
         'bundles': [
             {'id': name, 'quota': b['quota'], 'usd': b['usd']}
-            for name, b in QUOTA_BUNDLES.items()
+            for name, b in sorted(QUOTA_BUNDLES.items(), key=lambda kv: kv[1]['usd'])
         ],
+        'custom': {
+            'min_usd': MIN_CUSTOM_USD,
+            'max_usd': MAX_CUSTOM_USD,
+            'note': 'Pass usd instead of bundle to buy a whole-dollar amount, '
+                    'at the best bundle rate that amount qualifies for. The '
+                    'network fee you pay on top is the same whatever the size '
+                    'of the payment, so it eats a far larger share of a small one.',
+        },
     })
 
 
@@ -113,25 +134,56 @@ def create_quote():
         return error_response('Unauthorized', 401)
 
     data = request.get_json(silent=True) or {}
-    bundle_id = data.get('bundle', DEFAULT_BUNDLE)
-    bundle = QUOTA_BUNDLES.get(bundle_id)
-    if not bundle:
-        return error_response(f"Unknown bundle. Choose one of: {', '.join(QUOTA_BUNDLES)}", 400)
+
+    # A custom whole-dollar amount and a named bundle are the same thing to
+    # everything downstream: a USD figure and the quota it buys.
+    if data.get('usd') is not None:
+        # bool is an int subclass, so {"usd": true} would otherwise book a $1
+        # quote off a JSON flag that was never meant as an amount.
+        if isinstance(data['usd'], bool):
+            return error_response('usd must be a whole number of dollars', 400)
+        try:
+            usd = int(data['usd'])
+            if usd != float(data['usd']):
+                raise ValueError
+        except (TypeError, ValueError):
+            return error_response('usd must be a whole number of dollars', 400)
+        if not MIN_CUSTOM_USD <= usd <= MAX_CUSTOM_USD:
+            return error_response(
+                f'usd must be between {MIN_CUSTOM_USD} and {MAX_CUSTOM_USD}', 400)
+        bundle_id, quota = 'custom', quota_for_usd(usd)
+    else:
+        bundle_id = data.get('bundle', DEFAULT_BUNDLE)
+        bundle = QUOTA_BUNDLES.get(bundle_id)
+        if not bundle:
+            return error_response(
+                f"Unknown bundle. Choose one of: {', '.join(QUOTA_BUNDLES)}, "
+                'or pass usd for a custom amount.', 400)
+        usd, quota = bundle['usd'], bundle['quota']
 
     now = datetime.utcnow()
 
     # Zero-conf credit is provisional. Refuse to stack more of it on one user
     # than we are willing to lose to a replacement attack.
-    outstanding = db.session.query(BtcPaymentIntent).filter_by(
-        user_id=current_user_id, credited=True, settled=False, revoked=False).count()
-    if outstanding >= MAX_PROVISIONAL_INTENTS:
+    provisional = db.session.query(BtcPaymentIntent).filter_by(
+        user_id=current_user_id, credited=True, settled=False, revoked=False).all()
+    outstanding_usd = sum(p.usd_amount for p in provisional)
+    if len(provisional) >= MAX_PROVISIONAL_INTENTS:
         return error_response(
-            'A previous payment is still awaiting confirmation. Retry once it settles.', 409)
+            f'{len(provisional)} previous payments are still awaiting confirmation. '
+            'Retry once one settles.', 409)
+    if outstanding_usd + usd > MAX_PROVISIONAL_USD:
+        return error_response(
+            f'${outstanding_usd} of unconfirmed payments is already open on this '
+            f'account, and ${MAX_PROVISIONAL_USD} is the ceiling. Retry once it '
+            'settles, or buy a smaller amount.', 409)
 
-    # Reuse an open quote for the same bundle instead of burning an address.
+    # Reuse an open quote for the same purchase instead of burning an address.
+    # Custom amounts share one bundle id, so the amount has to match too.
     existing = db.session.query(BtcPaymentIntent).filter(
         BtcPaymentIntent.user_id == current_user_id,
         BtcPaymentIntent.bundle == bundle_id,
+        BtcPaymentIntent.usd_amount == usd,
         BtcPaymentIntent.credited.is_(False),
         BtcPaymentIntent.expires_at > now,
     ).first()
@@ -140,18 +192,31 @@ def create_quote():
 
     try:
         price = btc_price_usd()
+    except Exception as e:
+        app.logger.error(f'Quote failed: {e}')
+        return error_response('Could not reach the payment provider', 502)
+
+    # Price the order before deriving an address. A rejected quote must not
+    # advance the xPub index - unused addresses eat into the gap limit.
+    expected = int(round(usd / price * BTC_DECIMALS))
+    if expected < MIN_PAYMENT_SATS:
+        return error_response(
+            f'${usd} is only {expected} sats at the current price. No wallet will '
+            f'send an output below {MIN_PAYMENT_SATS} sats, so this payment could '
+            'not be broadcast. Buy a larger amount.', 400)
+
+    try:
         address = new_btc_address()
     except Exception as e:
         app.logger.error(f'Quote failed: {e}')
         return error_response('Could not reach the payment provider', 502)
 
-    expected = int(round(bundle['usd'] / price * BTC_DECIMALS))
     intent = BtcPaymentIntent(
         address=address,
         user_id=current_user_id,
         bundle=bundle_id,
-        quota=bundle['quota'],
-        usd_amount=bundle['usd'],
+        quota=quota,
+        usd_amount=usd,
         expected_satoshis=expected,
         expires_at=now + timedelta(minutes=QUOTE_TTL_MINUTES),
     )

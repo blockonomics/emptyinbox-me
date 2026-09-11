@@ -88,11 +88,13 @@ export class EmptyInboxClient {
             throw new Error(`getBundles failed: ${res.status} ${await res.text()}`);
         return res.json();
     }
-    async createQuote(bundle) {
+    async createQuote(bundle, usd) {
+        // usd wins when both are given: a caller that names an amount means it.
+        const body = usd !== undefined ? { usd } : bundle ? { bundle } : {};
         const res = await fetch(`${BASE_URL}/payments/quote`, {
             method: "POST",
             headers: this.headers,
-            body: JSON.stringify(bundle ? { bundle } : {}),
+            body: JSON.stringify(body),
         });
         if (!res.ok)
             throw new Error(`createQuote failed: ${res.status} ${await res.text()}`);

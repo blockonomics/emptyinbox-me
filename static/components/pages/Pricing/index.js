@@ -14,6 +14,7 @@ const LOCK_ICON = `<svg width="12" height="12" fill="none" stroke="currentColor"
 // Mirrors QUOTA_BUNDLES in api/constants.py. The static prerender in
 // static/pricing.html carries the same list — update both when prices move.
 const BUNDLES = [
+  { name: "Micro", quota: 10, usd: 1, unit: "$0.10 per inbox" },
   { name: "Starter", quota: 50, usd: 5, unit: "$0.10 per inbox" },
   { name: "Standard", quota: 200, usd: 15, unit: "$0.075 per inbox" },
   { name: "Bulk", quota: 750, usd: 40, unit: "$0.053 per inbox", best: true },
@@ -29,7 +30,7 @@ const FREE_FEATURES = [
 
 const PAID_FEATURES = [
   "Everything in Free",
-  "Three bundle sizes — up to 47% less per inbox",
+  "Four bundle sizes, or any amount from $1 — up to 47% less per inbox",
   "Pay with Bitcoin or USDT — no KYC, no card",
   "Credits never expire",
   "Priority email delivery",
@@ -131,7 +132,7 @@ export async function renderPricingPage() {
       <section class="pricing-bundles-section">
         <div class="bundles-header">
           <h2 class="bundles-title">Bitcoin bundles</h2>
-          <p class="bundles-note">Bundles start at $5 because on-chain fees make dollar-sized Bitcoin payments impractical. Paying in USDT instead? Send any amount — $1 buys 10 credits.</p>
+          <p class="bundles-note">Or name your own amount from $1 to $100 — pass <code>usd</code> instead of a bundle. The network fee is the same whatever the size of the payment, so it eats a far larger share of a small one. Paying in USDT instead? Send any amount — $1 buys 10 credits.</p>
         </div>
 
         <div class="bundle-tiles">

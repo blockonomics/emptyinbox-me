@@ -206,10 +206,11 @@ server.registerTool("wait_for_message", {
 server.registerTool("buy_quota", {
   description: "Buy more inbox quota with Bitcoin. Returns a payment address, the exact amount, and a BIP21 URI. Pay from a Bitcoin wallet, or give the BIP21 URI to the user to pay. Quota is granted as soon as the payment is seen on the network - no need to wait for confirmations. Call check_payment afterwards.",
   inputSchema: {
-    bundle: z.string().optional().describe("Bundle id from list_bundles (default: the cheapest)"),
+    bundle: z.string().optional().describe("Bundle id from list_bundles (default: starter)"),
+    usd: z.number().int().optional().describe("Spend a custom whole-dollar amount instead of a bundle, from 1 to 100. Priced at the best bundle rate the amount qualifies for. The network fee the payer adds on top is the same whatever the size of the payment, so it eats a far larger share of a small one."),
   },
-}, async ({ bundle }) => {
-  const quote = await client.createQuote(bundle);
+}, async ({ bundle, usd }) => {
+  const quote = await client.createQuote(bundle, usd);
   return { content: [{ type: "text" as const, text: JSON.stringify({
     ...quote,
     instructions: `Send exactly ${quote.amount_btc} BTC to ${quote.address}. ` +
