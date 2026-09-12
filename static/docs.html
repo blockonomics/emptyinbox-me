@@ -62,7 +62,7 @@
         "name": "How do I get an EmptyInbox API key?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Call POST /auth/register once and keep the key it returns, or install the MCP server, which registers on first run. No passkey, browser or email address is involved, and a username is optional. Free starting quota is reduced for networks that have already created several accounts in the last 24 hours, so read inbox_quota off the response rather than assuming 5."
+          "text": "Call POST /auth/register once and keep the key it returns, or install the MCP server, which registers on its first tool call. No passkey, browser or email address is involved, and a username is optional. Free starting quota is reduced for networks that have already created several accounts in the last 24 hours, so read inbox_quota off the response rather than assuming 5."
         }
       },
       {
@@ -230,7 +230,7 @@
 
         <div class="info-block">
           <h3>Zero-config with MCP</h3>
-          <p>Add to your MCP config and the server auto-registers on first run — no setup needed:</p>
+          <p>Add to your MCP config and the server auto-registers on its first tool call — no setup needed:</p>
           <div class="code-block">
             <div class="code-header">
               <span class="code-lang">json</span>
@@ -816,7 +816,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
           </div>
           <div class="faq-item">
             <h3>How do I get an API key?</h3>
-            <p>Call <code>POST /auth/register</code> once and keep the key it returns, or install the MCP server, which registers on first run. No passkey, browser or email address is involved, and a username is optional. Free starting quota is reduced for networks that have already created several accounts in the last 24 hours, so read <code>inbox_quota</code> off the response rather than assuming 5.</p>
+            <p>Call <code>POST /auth/register</code> once and keep the key it returns, or install the MCP server, which registers on its first tool call. No passkey, browser or email address is involved, and a username is optional. Free starting quota is reduced for networks that have already created several accounts in the last 24 hours, so read <code>inbox_quota</code> off the response rather than assuming 5.</p>
           </div>
           <div class="faq-item">
             <h3>Does listing messages return mail from every inbox?</h3>

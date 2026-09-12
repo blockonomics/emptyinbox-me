@@ -5,7 +5,7 @@ import { z } from "zod";
 import { readFileSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
-import { EmptyInboxClient, registerAgent, QuotaExhaustedError, type Message } from "./client.js";
+import { EmptyInboxClient, registerAgent, QuotaExhaustedError, VERSION, type Message, type RegisterResult } from "./client.js";
 
 // A container gets a fresh home directory on every run, so a key saved there
 // is gone by the next one and the server is asked for another account. That is
@@ -27,39 +27,45 @@ function storeKey(api_key: string, username: string): void {
   writeFileSync(CONFIG_PATH, JSON.stringify({ api_key, username }, null, 2));
 }
 
-let apiKey = process.env.EMPTYINBOX_API_KEY ?? loadStoredKey();
+// `||` not `??`: a CI secret that is missing arrives as an empty string, and
+// an empty string must fall through to the saved file, not register.
+let apiKey: string | null = process.env.EMPTYINBOX_API_KEY || loadStoredKey();
+const client = new EmptyInboxClient(apiKey);
 
-if (!apiKey) {
-  try {
-    process.stderr.write(`[emptyinbox] No API key found. Registering...\n`);
-    // The server names the account. Inventing one here risked colliding with
-    // an existing username and failing the very first call.
-    const result = await registerAgent();
-    apiKey = result.api_key;
-    storeKey(apiKey, result.username);
-    process.stderr.write(`[emptyinbox] Registered as "${result.username}". Key saved to ${CONFIG_PATH}\n`);
-    if (result.inbox_quota > 0) {
-      process.stderr.write(`[emptyinbox] Starting quota: ${result.inbox_quota} inbox(es)\n`);
-    } else {
-      // Still a working account. Saying so stops this reading as a failure.
-      process.stderr.write(`[emptyinbox] No free credits on this account: ${result.message ?? "free allowance used up for this network today"}\n`);
-      process.stderr.write(`[emptyinbox] The key works. Use buy_quota to add credits.\n`);
-    }
-  } catch (err) {
-    process.stderr.write(`[emptyinbox] Registration failed: ${err}\n`);
-    process.stderr.write(`[emptyinbox] Reuse a key instead of registering again: set EMPTYINBOX_API_KEY.\n`);
-    process.stderr.write(`[emptyinbox] In CI or containers, set it from a secret - a fresh container\n`);
-    process.stderr.write(`[emptyinbox] has no saved key and will register on every run.\n`);
-    process.stderr.write(`[emptyinbox] Docs: https://emptyinbox.me/docs.html\n`);
-    process.exit(1);
+function adoptKey(result: RegisterResult): void {
+  apiKey = result.api_key;
+  client.setKey(apiKey);
+  storeKey(apiKey, result.username);
+  process.stderr.write(`[emptyinbox] Registered as "${result.username}". Key saved to ${CONFIG_PATH}\n`);
+  if (result.inbox_quota === 0) {
+    // Still a working account. Saying so stops this reading as a failure.
+    process.stderr.write(`[emptyinbox] No free credits on this account: ${result.message ?? "free allowance used up for this network today"}\n`);
+    process.stderr.write(`[emptyinbox] The key works. Use buy_quota to add credits.\n`);
   }
 }
 
-const client = new EmptyInboxClient(apiKey);
+// Registration used to run at boot. That made every process start an account:
+// MCP hosts start a server just to list its tools, and registry crawlers do
+// the same in a throwaway sandbox, so most rows in `users` came from nobody
+// wanting an inbox. Registering inside the first call that needs a key means
+// an account exists only once a tool has actually been used, and a host that
+// only introspects costs nothing.
+//
+// One in-flight registration is shared: an agent that fires create_inbox and
+// get_quota together must not end up with two accounts.
+let registering: Promise<string> | null = null;
+
+async function ensureKey(): Promise<string> {
+  if (apiKey) return apiKey;
+  registering ??= registerAgent()
+    .then((result) => { adoptKey(result); return result.api_key; })
+    .finally(() => { registering = null; });
+  return registering;
+}
 
 const server = new McpServer({
   name: "emptyinbox",
-  version: "1.2.0",
+  version: VERSION,
 });
 
 server.registerTool("register_account", {
@@ -70,9 +76,7 @@ server.registerTool("register_account", {
 }, async ({ username }) => {
   try {
     const result = await registerAgent(username);
-    storeKey(result.api_key, result.username);
-    // Update the running client with the new key
-    (client as any).headers["Authorization"] = `Bearer ${result.api_key}`;
+    adoptKey(result);
     return { content: [{ type: "text" as const, text: JSON.stringify({
       success: true,
       username: result.username,
@@ -95,8 +99,9 @@ server.registerTool("register_account", {
 server.registerTool("get_quota", {
   description: "Check remaining inbox quota. If quota is low, returns a payment URL the user can visit to top up with USDT.",
 }, async () => {
+  const key = await ensureKey();
   const { inbox_quota, username } = await client.getQuota();
-  const purchaseUrl = `https://emptyinbox.me/purchase.html?api_key=${apiKey}`;
+  const purchaseUrl = `https://emptyinbox.me/purchase.html?api_key=${key}`;
   const result: Record<string, unknown> = { username, inbox_quota };
   if (inbox_quota <= 2) {
     result.warning = "Quota is low.";
@@ -108,6 +113,7 @@ server.registerTool("get_quota", {
 server.registerTool("create_inbox", {
   description: "Create a new disposable email inbox. Returns the email address. Use this before triggering any signup or email verification flow.",
 }, async () => {
+  await ensureKey();
   try {
     const email = await client.createInbox();
     return { content: [{ type: "text" as const, text: email.trim() }] };
@@ -126,6 +132,7 @@ server.registerTool("create_inbox", {
 server.registerTool("list_inboxes", {
   description: "List all disposable email inboxes on this account.",
 }, async () => {
+  await ensureKey();
   const inboxes = await client.listInboxes();
   return { content: [{ type: "text" as const, text: JSON.stringify(inboxes, null, 2) }] };
 });
@@ -154,6 +161,7 @@ server.registerTool("list_messages", {
     since: z.number().optional().describe("Unix seconds — only messages received after this"),
   },
 }, async ({ inbox, limit, since }) => {
+  await ensureKey();
   const messages = await client.listMessages({ inbox, limit, since, includeBody: false });
   return { content: [{ type: "text" as const, text: JSON.stringify(messages.map(summarize), null, 2) }] };
 });
@@ -166,6 +174,7 @@ server.registerTool("get_message", {
     include_html: z.boolean().default(false).describe("Include the raw html_body in json output (default: false — it is large and rarely needed)"),
   },
 }, async ({ message_id, format, include_html }) => {
+  await ensureKey();
   if (format === "text") {
     return { content: [{ type: "text" as const, text: await client.getMessageText(message_id) }] };
   }
@@ -184,6 +193,7 @@ server.registerTool("wait_for_message", {
     require_code: z.boolean().default(false).describe("Keep waiting until a message carries an extracted code or action link"),
   },
 }, async ({ inbox, timeout_seconds, poll_interval_seconds, subject_contains, require_code }) => {
+  await ensureKey();
   const intervalMs = Math.max(1, poll_interval_seconds) * 1000;
   const deadline = Date.now() + timeout_seconds * 1000;
 
@@ -228,6 +238,7 @@ server.registerTool("buy_quota", {
     usd: z.number().int().optional().describe("Spend a custom whole-dollar amount instead of a bundle, from 1 to 100. Priced at the best bundle rate the amount qualifies for. The network fee the payer adds on top is the same whatever the size of the payment, so it eats a far larger share of a small one."),
   },
 }, async ({ bundle, usd }) => {
+  await ensureKey();
   const quote = await client.createQuote(bundle, usd);
   return { content: [{ type: "text" as const, text: JSON.stringify({
     ...quote,
@@ -251,6 +262,7 @@ server.registerTool("check_payment", {
     poll_interval_seconds: z.number().default(5).describe("Seconds between checks (default: 5)"),
   },
 }, async ({ address, wait_seconds, poll_interval_seconds }) => {
+  await ensureKey();
   // A zero interval would hammer the API in a tight loop.
   const intervalMs = Math.max(1, poll_interval_seconds) * 1000;
   const deadline = Date.now() + Math.max(0, wait_seconds) * 1000;

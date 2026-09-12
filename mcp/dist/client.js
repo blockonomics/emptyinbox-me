@@ -1,7 +1,12 @@
+import { createRequire } from "module";
 export const BASE_URL = process.env.EMPTYINBOX_BASE_URL ?? "https://emptyinbox.me/api";
+// One source for the version. It drifted before: package.json said 1.2.1
+// while every request still announced 1.2.0, so the logs could not tell
+// which build a signup came from.
+export const VERSION = createRequire(import.meta.url)("../package.json").version;
 // Sent on every request so the server can tell MCP traffic from hand-rolled
 // REST clients. Without it, registrations are indistinguishable in the logs.
-export const CLIENT_ID = "emptyinbox-mcp/1.2.0";
+export const CLIENT_ID = `emptyinbox-mcp/${VERSION}`;
 /** Thrown when the account is out of inbox quota and must pay to continue. */
 export class QuotaExhaustedError extends Error {
     detail;
@@ -35,12 +40,21 @@ export async function registerAgent(username) {
 }
 export class EmptyInboxClient {
     headers;
+    /**
+     * A client may start without a key. Registration happens on the first tool
+     * call that needs one, not at boot, so a host that only starts the server
+     * to read its tool list never creates an account.
+     */
     constructor(apiKey) {
         this.headers = {
-            Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
             "X-Client": CLIENT_ID,
         };
+        if (apiKey)
+            this.setKey(apiKey);
+    }
+    setKey(apiKey) {
+        this.headers["Authorization"] = `Bearer ${apiKey}`;
     }
     async createInbox() {
         const res = await fetch(`${BASE_URL}/inbox`, {

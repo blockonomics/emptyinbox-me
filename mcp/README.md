@@ -17,7 +17,7 @@ MCP server for [EmptyInbox](https://emptyinbox.me) — create disposable email i
 }
 ```
 
-On first use, the agent calls `register_account` to create a free account automatically. The API key is saved to `~/.emptyinbox.json` for future sessions.
+No setup: the first tool call that needs an account registers one automatically and saves the key to `~/.emptyinbox.json` for future sessions. Starting the server on its own (as MCP hosts do to list tools) creates nothing.
 
 **Bring your own account** (optional — to reuse an existing key):
 ```json

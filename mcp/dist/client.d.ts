@@ -1,5 +1,6 @@
 export declare const BASE_URL: string;
-export declare const CLIENT_ID = "emptyinbox-mcp/1.2.0";
+export declare const VERSION: string;
+export declare const CLIENT_ID: string;
 export interface MessageLink {
     url: string;
     text: string;
@@ -97,7 +98,13 @@ export interface RegisterResult {
 export declare function registerAgent(username?: string): Promise<RegisterResult>;
 export declare class EmptyInboxClient {
     private headers;
-    constructor(apiKey: string);
+    /**
+     * A client may start without a key. Registration happens on the first tool
+     * call that needs one, not at boot, so a host that only starts the server
+     * to read its tool list never creates an account.
+     */
+    constructor(apiKey: string | null);
+    setKey(apiKey: string): void;
     createInbox(): Promise<string>;
     listInboxes(): Promise<Inbox[]>;
     listMessages(options?: ListMessagesOptions): Promise<Message[]>;
