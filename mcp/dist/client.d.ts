@@ -57,6 +57,8 @@ export interface Quote {
     amount_satoshis: number;
     amount_btc: string;
     bip21: string;
+    /** Page with a QR code and live status, for the human holding the wallet. */
+    pay_url?: string;
     expires_at: string;
     status_url: string;
 }

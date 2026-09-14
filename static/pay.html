@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f8f9fb" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1c1e24" media="(prefers-color-scheme: dark)" />
+  <!-- One page per quote, reached only through a link an agent hands its user. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Pay with Bitcoin — EmptyInbox</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="css/main.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);   /* lets the card shrink below its content width */
+      justify-items: center;
+      align-items: center;
+      padding-block: clamp(1rem, 4vw, 3rem);
+      padding-inline: 1rem;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 26rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 1rem;
+      box-shadow: var(--shadow-lg);
+      padding: clamp(1.25rem, 5vw, 2rem);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--color-text-secondary);
+      font-size: 0.85rem;
+      text-decoration: none;
+      margin-bottom: 1.25rem;
+    }
+    .brand img { height: 1.5rem; width: 1.5rem; }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.35rem, 4vw, 1.6rem);
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .lede {
+      color: var(--color-text-secondary);
+      font-size: 0.95rem;
+      margin-top: 0.35rem;
+    }
+
+    .qr {
+      margin: 1.5rem auto 1rem;
+      width: min(15rem, 100%);
+      aspect-ratio: 1;
+      max-width: 100%;
+      padding: 0.75rem;
+      background: oklch(1 0 0);           /* QR must stay dark-on-light in both themes */
+      border-radius: 0.75rem;
+      border: 1px solid var(--color-border);
+    }
+    .qr svg { width: 100%; height: 100%; display: block; }
+
+    .wallet {
+      display: block;
+      text-align: center;
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      font-weight: 600;
+      text-decoration: none;
+      padding: 0.75rem 1rem;
+      border-radius: 0.6rem;
+    }
+    .wallet:hover { background: var(--color-primary-dark); }
+
+    dl { margin-top: 1.25rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+    dt { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    dd {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.15rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.9rem;
+      overflow-wrap: anywhere;
+    }
+    dd span { flex: 1; min-width: 0; }
+
+    .copy {
+      flex: none;
+      font: inherit;
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.55rem;
+      border-radius: 0.4rem;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-subtle);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+    }
+    .copy:hover { color: var(--color-text-primary); }
+
+    .status {
+      margin-top: 1.25rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.6rem;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      background: var(--color-warning-soft);
+      color: var(--color-on-warning-soft);
+    }
+    .status[data-state="credited"] { background: var(--color-primary-soft); color: var(--color-on-primary-soft); }
+    .status[data-state="error"],
+    .status[data-state="expired"] { background: var(--color-danger-soft); color: var(--color-on-danger-soft); }
+
+    .fine { margin-top: 1rem; font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.5; }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .status[data-state="waiting"]::before {
+        content: "";
+        display: inline-block;
+        width: 0.5rem; height: 0.5rem;
+        margin-right: 0.5rem;
+        border-radius: 50%;
+        background: currentColor;
+        vertical-align: middle;
+        animation: pulse 1.4s ease-in-out infinite;
+      }
+      @keyframes pulse { 50% { opacity: 0.25; } }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <a class="brand" href="/"><img src="/favicon.svg" alt="" />EmptyInbox</a>
+
+    <h1 id="title">Loading payment…</h1>
+    <p class="lede" id="lede"></p>
+
+    <div id="pay" hidden>
+      <div class="qr" id="qr" role="img" aria-label="QR code for this Bitcoin payment"></div>
+      <a class="wallet" id="wallet" href="#">Open in wallet</a>
+
+      <dl>
+        <div>
+          <dt>Amount</dt>
+          <dd><span id="amount"></span><button class="copy" data-copy="amount">Copy</button></dd>
+        </div>
+        <div>
+          <dt>Address</dt>
+          <dd><span id="address"></span><button class="copy" data-copy="address">Copy</button></dd>
+        </div>
+      </dl>
+    </div>
+
+    <p class="status" id="status" data-state="waiting" role="status" aria-live="polite" hidden></p>
+
+    <p class="fine" id="fine" hidden>
+      Send the exact amount. Credits are added as soon as the payment is seen
+      on the network, usually within seconds, before it confirms. Keep this
+      page open or close it: your agent can check the payment itself.
+    </p>
+  </main>
+
+  <script src="/utils/qrcode.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const address = new URLSearchParams(location.search).get('address');
+    const POLL_MS = 5000;
+    let quote = null;
+    let timer = null;
+
+    function setStatus(state, text) {
+      const el = $('status');
+      el.hidden = false;
+      el.dataset.state = state;
+      el.textContent = text;
+    }
+
+    function fail(title, text) {
+      $('title').textContent = title;
+      $('lede').textContent = text;
+      $('pay').hidden = true;
+      $('fine').hidden = true;
+    }
+
+    function timeLeft(iso) {
+      const ms = new Date(iso) - Date.now();
+      if (ms <= 0) return null;
+      const m = Math.floor(ms / 60000), s = Math.floor(ms / 1000) % 60;
+      return `${m}:${String(s).padStart(2, '0')}`;
+    }
+
+    function render(q) {
+      const firstRender = !quote;
+      quote = q;
+
+      if (firstRender) {
+        $('title').textContent = `Buy ${q.quota} inboxes`;
+        $('lede').textContent = `$${q.usd} in Bitcoin`;
+        $('amount').textContent = `${q.amount_btc} BTC`;
+        $('address').textContent = q.address;
+        $('wallet').href = q.bip21;
+
+        const code = qrcode(0, 'M');
+        code.addData(q.bip21);
+        code.make();
+        $('qr').innerHTML = code.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+        $('pay').hidden = false;
+        $('fine').hidden = false;
+      }
+
+      if (q.revoked) {
+        setStatus('error', 'This payment was replaced or reversed on the network, so the credits were withdrawn.');
+        return stop();
+      }
+      if (q.quota_credited) {
+        $('pay').hidden = true;
+        $('fine').hidden = true;
+        $('title').textContent = `${q.quota} inboxes added`;
+        setStatus('credited', q.settled
+          ? 'Payment confirmed. The credits are on the account and your agent can create inboxes now.'
+          : 'Payment seen on the network. The credits are on the account already; your agent can create inboxes now.');
+        return stop();
+      }
+      if (q.received_satoshis > 0) {
+        const short = q.amount_satoshis - q.received_satoshis;
+        setStatus('waiting', short > 0
+          ? `Received ${q.received_satoshis} sats, ${short} sats short. Waiting for the rest…`
+          : 'Payment received. Crediting…');
+        return;
+      }
+      if (q.expired) {
+        $('pay').hidden = true;
+        $('fine').hidden = true;
+        setStatus('expired', 'This quote expired before a payment arrived. Ask your agent for a new one — the Bitcoin price has moved.');
+        return stop();
+      }
+      const left = timeLeft(q.expires_at);
+      setStatus('waiting', left ? `Waiting for payment · quote valid for ${left}` : 'Waiting for payment…');
+    }
+
+    function stop() { clearInterval(timer); timer = null; }
+
+    async function load() {
+      try {
+        const res = await fetch(`/api/payments/pay/${encodeURIComponent(address)}`);
+        if (res.status === 404) return fail('Quote not found', 'Check the link, or ask your agent for a new payment link.'), stop();
+        if (!res.ok) throw new Error(res.status);
+        render(await res.json());
+      } catch {
+        if (!quote) fail('Could not load this payment', 'Refresh the page in a moment.');
+      }
+    }
+
+    document.querySelectorAll('.copy').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const text = btn.dataset.copy === 'amount' ? quote.amount_btc : quote.address;
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.textContent = 'Copied';
+        } catch {
+          btn.textContent = 'Select to copy';
+        }
+        setTimeout(() => (btn.textContent = 'Copy'), 1500);
+      });
+    });
+
+    if (!address) {
+      fail('No payment selected', 'Open the payment link your agent gave you.');
+    } else {
+      load();
+      timer = setInterval(load, POLL_MS);
+      // Keep the countdown moving between polls.
+      setInterval(() => { if (timer && quote && !quote.quota_credited && !quote.received_satoshis) render(quote); }, 1000);
+    }
+  </script>
+</body>
+</html>

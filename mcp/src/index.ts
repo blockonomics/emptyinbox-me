@@ -63,10 +63,26 @@ async function ensureKey(): Promise<string> {
   return registering;
 }
 
-const server = new McpServer({
-  name: "emptyinbox",
-  version: VERSION,
-});
+// Read by the host once, before any tool is chosen. Tool descriptions say what
+// each tool does; this says how they fit together, and in particular how a sale
+// closes. An agent reaching the paywall with no plan either gives up or tells
+// its user the product is broken, and both lose the sale.
+const INSTRUCTIONS = `EmptyInbox gives you real, private email addresses for signups and email verification.
+
+Typical flow: create_inbox -> use the address -> wait_for_message (returns the parsed code and link).
+Reuse inboxes when you can; each new one costs one credit. Accounts start with a few free credits and register themselves on first use.
+
+When credits run out (create_inbox returns insufficient_quota, or get_quota shows 0):
+1. Tell the user, and show the prices from list_bundles. Let the user choose; do not buy on your own initiative.
+2. Call buy_quota with their choice.
+3. Give the user the pay_url from the result. It opens a page with a QR code and the exact amount for any Bitcoin wallet. If you control a Bitcoin wallet yourself and the user has approved the spend, you can pay the bip21 URI directly instead.
+4. Once the user says they have paid, call check_payment with wait_seconds around 120. Credits land within seconds of the payment being broadcast; no confirmations are needed.
+5. Continue the original task.`;
+
+const server = new McpServer(
+  { name: "emptyinbox", version: VERSION },
+  { instructions: INSTRUCTIONS },
+);
 
 server.registerTool("register_account", {
   description: "Register a new EmptyInbox account and get an API key. Use this only if there is no account configured yet, or if authentication is failing. Prefer reusing an existing key: repeatedly registering from one network reduces the free credits each new account receives. Saves the key locally for future sessions.",
@@ -83,7 +99,7 @@ server.registerTool("register_account", {
       api_key: result.api_key,
       inbox_quota: result.inbox_quota,
       ...(result.inbox_quota === 0 ? {
-        note: result.message ?? "Account created without free credits. The key works; buy quota to create inboxes.",
+        note: result.message ?? "Account created without free credits. The key works; call list_bundles and offer the user a bundle to buy with buy_quota.",
         bundles_url: result.bundles_url,
       } : {}),
       message: `Account created. API key saved to ${CONFIG_PATH}`,
@@ -97,15 +113,17 @@ server.registerTool("register_account", {
 });
 
 server.registerTool("get_quota", {
-  description: "Check remaining inbox quota. If quota is low, returns a payment URL the user can visit to top up with USDT.",
+  description: "Check how many inbox credits remain on this account. When credits are low, the result says how to buy more with Bitcoin.",
 }, async () => {
-  const key = await ensureKey();
+  await ensureKey();
   const { inbox_quota, username } = await client.getQuota();
-  const purchaseUrl = `https://emptyinbox.me/purchase.html?api_key=${key}`;
   const result: Record<string, unknown> = { username, inbox_quota };
+  // Points at the tools rather than a web page. The old link carried the API
+  // key in its query string and led to a USDT-only page the agent could not
+  // follow up on; buy_quota keeps the purchase inside the conversation.
   if (inbox_quota <= 2) {
-    result.warning = "Quota is low.";
-    result.top_up_url = purchaseUrl;
+    result.warning = inbox_quota === 0 ? "No credits left." : "Credits are low.";
+    result.next_step = "Show the user the prices from list_bundles, then call buy_quota with their choice and give them the pay_url.";
   }
   return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
 });
@@ -119,11 +137,15 @@ server.registerTool("create_inbox", {
     return { content: [{ type: "text" as const, text: email.trim() }] };
   } catch (err) {
     if (err instanceof QuotaExhaustedError) {
+      // Prices inline, so the agent can put a concrete offer to its user in
+      // this turn instead of spending another call discovering what to offer.
+      const prices = await client.getBundles().catch(() => null);
       return { content: [{ type: "text" as const, text: JSON.stringify({
         error: "insufficient_quota",
-        message: "Out of inbox quota. Call buy_quota to purchase more with Bitcoin.",
-        ...err.detail,
-      }, null, 2) }] };
+        message: "No inbox credits left. Offer the user one of the bundles below, call buy_quota with their choice, and give them the pay_url it returns.",
+        bundles: prices?.bundles,
+        custom_amount: prices ? "Or pass usd (whole dollars) to buy_quota for a custom amount." : undefined,
+      }, null, 2) }], isError: true };
     }
     throw err;
   }
@@ -232,7 +254,7 @@ server.registerTool("wait_for_message", {
 });
 
 server.registerTool("buy_quota", {
-  description: "Buy more inbox quota with Bitcoin. Returns a payment address, the exact amount, and a BIP21 URI. Pay from a Bitcoin wallet, or give the BIP21 URI to the user to pay. Quota is granted as soon as the payment is seen on the network - no need to wait for confirmations. Call check_payment afterwards.",
+  description: "Buy inbox credits with Bitcoin. Only call this after the user has chosen a bundle or amount. Returns a pay_url to give the user: a page with a QR code, the exact amount and a live payment status, which works with any Bitcoin wallet. Also returns the raw address, amount and BIP21 URI for paying directly. Credits are added as soon as the payment is seen on the network. Call check_payment once the user has paid.",
   inputSchema: {
     bundle: z.string().optional().describe("Bundle id from list_bundles (default: starter)"),
     usd: z.number().int().optional().describe("Spend a custom whole-dollar amount instead of a bundle, from 1 to 100. Priced at the best bundle rate the amount qualifies for. The network fee the payer adds on top is the same whatever the size of the payment, so it eats a far larger share of a small one."),
@@ -240,22 +262,25 @@ server.registerTool("buy_quota", {
 }, async ({ bundle, usd }) => {
   await ensureKey();
   const quote = await client.createQuote(bundle, usd);
+  const payTo = quote.pay_url
+    ? `Give the user this link to pay: ${quote.pay_url}`
+    : `Ask the user to send exactly ${quote.amount_btc} BTC to ${quote.address} (BIP21: ${quote.bip21}).`;
   return { content: [{ type: "text" as const, text: JSON.stringify({
     ...quote,
-    instructions: `Send exactly ${quote.amount_btc} BTC to ${quote.address}. ` +
-      `Grants ${quote.quota} inboxes. Quote expires ${quote.expires_at}.`,
+    instructions: `${payTo} It buys ${quote.quota} inboxes for $${quote.usd} and the quote expires ${quote.expires_at}. ` +
+      `When they say it is sent, call check_payment with address ${quote.address} and wait_seconds 120.`,
   }, null, 2) }] };
 });
 
 server.registerTool("list_bundles", {
-  description: "List the quota bundles available for purchase and their USD prices.",
+  description: "List the inbox credit bundles for sale and their USD prices, paid in Bitcoin. Show these to the user before calling buy_quota.",
 }, async () => {
   const bundles = await client.getBundles();
   return { content: [{ type: "text" as const, text: JSON.stringify(bundles, null, 2) }] };
 });
 
 server.registerTool("check_payment", {
-  description: "Check whether a Bitcoin payment from buy_quota has landed. Optionally waits until the quota is credited. Credit usually arrives within seconds of broadcast, well before confirmation.",
+  description: "Check whether a Bitcoin payment from buy_quota has landed. Pass wait_seconds (around 120) once the user says they have paid, to wait for the credits in one call. Credit usually arrives within seconds of broadcast, well before confirmation.",
   inputSchema: {
     address: z.string().describe("Payment address returned by buy_quota"),
     wait_seconds: z.number().default(0).describe("Seconds to keep polling for credit (default: 0, check once)"),

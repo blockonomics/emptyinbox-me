@@ -21,6 +21,12 @@ payments_bp = Blueprint('payments', __name__)
 USDT_ADDRESS = os.getenv('USDT_RECEIVING_ADDRESS', '0x742d35Cc6634C0532925a3b8D9DDdB4D1f0B1b69')
 BLOCKONOMICS_API = 'https://www.blockonomics.co/api'
 
+# Where a human pays a quote. An agent can obtain a quote but almost never
+# holds a wallet, so the sale closes only if it can hand its user something
+# they can act on. A bare bitcoin: URI in a chat window is not that; a page
+# with a QR code and a live status is.
+PAY_PAGE = f"https://{os.getenv('DOMAIN', 'emptyinbox.me')}/pay.html"
+
 
 def get_current_user():
     """Get current user from API key (not session token)"""
@@ -237,6 +243,7 @@ def quote_payload(intent: BtcPaymentIntent):
         'amount_satoshis': intent.expected_satoshis,
         'amount_btc': f'{btc:.8f}',
         'bip21': f'bitcoin:{intent.address}?amount={btc:.8f}',
+        'pay_url': f'{PAY_PAGE}?address={intent.address}',
         'expires_at': intent.expires_at.isoformat() + 'Z',
         'status_url': f'/api/payments/status/{intent.address}',
     }
@@ -264,6 +271,37 @@ def payment_status(address):
         'settled': intent.settled,
         'revoked': intent.revoked,
         'txid': intent.txid,
+        'expires_at': intent.expires_at.isoformat() + 'Z',
+    }), 200
+
+
+@payments_bp.route('/pay/<address>', methods=['GET'])
+def public_quote(address):
+    """What the pay page needs to render a quote, without an API key.
+
+    The page is opened by whoever holds the wallet, which is usually not the
+    agent that holds the key, and putting the key in the link would leave the
+    whole account in browser history and chat logs. The address is the
+    capability instead: it is only ever handed to the buyer, and what it
+    reveals here is what the buyer already knows - the amount, what it buys,
+    and whether it has landed. Nothing identifies the account."""
+    intent = db.session.query(BtcPaymentIntent).filter_by(address=address).first()
+    if not intent:
+        return error_response('Quote not found', 404)
+
+    btc = intent.expected_satoshis / BTC_DECIMALS
+    return jsonify({
+        'address': intent.address,
+        'quota': intent.quota,
+        'usd': intent.usd_amount,
+        'amount_satoshis': intent.expected_satoshis,
+        'amount_btc': f'{btc:.8f}',
+        'bip21': f'bitcoin:{intent.address}?amount={btc:.8f}',
+        'received_satoshis': intent.received_satoshis,
+        'quota_credited': intent.credited and not intent.revoked,
+        'settled': intent.settled,
+        'revoked': intent.revoked,
+        'expired': not intent.credited and intent.expires_at <= datetime.utcnow(),
         'expires_at': intent.expires_at.isoformat() + 'Z',
     }), 200
 

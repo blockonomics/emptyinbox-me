@@ -230,7 +230,7 @@
 
         <div class="info-block">
           <h3>Zero-config with MCP</h3>
-          <p>Add to your MCP config and the server auto-registers on its first tool call — no setup needed:</p>
+          <p>Add to your MCP config and the server auto-registers on its first tool call — no setup needed. Package: <a href="https://www.npmjs.com/package/emptyinbox-mcp" rel="noopener"><code>emptyinbox-mcp</code> on npm</a>, listed in the official MCP Registry as <code>io.github.cnohall/emptyinbox</code> (<a href="https://github.com/blockonomics/emptyinbox-me/tree/main/mcp" rel="noopener">source</a>).</p>
           <div class="code-block">
             <div class="code-header">
               <span class="code-lang">json</span>
@@ -686,6 +686,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
   "amount_satoshis": 5300,
   "amount_btc": "0.00005300",
   "bip21": "bitcoin:bc1qexampleaddress?amount=0.00005300",
+  "pay_url": "https://emptyinbox.me/pay.html?address=bc1qexampleaddress",
   "expires_at": "2026-09-09T12:15:00Z",
   "status_url": "/api/payments/status/bc1qexampleaddress"
 }</code></pre>

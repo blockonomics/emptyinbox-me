@@ -2,9 +2,19 @@
 
 MCP server for [EmptyInbox](https://emptyinbox.me) — create disposable email inboxes and read messages from AI agents.
 
+[![npm](https://img.shields.io/npm/v/emptyinbox-mcp)](https://www.npmjs.com/package/emptyinbox-mcp)
+
+Listed in the [official MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.cnohall/emptyinbox`.
+
 ## Setup
 
-**Zero config — just add to your MCP config and it works:**
+**Claude Code:**
+
+```
+claude mcp add emptyinbox -- npx -y emptyinbox-mcp
+```
+
+**Any other MCP client — add to its config:**
 
 ```json
 {
@@ -45,8 +55,9 @@ Get an API key at https://emptyinbox.me/settings.html
 | `list_messages` | List received messages, each with its extracted code, action link and text preview |
 | `get_message` | Get one message parsed (code, links, plain text), or `format="text"` for a flat rendering |
 | `wait_for_message` | **Block until an email arrives** — perfect for signup/OTP flows; returns the extracted code with it |
+| `get_quota` | Credits remaining on the account |
 | `list_bundles` | List quota bundles and prices |
-| `buy_quota` | Get a Bitcoin address and amount to buy more inboxes |
+| `buy_quota` | Quote a Bitcoin payment; returns a `pay_url` for the user plus address, amount and BIP21 URI |
 | `check_payment` | Check whether a payment landed and quota was credited |
 
 ## Example agent workflow
@@ -60,12 +71,14 @@ Get an API key at https://emptyinbox.me/settings.html
 
 ## Payment
 
-Every account starts with 5 inboxes. When they run out, `create_inbox` reports
-that quota is exhausted and the agent can buy more without leaving the session:
+Every account starts with free inboxes. When they run out, `create_inbox` returns
+the prices and the agent can close the purchase without leaving the session:
 
-1. `buy_quota` returns a Bitcoin address, the exact amount, and a BIP21 URI
-2. pay it from any wallet — or hand the BIP21 URI to a human to pay
-3. `check_payment` confirms the credit, usually within seconds of broadcast
+1. the agent shows its user the bundles and the user picks one
+2. `buy_quota` returns a `pay_url` — a page with a QR code, the exact amount and
+   live status — plus the raw address, amount and BIP21 URI
+3. the user pays from any Bitcoin wallet (or an agent with its own wallet pays the BIP21 URI)
+4. `check_payment` with `wait_seconds` confirms the credit, usually within seconds of broadcast
 
 `buy_quota` takes either a `bundle` id from `list_bundles` or a custom whole-dollar
 `usd` amount from $1 to $100, for an agent spending down whatever a wallet holds.

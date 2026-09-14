@@ -66,6 +66,12 @@ components:
           type: string
           description: Wallet URI with address and amount prefilled
           example: "bitcoin:bc1qexampleaddress?amount=0.00005300"
+        pay_url:
+          type: string
+          description: |
+            Page for the person paying: QR code, exact amount and live status.
+            An agent without a wallet should give this link to its user.
+          example: "https://emptyinbox.me/pay.html?address=bc1qexampleaddress"
         expires_at:
           type: string
           example: "2026-09-09T12:15:00Z"
@@ -508,8 +514,9 @@ paths:
       operationId: createQuote
       summary: Quote a Bitcoin price for a quota bundle
       description: |
-        Returns a payment address, the exact amount to send, and a BIP21 URI.
-        Send the amount from any Bitcoin wallet, then poll
+        Returns a payment address, the exact amount to send, a BIP21 URI, and a
+        `pay_url`. An agent that cannot pay itself should give `pay_url` to its
+        user, who can pay from any Bitcoin wallet. Then poll
         GET /payments/status/{address}.
 
         Quota is credited as soon as the transaction is seen on the network,
@@ -562,6 +569,44 @@ paths:
           description: A previous payment is still awaiting confirmation
         "502":
           description: Payment provider unreachable
+
+  /payments/pay/{address}:
+    get:
+      operationId: getPublicQuote
+      summary: Public view of a quote, for the person paying
+      description: |
+        No API key. Returns what the pay page shows: the amount, what it buys,
+        and whether it has landed. Nothing that identifies the account.
+      security: []
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          example: bc1qexampleaddress
+      responses:
+        "200":
+          description: Quote state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  address: {type: string}
+                  quota: {type: integer}
+                  usd: {type: integer}
+                  amount_satoshis: {type: integer}
+                  amount_btc: {type: string}
+                  bip21: {type: string}
+                  received_satoshis: {type: integer}
+                  quota_credited: {type: boolean}
+                  settled: {type: boolean}
+                  revoked: {type: boolean}
+                  expired: {type: boolean}
+                  expires_at: {type: string}
+        "404":
+          description: No quote for this address
 
   /payments/status/{address}:
     get:

@@ -36,21 +36,33 @@ https://emptyinbox.me/settings.html. This is not required for API use.
 
 ## MCP Server
 
-Install for Claude, Claude Code, or any MCP-compatible agent:
+Install for Claude, Claude Code, Cursor, or any MCP-compatible agent. No API
+key and no config: the server registers an account on its first tool call and
+saves the key to `~/.emptyinbox.json`.
 
 ```json
 {
   "mcpServers": {
     "emptyinbox": {
       "command": "npx",
-      "args": ["emptyinbox-mcp"],
-      "env": { "EMPTYINBOX_API_KEY": "your_api_key_here" }
+      "args": ["-y", "emptyinbox-mcp"]
     }
   }
 }
 ```
 
-npm package: `emptyinbox-mcp`
+Claude Code: `claude mcp add emptyinbox -- npx -y emptyinbox-mcp`
+
+To reuse an existing account, add `"env": { "EMPTYINBOX_API_KEY": "<key>" }`.
+Leave it out otherwise: a placeholder value is sent as the key and every call fails.
+
+- npm: https://www.npmjs.com/package/emptyinbox-mcp
+- Official MCP Registry: `io.github.cnohall/emptyinbox`
+- Source: https://github.com/blockonomics/emptyinbox-me/tree/main/mcp
+
+Tools: `create_inbox`, `list_inboxes`, `list_messages`, `get_message`,
+`wait_for_message`, `get_quota`, `list_bundles`, `buy_quota`, `check_payment`,
+`register_account`.
 
 ## REST API Endpoints
 
@@ -60,8 +72,9 @@ npm package: `emptyinbox-mcp`
 - `GET /api/messages` — list all messages `[{id, inbox, subject, text_body, html_body, sender, timestamp}]`
 - `GET /api/message/{id}` — get full message content
 - `GET /api/payments/bundles` — quota bundles for sale, no auth required
-- `POST /api/payments/quote` — get a Bitcoin address and amount to buy quota `{bundle}` or `{usd}`
+- `POST /api/payments/quote` — get a Bitcoin address, amount, and `pay_url` to buy quota `{bundle}` or `{usd}`
 - `GET /api/payments/status/{address}` — check whether a payment landed and quota was credited
+- `GET /api/payments/pay/{address}` — public view of a quote for the person paying, no auth required
 
 ## Guides
 
@@ -104,9 +117,11 @@ The MCP `wait_for_message` tool handles the polling loop automatically.
 
 When quota runs out, `POST /api/inbox` returns `402` with `bundles_url` and `quote_url`.
 
-1. `POST /api/payments/quote` → returns a Bitcoin address, exact amount, and BIP21 URI
-2. Pay from any Bitcoin wallet, or hand the BIP21 URI to a human to pay
-3. `GET /api/payments/status/{address}` → poll until `quota_credited` is true
+1. Show the user the prices from `GET /api/payments/bundles` and let them choose
+2. `POST /api/payments/quote` → returns a Bitcoin address, exact amount, BIP21 URI, and `pay_url`
+3. Give the user the `pay_url`: a page with a QR code, the amount and live status, for any Bitcoin wallet.
+   An agent that controls its own wallet can pay the BIP21 URI directly, with the user's approval
+4. `GET /api/payments/status/{address}` → poll until `quota_credited` is true
 
 Quota is credited as soon as the payment is seen on the network, without waiting
 for confirmations. The MCP tools `buy_quota` and `check_payment` wrap this flow.

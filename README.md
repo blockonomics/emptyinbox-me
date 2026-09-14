@@ -4,23 +4,28 @@ Disposable email inbox API for AI agents and developers. Create temporary email 
 
 **Live at [emptyinbox.me](https://emptyinbox.me)**
 
-## MCP Server (Claude / Claude Code / any MCP agent)
+## MCP Server (Claude / Claude Code / Cursor / any MCP agent)
+
+[![npm](https://img.shields.io/npm/v/emptyinbox-mcp)](https://www.npmjs.com/package/emptyinbox-mcp) · Official MCP Registry: `io.github.cnohall/emptyinbox` · [source and tool reference](mcp/)
+
+Zero config. No API key: the server registers an account on its first tool call.
+
+```
+claude mcp add emptyinbox -- npx -y emptyinbox-mcp
+```
 
 ```json
 {
   "mcpServers": {
     "emptyinbox": {
       "command": "npx",
-      "args": ["emptyinbox-mcp"],
-      "env": {
-        "EMPTYINBOX_API_KEY": "your_api_key_here"
-      }
+      "args": ["-y", "emptyinbox-mcp"]
     }
   }
 }
 ```
 
-Get your API key at https://emptyinbox.me/settings.html
+Free inboxes to start. More are bought with Bitcoin from inside the agent session: `buy_quota` returns a payment page with a QR code for the user, and credits land within seconds of the payment being broadcast.
 
 ## REST API
 
