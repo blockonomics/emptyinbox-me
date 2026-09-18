@@ -132,10 +132,11 @@
 }
 
 /* Card top */
+/* Icon leads, so the top-right corner stays clear for .card-badge. */
 .card-top {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-start;
   gap: var(--space-4);
 }
 
@@ -149,11 +150,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: var(--color-text-secondary);
 }
 
 .pricing-card.featured .card-icon-wrap {
   background: var(--color-primary-alpha);
   border-color: var(--color-primary-ring);
+  color: var(--color-primary);
 }
 
 .card-name {

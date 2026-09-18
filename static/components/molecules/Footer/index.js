@@ -1,4 +1,5 @@
-import { LOGO, ROUTES, FOOTER_LINKS } from "../../../utils/constants.js";
+import { ROUTES, FOOTER_LINKS } from "../../../utils/constants.js";
+import { createBrandLogo } from "../../atoms/BrandLogo/index.js";
 import { getIsLoggedIn } from "../../../utils/storage.js";
 
 export function createFooter() {
@@ -21,10 +22,7 @@ export function createFooter() {
   logoLink.href = isLoggedIn ? ROUTES.MESSAGES : "/";
   logoLink.className = "footer-logo-link";
 
-  const logo = document.createElement("img");
-  logo.src = LOGO.src;
-  logo.alt = LOGO.alt;
-  logo.className = "footer-logo";
+  const logo = createBrandLogo("footer-logo");
 
   const brandText = document.createElement("p");
   brandText.className = "footer-brand-text";

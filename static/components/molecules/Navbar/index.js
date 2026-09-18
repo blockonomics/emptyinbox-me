@@ -1,12 +1,12 @@
 import { fetchUserData } from "../../../services/apiService.js";
 import {
   NAV_LINKS,
-  LOGO,
   ROUTES,
   LOCAL_STORAGE_KEYS,
 } from "../../../utils/constants.js";
 import { clearAllAuthData } from "../../../utils/storage.js";
 import { renderLogoutButton } from "../../atoms/LogoutButton/index.js";
+import { createBrandLogo } from "../../atoms/BrandLogo/index.js";
 
 // In your navbar creation function
 export async function createNavbar() {
@@ -21,16 +21,7 @@ export async function createNavbar() {
   logoLink.href = ROUTES.HOME;
   logoLink.className = "logo-link";
 
-  const SVG_NS = "http://www.w3.org/2000/svg";
-  const logo = document.createElementNS(SVG_NS, "svg");
-  logo.setAttribute("viewBox", LOGO.viewBox);
-  logo.setAttribute("role", "img");
-  logo.setAttribute("aria-label", LOGO.alt);
-  logo.setAttribute("class", "site-logo");
-  const logoUse = document.createElementNS(SVG_NS, "use");
-  logoUse.setAttribute("href", LOGO.href);
-  logo.appendChild(logoUse);
-  logoLink.appendChild(logo);
+  logoLink.appendChild(createBrandLogo("site-logo"));
 
   // Mobile menu toggle
   const navToggle = document.createElement("button");
