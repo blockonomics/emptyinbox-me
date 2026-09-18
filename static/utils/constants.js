@@ -49,8 +49,11 @@ export const FOOTER_LINKS = {
 };
 
 export const LOGO = {
-  src: "../assets/emptyinboxlogo.png",
-  alt: "EmptyInbox Logo",
+  // Referenced via <svg><use> so the mark picks up --logo-ink / --logo-brand
+  // from the page instead of its baked-in fallback colours.
+  href: "/assets/logo.svg#logo",
+  viewBox: "0 0 194 40",
+  alt: "EmptyInbox.me",
 };
 
 export const API_BASE_URL =

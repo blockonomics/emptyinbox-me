@@ -43,7 +43,7 @@
 
 .footer-logo-link:hover { transform: scale(1.02); }
 
-.footer-logo { height: 34px; width: auto; object-fit: contain; }
+.footer-logo { height: 34px; width: auto; aspect-ratio: 194 / 40; display: block; }
 
 .footer-brand-text {
   color: var(--color-text-secondary);

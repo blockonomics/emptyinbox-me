@@ -35,7 +35,8 @@
 .site-logo {
   height: 38px;
   width: auto;
-  object-fit: contain;
+  aspect-ratio: 194 / 40;
+  display: block;
 }
 
 /* Nav links */

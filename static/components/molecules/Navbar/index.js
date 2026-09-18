@@ -21,10 +21,15 @@ export async function createNavbar() {
   logoLink.href = ROUTES.HOME;
   logoLink.className = "logo-link";
 
-  const logo = document.createElement("img");
-  logo.src = LOGO.src;
-  logo.alt = LOGO.alt;
-  logo.className = "site-logo";
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const logo = document.createElementNS(SVG_NS, "svg");
+  logo.setAttribute("viewBox", LOGO.viewBox);
+  logo.setAttribute("role", "img");
+  logo.setAttribute("aria-label", LOGO.alt);
+  logo.setAttribute("class", "site-logo");
+  const logoUse = document.createElementNS(SVG_NS, "use");
+  logoUse.setAttribute("href", LOGO.href);
+  logo.appendChild(logoUse);
   logoLink.appendChild(logo);
 
   // Mobile menu toggle
