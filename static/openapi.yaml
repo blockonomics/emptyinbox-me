@@ -201,12 +201,38 @@ components:
             network has already registered several accounts today. Read it rather
             than assuming.
           example: 5
+        note:
+          type: string
+          description: >-
+            Always present. Persist the key and reuse it: one account creates
+            many inboxes, and registering per run drains the free allowance of
+            the whole network.
         message:
           type: string
           description: Present only when inbox_quota is 0, explaining why.
+        reuse_note:
+          type: string
+          description: >-
+            Present only when inbox_quota is 0. Names how many unused free
+            credits still sit on accounts this network registered today, if any.
+        unused_credits_nearby:
+          type: integer
+          description: Present only when inbox_quota is 0 and the figure is above zero.
+        pricing:
+          type: string
+          description: Present only when inbox_quota is 0. Every bundle with its price, inline.
+        pricing_url:
+          type: string
+          example: https://emptyinbox.me/pricing.html
+        buy_with_api:
+          type: string
+          description: Present only when inbox_quota is 0. The quote-then-pay sequence in one sentence.
         bundles_url:
           type: string
-          description: Present only when inbox_quota is 0. Where to buy credits.
+          example: https://emptyinbox.me/api/payments/bundles
+        quote_url:
+          type: string
+          example: https://emptyinbox.me/api/payments/quote
 
     QuotaResult:
       type: object
@@ -327,7 +353,9 @@ paths:
           description: Missing or invalid API key
         "402":
           description: |
-            Inbox quota exhausted. The body carries the URLs for buying more.
+            Inbox quota exhausted. The body carries prices inline, absolute
+            URLs for buying more, and a note to reuse any other key you hold
+            that still has credits.
           content:
             application/json:
               schema:
@@ -338,12 +366,22 @@ paths:
                     example: insufficient_quota
                   message:
                     type: string
+                  reuse_note:
+                    type: string
+                  pricing:
+                    type: string
+                    example: micro $1 = 10 inboxes, starter $5 = 50 inboxes, standard $15 = 200 inboxes, bulk $40 = 750 inboxes
+                  pricing_url:
+                    type: string
+                    example: https://emptyinbox.me/pricing.html
+                  buy_with_api:
+                    type: string
                   bundles_url:
                     type: string
-                    example: /api/payments/bundles
+                    example: https://emptyinbox.me/api/payments/bundles
                   quote_url:
                     type: string
-                    example: /api/payments/quote
+                    example: https://emptyinbox.me/api/payments/quote
 
   /inboxes:
     get:

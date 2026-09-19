@@ -28,6 +28,54 @@ DEFAULT_BUNDLE = 'starter'
 MIN_CUSTOM_USD = 1
 MAX_CUSTOM_USD = 100
 
+# The purchase block attached to every response that turns a caller away for
+# want of credits: the 402 on POST /inbox and the zero-grant on registration.
+#
+# Everything in it is chosen for the reader it actually reaches. The caller is
+# a program; the buyer is the developer reading that program's output, often
+# hours later in a log. So the URLs are absolute (a relative path in a log
+# points nowhere), the prices are inline (a link to a price list is one hop
+# more than a log reader will take), the human path is one click
+# (pricing page, not an API sequence), and the first line is the cheapest way
+# out of all: the key the caller already holds. Every account the ledger has
+# seen so far that hit this wall had unused credits on a sibling account it
+# had registered earlier the same day.
+SITE_URL = 'https://emptyinbox.me'
+
+
+def purchase_block(unused_credits_nearby: int = 0) -> dict:
+    """Machine-readable and human-readable at once. Returned inline rather than
+    built at import so the bundle table stays the single source of prices."""
+    prices = ', '.join(
+        f"{name} ${b['usd']} = {b['quota']} inboxes"
+        for name, b in sorted(QUOTA_BUNDLES.items(), key=lambda kv: kv[1]['usd'])
+    )
+    block = {
+        'pricing': prices,
+        'pricing_url': f'{SITE_URL}/pricing.html',
+        'buy_with_api': (
+            f'POST {SITE_URL}/api/payments/quote with your API key and '
+            '{"bundle": "micro"} (or any bundle above) to get a BTC address; '
+            f'open {SITE_URL}/pay.html?address=<address> to pay from a browser.'
+        ),
+        'bundles_url': f'{SITE_URL}/api/payments/bundles',
+        'quote_url': f'{SITE_URL}/api/payments/quote',
+        'reuse_note': (
+            'One account creates many inboxes. Persist this API key and reuse '
+            'it across runs instead of registering a new account each time; '
+            'new accounts from a network that has already registered today '
+            'receive fewer or no free credits.'
+        ),
+    }
+    if unused_credits_nearby > 0:
+        block['unused_credits_nearby'] = unused_credits_nearby
+        block['reuse_note'] = (
+            f'Accounts registered from this network in the last 24 hours still '
+            f'hold {unused_credits_nearby} unused free inbox credits between '
+            f'them. Reuse one of those API keys. ' + block['reuse_note']
+        )
+    return block
+
 # The smallest output a paying wallet will agree to build. Relay dust is not
 # our rule to enforce - we only ever receive, and a payer asked for an output
 # below the limit gets stopped by its own wallet before anything reaches the

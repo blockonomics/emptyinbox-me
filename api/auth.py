@@ -7,6 +7,7 @@ from eth_account.messages import encode_defunct
 from eth_account import Account
 from config import db, app
 from urllib.parse import urlparse
+from sqlalchemy import func
 import traceback
 from auth_utils import auth_required
 
@@ -15,7 +16,7 @@ from db_models import (AuthChallenge, UserSession, User, PaymentIntent, PaymentS
                        RegistrationAttempt)
 from constants import (USER_STARTING_QUOTA, AGENT_STARTING_QUOTA, QUOTA_PER_USDT,
                        REGISTER_WINDOW, REGISTER_GRADES, REGISTER_HARD_CAP,
-                       REGISTER_V4_PREFIX, REGISTER_V6_PREFIX)
+                       REGISTER_V4_PREFIX, REGISTER_V6_PREFIX, purchase_block)
 
 # Add these imports for passkey functionality
 from cryptography.hazmat.primitives import hashes
@@ -722,6 +723,33 @@ def recent_registration_count(subnet: str) -> int:
     ).count()
 
 
+def unused_credits_nearby(subnet: str) -> int:
+    """Free credits still sitting on accounts this network registered today.
+
+    The one number that tells a caller hitting the zero grade what it should
+    actually do. The pattern in the ledger is an integration that registers a
+    fresh account per run, spends one credit, and discards the key: by the time
+    it is graded to zero it typically holds dozens of credits it never used.
+    Telling it to buy at that point is telling it to pay for what it already
+    has. Best effort: a failure here degrades the message, not the signup."""
+    try:
+        cutoff = datetime.utcnow() - timedelta(seconds=REGISTER_WINDOW)
+        total = db.session.query(func.coalesce(func.sum(User.inbox_quota), 0)).filter(
+            User.username.in_(
+                db.session.query(RegistrationAttempt.username).filter(
+                    RegistrationAttempt.subnet == subnet,
+                    RegistrationAttempt.created_at >= cutoff,
+                    RegistrationAttempt.outcome.in_(('granted', 'reduced')),
+                )
+            ),
+            User.inbox_quota > 0,
+        ).scalar()
+        return int(total or 0)
+    except Exception as e:
+        app.logger.error(f"Could not sum nearby credits: {e}")
+        return 0
+
+
 def grade_registration(count: int) -> tuple:
     """How much free quota this registration gets, and what to call it.
 
@@ -856,16 +884,27 @@ def agent_register():
             'api_key': api_key,
             'username': username,
             'inbox_quota': quota,
+            # Said on every grade, not only the last one. By the time a caller
+            # reaches zero it has already thrown away several keys; the note
+            # has to land while it is still holding a full one.
+            'note': (
+                'Persist this API key and reuse it: one account creates many '
+                'inboxes. Registering a new account per run spends the free '
+                'allowance of your whole network and ends in empty accounts.'
+            ),
         }
         if quota == 0:
             # Say why the account arrived empty, and where to fix it. Silence
-            # here reads as a broken signup rather than a completed one.
+            # here reads as a broken signup rather than a completed one. The
+            # purchase block is the same one the 402 carries, so a developer
+            # reading either in a log sees one story: reuse a key, or here is
+            # the price and the link.
             body['message'] = (
                 'Account created without free credits: this network has already '
-                'used its free allowance today. The key works. Buy credits to '
-                'create inboxes.'
+                'used its free allowance today. The key works. Reuse an earlier '
+                'key from this network, or buy credits to create inboxes.'
             )
-            body['bundles_url'] = '/api/payments/bundles'
+            body.update(purchase_block(unused_credits_nearby(subnet)))
         return jsonify(body), 201
 
     except Exception as e:

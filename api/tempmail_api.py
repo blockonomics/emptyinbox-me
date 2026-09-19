@@ -14,6 +14,7 @@ import re
 import logging
 from words import adjectives, nouns
 from auth_utils import auth_required, get_api_key_from_token
+from constants import purchase_block
 import message_parse
 
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
@@ -222,13 +223,19 @@ def create_mailbox(token):
         # and stopped from one that never tried.
         record_quota_block(api_key)
         # 402 so an agent can tell "out of quota, here is how to buy more"
-        # apart from "not allowed".
-        return jsonify({
+        # apart from "not allowed". The body is written for the developer who
+        # reads it in the agent's log, not for the agent: absolute links,
+        # prices inline, and the reuse note first, because every account that
+        # has hit this so far did so with free credits left on a sibling key.
+        body = {
             'error': 'insufficient_quota',
-            'message': 'Inbox quota exhausted. Buy more with Bitcoin.',
-            'bundles_url': '/api/payments/bundles',
-            'quote_url': '/api/payments/quote',
-        }), 402
+            'message': (
+                'Inbox quota exhausted on this API key. Reuse another key you '
+                'hold with credits left, or buy more with Bitcoin.'
+            ),
+        }
+        body.update(purchase_block())
+        return jsonify(body), 402
     email_address = f'{get_mailboxname()}@{DOMAIN}'
     # The credit was spent above and is committed with the inbox it paid for,
     # so a failed insert takes the decrement down with it.
