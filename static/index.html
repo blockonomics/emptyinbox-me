@@ -334,8 +334,8 @@
       </div>
     </section>
 
-    <!-- Integrations. The terminal is HTML rather than a screenshot so it
-         follows the theme and its sample addresses stay presentable. -->
+    <!-- Integrations. bash.png is a real tmpmail session, run against a
+         seeded local API so the addresses and dates are presentable. -->
     <section class="integrations-section">
       <h2 class="integrations-title">Use it your way</h2>
       <span class="integrations-subtitle">One API key works everywhere: from your terminal, inside an agent, or in the browser when you'd rather click.</span>
@@ -344,26 +344,7 @@
           <h3 class="integration-title">Terminal: tmpmail</h3>
           <p class="integration-desc">An open-source bash CLI built on the same API. It generates inboxes, reads mail in the terminal and copies the activation code to your clipboard. No browser needed.</p>
           <a href="https://github.com/shivaenigma/tmpmail" class="integration-link" target="_blank" rel="noopener noreferrer">Get tmpmail on GitHub</a>
-          <div class="cli-terminal" role="img" aria-label="tmpmail terminal session: generate an inbox, list mail, copy the activation code">
-            <div class="demo-chrome">
-              <span class="chrome-dot chrome-red"></span>
-              <span class="chrome-dot chrome-yellow"></span>
-              <span class="chrome-dot chrome-green"></span>
-              <span class="demo-chrome-title">bash</span>
-            </div>
-<pre class="cli-body"><span class="snippet-prompt">$</span> tmpmail -g
-quiet.green.harbor@emptyinbox.me
-<span class="snippet-prompt">$</span> tmpmail
-<span class="cli-dim">86acd15c</span>  quiet.green.harbor@emptyinbox.me  Verify your email
-<span class="cli-dim">f4174aed</span>  brave.small.river@emptyinbox.me   Welcome aboard
-<span class="snippet-prompt">$</span> tmpmail -a
-<span class="cli-ok">Activation code 847291 copied to clipboard</span>
-<span class="snippet-prompt">$</span> tmpmail -l
-quiet.green.harbor@emptyinbox.me
-brave.small.river@emptyinbox.me
-calm.early.maple@emptyinbox.me
-<span class="snippet-prompt">$</span> <span class="cli-cursor"></span></pre>
-          </div>
+          <img src="/assets/bash.png" alt="tmpmail in bash: -g generates blue.clean.picture@emptyinbox.me, tmpmail lists a 'Verify your email' message, -a copies activation code 847291 to the clipboard, -l lists the inboxes" class="integration-img integration-shot" loading="lazy" width="690" height="424">
         </div>
         <div class="integration">
           <h3 class="integration-title">Web inbox</h3>
