@@ -69,6 +69,13 @@
           },
           {
             "@type": "Offer",
+            "name": "Micro bundle",
+            "price": "1",
+            "priceCurrency": "USD",
+            "description": "10 inbox credits, no expiry, paid in Bitcoin or USDT"
+          },
+          {
+            "@type": "Offer",
             "name": "Starter bundle",
             "price": "5",
             "priceCurrency": "USD",
@@ -198,7 +205,7 @@
             <div class="demo-body">
               <div class="demo-line demo-comment" style="--delay:0.3s"># 1. Create a disposable inbox</div>
               <div class="demo-line" style="--delay:0.6s"><span class="demo-method">POST</span> <span class="demo-path">/api/inbox</span></div>
-              <div class="demo-line demo-response" style="--delay:1.1s">→ <span class="demo-key">"address"</span>: <span class="demo-string">"fox12@emptyinbox.me"</span></div>
+              <div class="demo-line demo-response" style="--delay:1.1s">→ <span class="demo-key">"address"</span>: <span class="demo-string">"quiet.green.fox@emptyinbox.me"</span></div>
               <div class="demo-spacer"></div>
               <div class="demo-line demo-comment" style="--delay:1.8s"># 2. Poll until email arrives</div>
               <div class="demo-line" style="--delay:2.1s"><span class="demo-method">GET</span>  <span class="demo-path">/api/messages</span></div>
@@ -260,7 +267,7 @@
             <span class="feature-num">05</span>
             <div class="feature-content">
               <h3 class="feature-title">Crypto Payments</h3>
-              <p class="feature-description">Buy inbox credits with Bitcoin or USDT via Blockonomics. Bitcoin bundles start at $5 for 50 credits; USDT takes any amount, $1 for 10. No credit card, no KYC.</p>
+              <p class="feature-description">Buy inbox credits with Bitcoin or USDT via Blockonomics, from $1 for 10. Out of credits, the API answers 402 with a pay link your agent can hand you. No card, no KYC.</p>
             </div>
           </div>
 
@@ -276,22 +283,101 @@
       </div>
     </section>
 
-    <!-- Integrations -->
+    <!-- Out of credits. The 402 is the moment a free account turns into a
+         paying one, and it is the thing no other disposable-mail API does for
+         an agent, so the landing page walks through it rather than leaving
+         it to the pricing page. -->
+    <section class="paywall-section" aria-labelledby="paywall-title">
+      <div class="paywall-header">
+        <h2 class="paywall-title" id="paywall-title">When the credits run out, your agent asks you to pay</h2>
+        <p class="paywall-subtitle">No dashboard, no card form, no dead run. The API answers <code>402</code> with prices and a pay link, the agent passes it on, and it carries on once you've paid.</p>
+      </div>
+      <ol class="paywall-steps">
+        <li class="paywall-step">
+          <span class="feature-num">01</span>
+          <h3>The API says why</h3>
+          <p>An empty key gets a <code>402</code>, not a vague error. The prices and the next call are in the body, so whoever reads the log knows what to do.</p>
+          <pre class="paywall-code"><span class="demo-method">POST</span> /api/inbox
+<span class="paywall-status">402 Payment Required</span>
+{ <span class="demo-key">"error"</span>: <span class="demo-string">"insufficient_quota"</span>,
+  <span class="demo-key">"pricing"</span>: <span class="demo-string">"micro $1 = 10 inboxes, ..."</span>,
+  <span class="demo-key">"quote_url"</span>: <span class="demo-string">".../api/payments/quote"</span> }</pre>
+        </li>
+        <li class="paywall-step">
+          <span class="feature-num">02</span>
+          <h3>The agent asks you</h3>
+          <p>Over MCP, the agent lists the bundles, you pick one, and it hands you a pay link with a QR code for any Bitcoin wallet.</p>
+          <div class="paywall-chat">
+            <p class="chat-msg chat-agent">Out of inbox credits. $5 buys 50 inboxes. Pay here and I'll carry on:<br><span class="chat-link">emptyinbox.me/pay.html?address=bc1q&hellip;</span></p>
+            <p class="chat-msg chat-user">Paid.</p>
+          </div>
+        </li>
+        <li class="paywall-step">
+          <span class="feature-num">03</span>
+          <h3>Credits land, the run continues</h3>
+          <p>Credits are added as soon as the payment appears on the network, before it confirms. <code>check_payment</code> waits for them in one call.</p>
+          <pre class="paywall-code"><span class="demo-method">check_payment</span>(wait_seconds=120)
+&rarr; <span class="demo-key">"quota_credited"</span>: <span class="demo-string">true</span>
+<span class="demo-method">create_inbox</span>()
+&rarr; <span class="demo-string">"quiet.green.harbor@emptyinbox.me"</span></pre>
+        </li>
+      </ol>
+      <div class="price-strip">
+        <ul class="price-list">
+          <li><strong>5</strong> free</li>
+          <li><strong>$1</strong> 10 inboxes</li>
+          <li><strong>$5</strong> 50</li>
+          <li><strong>$15</strong> 200</li>
+          <li><strong>$40</strong> 750</li>
+        </ul>
+        <p class="price-note">Bitcoin or USDT. Credits never expire. No card, no KYC. <a href="/pricing.html">Full pricing</a></p>
+      </div>
+    </section>
+
+    <!-- Integrations. The terminal is HTML rather than a screenshot so it
+         follows the theme and its sample addresses stay presentable. -->
     <section class="integrations-section">
       <h2 class="integrations-title">Use it your way</h2>
-      <span class="integrations-subtitle">EmptyInbox works wherever you run code — shell scripts, browsers, or any HTTP client.</span>
+      <span class="integrations-subtitle">One API key works everywhere: from your terminal, inside an agent, or in the browser when you'd rather click.</span>
       <div class="integrations-grid">
         <div class="integration">
-          <h3 class="integration-title">Shell / Bash</h3>
-          <a href="https://github.com/shivaenigma/tmpmail" class="integration-link">Download from GitHub</a>
-          <img src="/assets/bash.png" alt="Bash integration screenshot" class="integration-img" loading="lazy" width="543" height="633">
+          <h3 class="integration-title">Terminal: tmpmail</h3>
+          <p class="integration-desc">An open-source bash CLI built on the same API. It generates inboxes, reads mail in the terminal and copies the activation code to your clipboard. No browser needed.</p>
+          <a href="https://github.com/shivaenigma/tmpmail" class="integration-link" target="_blank" rel="noopener noreferrer">Get tmpmail on GitHub</a>
+          <div class="cli-terminal" role="img" aria-label="tmpmail terminal session: generate an inbox, list mail, copy the activation code">
+            <div class="demo-chrome">
+              <span class="chrome-dot chrome-red"></span>
+              <span class="chrome-dot chrome-yellow"></span>
+              <span class="chrome-dot chrome-green"></span>
+              <span class="demo-chrome-title">bash</span>
+            </div>
+<pre class="cli-body"><span class="snippet-prompt">$</span> tmpmail -g
+quiet.green.harbor@emptyinbox.me
+<span class="snippet-prompt">$</span> tmpmail
+<span class="cli-dim">86acd15c</span>  quiet.green.harbor@emptyinbox.me  Verify your email
+<span class="cli-dim">f4174aed</span>  brave.small.river@emptyinbox.me   Welcome aboard
+<span class="snippet-prompt">$</span> tmpmail -a
+<span class="cli-ok">Activation code 847291 copied to clipboard</span>
+<span class="snippet-prompt">$</span> tmpmail -l
+quiet.green.harbor@emptyinbox.me
+brave.small.river@emptyinbox.me
+calm.early.maple@emptyinbox.me
+<span class="snippet-prompt">$</span> <span class="cli-cursor"></span></pre>
+          </div>
         </div>
         <div class="integration">
-          <h3 class="integration-title">Web Inbox</h3>
-          <a href="/login.html" class="integration-link">Open the inbox UI</a>
+          <h3 class="integration-title">Web inbox</h3>
+          <p class="integration-desc">Prefer a UI? Sign in with a passkey to see every inbox, with codes and links pulled out of each message and a copy button next to them.</p>
+          <a href="/login.html" class="integration-link">Open the web inbox</a>
           <div class="integration-images">
-            <img src="/assets/web1.jpg" alt="Web integration screenshot 1" class="integration-img" loading="lazy" width="411" height="856">
-            <img src="/assets/web2.jpg" alt="Web integration screenshot 2" class="integration-img" loading="lazy" width="410" height="893">
+            <picture>
+              <source srcset="/assets/web1-dark.jpg" media="(prefers-color-scheme: dark)">
+              <img src="/assets/web1.jpg" alt="Message list with a verification code and a reset link pulled out" class="integration-img" loading="lazy" width="411" height="856">
+            </picture>
+            <picture>
+              <source srcset="/assets/web2-dark.jpg" media="(prefers-color-scheme: dark)">
+              <img src="/assets/web2.jpg" alt="Inbox list with credits left and a create button" class="integration-img" loading="lazy" width="411" height="856">
+            </picture>
           </div>
         </div>
       </div>

@@ -1,7 +1,6 @@
 import {
   LOCAL_STORAGE_KEYS,
   ROUTES,
-  USER_STARTING_QUOTA,
 } from "../../../utils/constants.js";
 import { createInboxCards } from "../../organisms/InboxCards/index.js";
 import { renderInboxesHeader } from "../../molecules/InboxesHeader/index.js";
@@ -39,18 +38,10 @@ export async function renderInboxesPage() {
   try {
     const userData = await fetchUserData();
 
-    // Extract current quota from user data
-    const maxQuota = Array.isArray(userData.payments)
-      ? userData.payments.reduce(
-          (sum, p) => sum + (typeof p.amount === "number" ? p.amount : 0),
-          USER_STARTING_QUOTA
-        )
-      : USER_STARTING_QUOTA;
-
-    const inboxQuota =
+    // inbox_quota is the balance: the API decrements it per inbox and adds
+    // every purchase (BTC or USDT) to it, so it is already the number to show.
+    const remaining =
       typeof userData.inbox_quota === "number" ? userData.inbox_quota : 0;
-
-    const currentQuota = maxQuota - inboxQuota;
 
     // Clear loading message
     section.innerHTML = "";
@@ -70,7 +61,7 @@ export async function renderInboxesPage() {
     }
 
     // Render actual content
-    section.appendChild(renderInboxesHeader(currentQuota, maxQuota));
+    section.appendChild(renderInboxesHeader(remaining));
     section.appendChild(createInboxCards());
   } catch (error) {
     console.error("User fetch failed:", error);

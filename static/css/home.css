@@ -451,10 +451,171 @@ a.trust-item:hover { color: var(--color-primary); }
   max-width: 36ch;
 }
 
+/* === Paywall Section ===
+   Walks through the 402 -> pay link -> credits flow. Code blocks reuse the
+   hero terminal's token colours so the page reads as one system. */
+.paywall-section {
+  padding: var(--space-16) var(--space-6);
+  background: var(--color-bg);
+}
+
+.paywall-header {
+  max-width: var(--container-page);
+  margin: 0 auto var(--space-10);
+}
+
+.paywall-title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  letter-spacing: -0.025em;
+  max-width: 24ch;
+}
+
+.paywall-subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 60ch;
+}
+
+.paywall-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  max-width: var(--container-page);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--space-10) var(--space-6);
+}
+
+.paywall-step {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.paywall-step .feature-num { margin-bottom: var(--space-3); }
+
+.paywall-step h3 {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+  letter-spacing: -0.01em;
+}
+
+.paywall-step > p {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: 1.65;
+  margin: 0 0 var(--space-4);
+}
+
+.paywall-code,
+.paywall-chat {
+  margin: auto 0 0;
+  background: var(--color-code-bg);
+  border: 1px solid oklch(0.28 0.015 248);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.paywall-code {
+  font-family: "Monaco", "Consolas", "Menlo", monospace;
+  font-size: var(--text-xs);
+  line-height: 1.8;
+  color: var(--color-code-text);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.paywall-status { color: var(--color-warning); font-weight: 700; }
+
+.paywall-chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.chat-msg {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  max-width: 90%;
+  overflow-wrap: anywhere;
+}
+
+.chat-agent {
+  align-self: flex-start;
+  background: oklch(0.24 0.014 248);
+  color: var(--color-code-text);
+}
+
+.chat-user {
+  align-self: flex-end;
+  background: var(--color-primary);
+  color: oklch(0.16 0.012 248);
+  font-weight: 600;
+}
+
+.chat-link {
+  font-family: "Monaco", "Consolas", monospace;
+  font-size: var(--text-xs);
+  color: oklch(0.78 0.12 155);
+}
+
+.price-strip {
+  max-width: var(--container-page);
+  margin: var(--space-10) auto 0;
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--color-primary-ring);
+  background: var(--color-primary-alpha);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.price-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.price-list strong {
+  color: var(--color-text-primary);
+  font-size: var(--text-lg);
+  margin-right: var(--space-1);
+}
+
+.price-note {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.price-note a {
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-left: var(--space-1);
+}
+
 /* === Integrations Section === */
 .integrations-section {
   padding: var(--space-16) var(--space-6);
-  background: var(--color-bg);
+  background: var(--color-bg-subtle);
 }
 
 .integrations-title {
@@ -508,6 +669,14 @@ a.trust-item:hover { color: var(--color-primary); }
   color: var(--color-text-primary);
 }
 
+.integration-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0 auto var(--space-3);
+  max-width: 46ch;
+}
+
 .integration-link {
   display: block;
   margin-bottom: var(--space-4);
@@ -521,6 +690,8 @@ a.trust-item:hover { color: var(--color-primary); }
   color: var(--color-secondary-dark);
   text-decoration: underline;
 }
+
+.integration-images picture { display: block; }
 
 .integration-images {
   display: flex;
@@ -542,7 +713,50 @@ a.trust-item:hover { color: var(--color-primary); }
 
 @media (min-width: 1024px) {
   .integration-images { flex-wrap: nowrap; }
-  .integration-images img { flex: 1 1 auto; max-width: 48%; }
+  .integration-images picture { flex: 1 1 0; min-width: 0; max-width: 48%; }
+}
+
+/* tmpmail terminal, drawn in HTML so it follows the theme */
+.integration:has(.cli-terminal) {
+  display: flex;
+  flex-direction: column;
+}
+
+.cli-terminal {
+  flex: 1;
+  text-align: left;
+  background: var(--color-code-bg);
+  border: 1px solid oklch(0.28 0.015 248);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.cli-body {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  font-family: "Monaco", "Consolas", "Menlo", monospace;
+  font-size: var(--text-xs);
+  line-height: 1.8;
+  color: var(--color-code-text);
+  overflow-x: auto;
+}
+
+.cli-dim { color: oklch(0.55 0.01 248); }
+.cli-ok  { color: oklch(0.78 0.12 155); }
+
+.cli-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.1em;
+  vertical-align: text-bottom;
+  background: var(--color-code-text);
+  animation: cliBlink 1.1s steps(1) infinite;
+}
+
+@keyframes cliBlink { 50% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cli-cursor { animation: none; }
 }
 
 /* Lightbox */

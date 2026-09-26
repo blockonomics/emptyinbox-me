@@ -1,7 +1,7 @@
 import { renderBuyQuotaButton } from "../../atoms/BuyMoreQuotaButton/index.js";
 import { createInboxButtonWithLogic } from "../InboxButtonWithLogic/index.js";
 
-export function renderInboxesHeader(currentQuota, maxQuota) {
+export function renderInboxesHeader(remaining) {
   const quotaHeader = document.createElement("div");
   quotaHeader.classList.add("inboxes-header");
 
@@ -10,7 +10,7 @@ export function renderInboxesHeader(currentQuota, maxQuota) {
 
   const quotaText = document.createElement("span");
   quotaText.classList.add("quota-text");
-  quotaText.textContent = `${currentQuota}/${maxQuota}`;
+  quotaText.textContent = `${remaining} ${remaining === 1 ? "inbox" : "inboxes"} left`;
 
   // Add title and createInboxButtonWithLogic to left group
   const leftGroup = document.createElement("div");
@@ -22,7 +22,7 @@ export function renderInboxesHeader(currentQuota, maxQuota) {
   const rightGroup = document.createElement("div");
   rightGroup.classList.add("quota-right");
   rightGroup.appendChild(quotaText);
-  rightGroup.appendChild(renderBuyQuotaButton(currentQuota, maxQuota));
+  rightGroup.appendChild(renderBuyQuotaButton(remaining));
 
   quotaHeader.appendChild(leftGroup);
   quotaHeader.appendChild(rightGroup);

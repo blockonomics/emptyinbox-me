@@ -16,6 +16,7 @@ from db_models import (AuthChallenge, UserSession, User, PaymentIntent, PaymentS
                        RegistrationAttempt)
 from constants import (USER_STARTING_QUOTA, AGENT_STARTING_QUOTA, QUOTA_PER_USDT,
                        REGISTER_WINDOW, REGISTER_GRADES, REGISTER_HARD_CAP,
+                       REGISTER_ZERO_STICKY,
                        REGISTER_V4_PREFIX, REGISTER_V6_PREFIX, purchase_block)
 
 # Add these imports for passkey functionality
@@ -723,6 +724,19 @@ def recent_registration_count(subnet: str) -> int:
     ).count()
 
 
+def recently_zeroed(subnet: str) -> bool:
+    """Whether this network was graded to zero within REGISTER_ZERO_STICKY.
+
+    Measured from the most recent zero, so a caller that keeps registering
+    keeps itself at zero; only a full quiet period restores the free grades."""
+    cutoff = datetime.utcnow() - timedelta(seconds=REGISTER_ZERO_STICKY)
+    return db.session.query(RegistrationAttempt.id).filter(
+        RegistrationAttempt.subnet == subnet,
+        RegistrationAttempt.created_at >= cutoff,
+        RegistrationAttempt.outcome == 'zero',
+    ).first() is not None
+
+
 def unused_credits_nearby(subnet: str) -> int:
     """Free credits still sitting on accounts this network registered today.
 
@@ -857,10 +871,12 @@ def agent_register():
                 'docs_url': 'https://emptyinbox.me/docs.html',
             }), 429
 
-        quota, outcome = (
-            grade_registration(recent) if identifiable
-            else (AGENT_STARTING_QUOTA, 'granted')
-        )
+        if not identifiable:
+            quota, outcome = AGENT_STARTING_QUOTA, 'granted'
+        elif recently_zeroed(subnet):
+            quota, outcome = 0, 'zero'
+        else:
+            quota, outcome = grade_registration(recent)
 
         api_key = create_user_token(username)[:32]
         user = User(
@@ -901,7 +917,7 @@ def agent_register():
             # the price and the link.
             body['message'] = (
                 'Account created without free credits: this network has already '
-                'used its free allowance today. The key works. Reuse an earlier '
+                'used its free allowance. The key works. Reuse an earlier '
                 'key from this network, or buy credits to create inboxes.'
             )
             body.update(purchase_block(unused_credits_nearby(subnet)))

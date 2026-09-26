@@ -290,7 +290,7 @@
           </div>
           <div class="endpoint-body">
             <p class="endpoint-description">Create a new account and get an API key. The key is the account: keep it and no other credential is needed.</p>
-            <p class="endpoint-description">Accounts normally start with 5 inbox credits. Rather than refusing frequent registrations, the free grant is graded down: a network that has already taken several accounts in the last 24 hours gets fewer credits, and past that gets a working key with none, where <code>POST /inbox</code> answers <span class="status-code status-402">402</span> with purchase links. Only extreme volume from one network is refused. Always read <code>inbox_quota</code> from the response.</p>
+            <p class="endpoint-description">Accounts normally start with 5 inbox credits. Rather than refusing frequent registrations, the free grant is graded down: a network that has already taken several accounts in the last 24 hours gets fewer credits, and past that gets a working key with none, where <code>POST /inbox</code> answers <span class="status-code status-402">402</span> with purchase links. A network graded to none stays there until it has registered nothing for 7 days. Only extreme volume from one network is refused. Always read <code>inbox_quota</code> from the response.</p>
 
             <h4>Request Body</h4>
             <table class="parameter-table">
@@ -771,7 +771,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
             <tr>
               <td><span class="status-code status-429">429</span></td>
               <td>Too Many Requests</td>
-              <td>Registration rate limit exceeded (3 per IP per 24 hours)</td>
+              <td>Extreme registration volume from one network (200 accounts in 24 hours)</td>
             </tr>
           </tbody>
         </table>
@@ -785,7 +785,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
             <li>All accounts start with <strong>5 inbox quota</strong></li>
             <li>Creating an inbox consumes 1 quota unit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a></li>
             <li>Messages are automatically deleted after <strong>7 days</strong></li>
-            <li>Registration is limited to <strong>3 new accounts per IP per 24 hours</strong></li>
+            <li>Free starting quota is graded down per network after <strong>3 accounts in 24 hours</strong>, and drops to none for <strong>7 days</strong> after that — reuse your key</li>
             <li>Full OpenAPI 3.1 spec available at <a href="/openapi.yaml">/openapi.yaml</a></li>
           </ul>
         </div>

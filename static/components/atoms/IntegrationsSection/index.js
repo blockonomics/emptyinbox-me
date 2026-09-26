@@ -1,34 +1,3 @@
-export function renderIntegrationsSection() {
-  const section = document.createElement("section");
-  section.className = "integrations-section";
-
-  section.innerHTML = `
-    <h2 class="integrations-title">Integrations</h2>
-    <div class="integrations-grid">
-      
-      <!-- Bash Column -->
-      <div class="integration">
-        <h3 class="integration-title">Bash</h3>
-        <a href="https://github.com/shivaenigma/tmpmail" class="integration-link">Download from GitHub</a>
-        <img src="../../assets/bash.png" alt="Bash integration screenshot" class="integration-img">
-      </div>
-
-      <!-- Web Column -->
-      <div class="integration">
-        <h3 class="integration-title">Web</h3>
-        <a href="https://emptyinbox.me/login.html" class="integration-link">Try out</a>
-        <div class="integration-images">
-          <img src="../../assets/web1.jpg" alt="Web integration screenshot 1" class="integration-img">
-          <img src="../../assets/web2.jpg" alt="Web integration screenshot 2" class="integration-img">
-        </div>
-      </div>
-
-    </div>
-  `;
-
-  return section;
-}
-
 export function enableImageLightbox() {
   // Create overlay once
   const overlay = document.createElement("div");
@@ -46,7 +15,8 @@ export function enableImageLightbox() {
   document.addEventListener("click", (e) => {
     const img = e.target.closest(".integration-img");
     if (img) {
-      lightboxImage.src = img.src;
+      // currentSrc, so the lightbox opens the variant <picture> picked.
+      lightboxImage.src = img.currentSrc || img.src;
       overlay.classList.add("active");
     }
   });

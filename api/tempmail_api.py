@@ -11,6 +11,7 @@ import os
 import json
 import random
 import re
+import sqlite3
 import logging
 from words import adjectives, nouns
 from auth_utils import auth_required, get_api_key_from_token
@@ -79,6 +80,35 @@ def int_arg(name, default=None, minimum=None, maximum=None):
     if maximum is not None:
         value = min(maximum, value)
     return value
+
+
+@app.route(f'{url_prefix}/health', methods=['GET'])
+def health():
+    '''Whether the service can write, not just whether it answers.
+
+    Reads keep working when the database is not writable, so the site looks up
+    while every signup, inbox and inbound email fails. That went unnoticed for
+    days once, with gunicorn running as a user that could not write the file.
+    A fresh connection is opened each time because SQLite silently falls back
+    to read-only when it cannot open for writing, and a pooled connection would
+    hide that; mode=rw turns the fallback into an error instead. BEGIN IMMEDIATE
+    takes the write lock, catching a writer that is stuck holding it, and the
+    directory check covers the journal file SQLite creates beside the database.'''
+    db_path = db.engine.url.database
+    try:
+        if not os.access(os.path.dirname(db_path), os.W_OK):
+            raise PermissionError('database directory is not writable')
+        conn = sqlite3.connect(f'file:{db_path}?mode=rw', uri=True, timeout=2,
+                               isolation_level=None)
+        try:
+            conn.execute('BEGIN IMMEDIATE')
+            conn.execute('ROLLBACK')
+        finally:
+            conn.close()
+    except Exception as e:
+        app.logger.error(f"Health check failed: {e}")
+        return jsonify({'status': 'error', 'db': 'not_writable'}), 503
+    return jsonify({'status': 'ok', 'db': 'writable'}), 200
 
 
 @app.route(f'{url_prefix}/messages', methods=['GET'])

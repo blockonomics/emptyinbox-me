@@ -137,6 +137,14 @@ REGISTER_WINDOW = 86400  # seconds the counts below are measured over
 # watch a real message land. Past the last bucket the grant is zero.
 REGISTER_GRADES = ((3, AGENT_STARTING_QUOTA), (10, 2))
 
+# Once a subnet has been graded to zero, it stays at zero for this long after
+# its most recent zero, whatever the window count says. Without it the rolling
+# window resets overnight and the cheapest response to the paywall is to wait:
+# the ledger shows a register-per-run script doing exactly that, hitting zero
+# two dozen times without ever requesting a quote. Keeping it at zero makes the
+# failure persist long enough for a human to read the 402 and its pay link.
+REGISTER_ZERO_STICKY = 7 * 86400  # seconds
+
 # Past this many accounts from one subnet in the window, registration is
 # refused. The row itself is the only remaining cost, so this is a bound on
 # table growth rather than a product decision, which is why it sits an order of

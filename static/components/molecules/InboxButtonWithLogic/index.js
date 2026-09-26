@@ -2,7 +2,6 @@ import { createCreateInboxButton } from "../../atoms/CreateInboxButton/index.js"
 import { createInbox } from "../../../services/apiService.js";
 import { ButtonStates } from "../../molecules/ButtonStates/index.js";
 import { fetchUserData } from "../../../services/apiService.js";
-import { USER_STARTING_QUOTA } from "../../../utils/constants.js";
 import { renderInboxesHeader } from "../../molecules/InboxesHeader/index.js";
 import { createInboxCards } from "../../organisms/InboxCards/index.js";
 
@@ -70,23 +69,15 @@ async function refreshInboxesData() {
   try {
     const userData = await fetchUserData();
 
-    // Calculate quotas
-    const maxQuota = Array.isArray(userData.payments)
-      ? userData.payments.reduce(
-          (sum, p) => sum + (typeof p.amount === "number" ? p.amount : 0),
-          USER_STARTING_QUOTA
-        )
-      : USER_STARTING_QUOTA;
-
-    const inboxQuota =
+    // inbox_quota is the balance: the API decrements it per inbox and adds
+    // every purchase (BTC or USDT) to it, so it is already the number to show.
+    const remaining =
       typeof userData.inbox_quota === "number" ? userData.inbox_quota : 0;
-
-    const currentQuota = maxQuota - inboxQuota;
 
     // Find and update the header
     const existingHeader = document.querySelector(".inboxes-header");
     if (existingHeader) {
-      const newHeader = renderInboxesHeader(currentQuota, maxQuota);
+      const newHeader = renderInboxesHeader(remaining);
       existingHeader.parentNode.replaceChild(newHeader, existingHeader);
     }
 

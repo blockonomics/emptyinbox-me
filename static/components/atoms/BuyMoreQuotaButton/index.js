@@ -1,17 +1,17 @@
 import { QUOTA_PER_USDT } from "../../../utils/constants.js";
 
-export function renderBuyQuotaButton(currentQuota, maxQuota) {
+export function renderBuyQuotaButton(remaining) {
   const wrapper = document.createElement("div");
   wrapper.innerHTML = `<button id="buy-quota-btn" class="buy-quota-btn">Buy Inboxes</button>`;
 
   setTimeout(() => {
-    setupPaymentModal(currentQuota, maxQuota);
+    setupPaymentModal(remaining);
   }, 0);
 
   return wrapper;
 }
 
-function setupPaymentModal(currentQuota, maxQuota) {
+function setupPaymentModal(remaining) {
   const buyBtn = document.getElementById("buy-quota-btn");
 
   function createModal() {
@@ -31,7 +31,7 @@ function setupPaymentModal(currentQuota, maxQuota) {
           <div class="qm-header">
             <div>
               <h2 id="qm-title" class="qm-title">Purchase Inboxes</h2>
-              <p class="qm-subtitle">${currentQuota} of ${maxQuota} used</p>
+              <p class="qm-subtitle">${remaining} ${remaining === 1 ? "inbox" : "inboxes"} left</p>
             </div>
             <button class="close-modal" aria-label="Close">&times;</button>
           </div>
