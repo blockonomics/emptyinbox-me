@@ -36,12 +36,18 @@ components:
       scheme: bearer
       description: |
         Your API key. Obtain one by calling `POST /auth/register` (agents) or from https://emptyinbox.me/settings.html (humans).
-        Usage: `Authorization: Bearer <your_api_key>`
+        Usage: `Authorization: Bearer <your_api_key>`. `X-API-Key: <your_api_key>` is also accepted.
 
   schemas:
     PaymentQuote:
       type: object
       properties:
+        how_to_pay:
+          type: string
+          description: |
+            Plain-language payment instructions for the caller: pay directly
+            from a wallet you control (with your user's approval), or give your
+            user `pay_url`; then poll `status_url`.
         address:
           type: string
           description: Bitcoin address to pay. Unique to this quote.
@@ -77,7 +83,8 @@ components:
           example: "2026-09-09T12:15:00Z"
         status_url:
           type: string
-          example: /api/payments/status/bc1qexampleaddress
+          description: Absolute URL. Poll with the same Authorization header.
+          example: https://emptyinbox.me/api/payments/status/bc1qexampleaddress
 
     Message:
       type: object
@@ -553,9 +560,13 @@ paths:
       summary: Quote a Bitcoin price for a quota bundle
       description: |
         Returns a payment address, the exact amount to send, a BIP21 URI, and a
-        `pay_url`. An agent that cannot pay itself should give `pay_url` to its
-        user, who can pay from any Bitcoin wallet. Then poll
-        GET /payments/status/{address}.
+        `pay_url`. An agent that controls a Bitcoin wallet can pay directly,
+        with its user's approval: send exactly `amount_btc` to `address` in a
+        single output (or pay `bip21`) before `expires_at`. An agent without a
+        wallet should give `pay_url` to its user, who can pay from any Bitcoin
+        wallet. Then poll GET /payments/status/{address}.
+
+        This endpoint is POST only; GET returns 405.
 
         Quota is credited as soon as the transaction is seen on the network,
         without waiting for confirmations, unless the transaction signals

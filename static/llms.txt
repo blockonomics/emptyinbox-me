@@ -5,7 +5,7 @@
 ## API Access
 
 - Base URL: https://emptyinbox.me/api
-- Auth: `Authorization: Bearer <api_key>`
+- Auth: `Authorization: Bearer <api_key>` on every endpoint, payments included (`X-API-Key: <api_key>` also works)
 - OpenAPI spec: https://emptyinbox.me/openapi.yaml
 
 ### Getting an API key
@@ -118,10 +118,21 @@ The MCP `wait_for_message` tool handles the polling loop automatically.
 When quota runs out, `POST /api/inbox` returns `402` with `bundles_url` and `quote_url`.
 
 1. Show the user the prices from `GET /api/payments/bundles` and let them choose
-2. `POST /api/payments/quote` → returns a Bitcoin address, exact amount, BIP21 URI, and `pay_url`
-3. Give the user the `pay_url`: a page with a QR code, the amount and live status, for any Bitcoin wallet.
-   An agent that controls its own wallet can pay the BIP21 URI directly, with the user's approval
-4. `GET /api/payments/status/{address}` → poll until `quota_credited` is true
+2. Request a quote. It is a POST (GET returns 405) and needs the same API key:
+
+```bash
+curl -X POST https://emptyinbox.me/api/payments/quote   -H "Authorization: Bearer <api_key>" -H "Content-Type: application/json"   -d '{"bundle": "micro"}'
+```
+
+   It returns `address`, `amount_btc`, a BIP21 URI, `pay_url`, `status_url`,
+   `expires_at` (15 minutes) and `how_to_pay`.
+3. Pay, one of two ways:
+   - **Agent with its own wallet** (and the user's approval for the spend): send
+     exactly `amount_btc` to `address` in one output, or pay the `bip21` URI,
+     before `expires_at`. No human step needed.
+   - **No wallet**: give the user `pay_url`, a page with a QR code, the amount
+     and live status, for any Bitcoin wallet.
+4. `GET status_url` with the same Authorization header → poll until `quota_credited` is true
 
 Quota is credited as soon as the payment is seen on the network, without waiting
 for confirmations. The MCP tools `buy_quota` and `check_payment` wrap this flow.

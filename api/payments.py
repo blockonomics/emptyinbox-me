@@ -10,7 +10,7 @@ from config import db, app
 from constants import (
     USDT_DECIMALS, QUOTA_PER_USDT, BTC_DECIMALS, QUOTA_BUNDLES, DEFAULT_BUNDLE,
     QUOTE_TTL_MINUTES, UNDERPAYMENT_TOLERANCE, MAX_PROVISIONAL_INTENTS,
-    MAX_PROVISIONAL_USD, MIN_CUSTOM_USD, MAX_CUSTOM_USD, MIN_PAYMENT_SATS,
+    MAX_PROVISIONAL_USD, MIN_CUSTOM_USD, MAX_CUSTOM_USD, MIN_PAYMENT_SATS, SITE_URL,
 )
 from db_models import (
     User, UserSession, PaymentIntent, PaymentStatus, BtcPaymentIntent, PaymentCallback,
@@ -29,31 +29,46 @@ PAY_PAGE = f"https://{os.getenv('DOMAIN', 'emptyinbox.me')}/pay.html"
 
 
 def get_current_user():
-    """Get current user from API key (not session token)"""
+    """Resolve the caller from an API key or a session token, sent the same
+    ways the inbox routes accept them. Payments used to take only an API key
+    in Authorization, so a credential that created inboxes fine came back 401
+    here, and the one developer known to have scripted a purchase gave up on
+    exactly that."""
     try:
-        auth_header = request.headers.get('Authorization')
-        if not auth_header:
+        token = request.headers.get('X-API-Key', '').strip()
+        if not token:
+            auth_header = request.headers.get('Authorization', '').strip()
+            token = auth_header[7:].strip() if auth_header.startswith('Bearer ') else auth_header
+        if not token:
+            token = request.cookies.get('session_token', '')
+        if not token:
             return None
 
-        if auth_header.startswith('Bearer '):
-            api_key = auth_header[7:]
-        else:
-            api_key = auth_header
+        user = db.session.query(User).filter_by(api_key=token).first()
+        if user:
+            return user.user_id
 
-        if not api_key:
-            return None
-
-        user = db.session.query(User).filter_by(api_key=api_key).first()
-        if not user:
-            return None
-
-        return user.user_id
+        session = db.session.query(UserSession).filter_by(token=token).first()
+        if session and session.expires_at > datetime.utcnow():
+            return session.user_id
+        return None
 
     except Exception:
         return None
 
 def error_response(message: str, code: int = 400):
     return jsonify({'error': message}), code
+
+
+def unauthorized():
+    # A bare "Unauthorized" leaves a script author guessing which header and
+    # which credential; say both.
+    return jsonify({
+        'error': 'Unauthorized',
+        'message': ('Missing or invalid API key. Send it as '
+                    '"Authorization: Bearer <api_key>". Get a key from '
+                    'POST https://emptyinbox.me/api/auth/register or the dashboard.'),
+    }), 401
 
 
 def blockonomics_headers():
@@ -129,6 +144,19 @@ def get_bundles():
     })
 
 
+@payments_bp.route('/quote', methods=['GET'])
+def quote_wrong_method():
+    # Agents probing with a GET-only fetch tool got Flask's HTML 405 and no
+    # way forward. Answer in JSON with the call they should have made.
+    return jsonify({
+        'error': 'Method not allowed',
+        'message': ('Quotes are created with POST, not GET. Send '
+                    '"Authorization: Bearer <api_key>" and a JSON body '
+                    '{"bundle": "micro"} or {"usd": <whole dollars>}. Prices: '
+                    f'GET {SITE_URL}/api/payments/bundles.'),
+    }), 405
+
+
 @payments_bp.route('/quote', methods=['POST'])
 def create_quote():
     """Quote a BTC price for a quota bundle and return a payment address.
@@ -137,7 +165,7 @@ def create_quote():
     rather than deriving a second address."""
     current_user_id = get_current_user()
     if not current_user_id:
-        return error_response('Unauthorized', 401)
+        return unauthorized()
 
     data = request.get_json(silent=True) or {}
 
@@ -236,6 +264,15 @@ def create_quote():
 def quote_payload(intent: BtcPaymentIntent):
     btc = intent.expected_satoshis / BTC_DECIMALS
     return {
+        # Agents calling over plain HTTP never see the MCP server's guidance,
+        # so the response carries it: both ways to pay, and how to confirm.
+        'how_to_pay': (
+            f'If you control a Bitcoin wallet and your user has approved the '
+            f'spend, send exactly {btc:.8f} BTC to {intent.address} (or pay the '
+            'bip21 URI). Otherwise give your user pay_url: a page with a QR code '
+            'for any wallet. Then poll status_url with the same Authorization '
+            'header; quota is credited as soon as the payment is seen.'
+        ),
         'address': intent.address,
         'bundle': intent.bundle,
         'quota': intent.quota,
@@ -245,7 +282,7 @@ def quote_payload(intent: BtcPaymentIntent):
         'bip21': f'bitcoin:{intent.address}?amount={btc:.8f}',
         'pay_url': f'{PAY_PAGE}?address={intent.address}',
         'expires_at': intent.expires_at.isoformat() + 'Z',
-        'status_url': f'/api/payments/status/{intent.address}',
+        'status_url': f'https://{os.getenv("DOMAIN", "emptyinbox.me")}/api/payments/status/{intent.address}',
     }
 
 
@@ -255,7 +292,7 @@ def payment_status(address):
     transactions, so `quota_credited` can be true before `settled`."""
     current_user_id = get_current_user()
     if not current_user_id:
-        return error_response('Unauthorized', 401)
+        return unauthorized()
 
     intent = db.session.query(BtcPaymentIntent).filter_by(address=address).first()
     if not intent or intent.user_id != current_user_id:
@@ -312,7 +349,7 @@ def monitor_transaction():
     on-chain value at callback time, never from the client."""
     current_user_id = get_current_user()
     if not current_user_id:
-        return error_response("Unauthorized", 401)
+        return unauthorized()
 
     data = request.get_json()
     if not data:

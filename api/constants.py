@@ -54,7 +54,8 @@ def purchase_block(unused_credits_nearby: int = 0) -> dict:
         'pricing': prices,
         'pricing_url': f'{SITE_URL}/pricing.html',
         'buy_with_api': (
-            f'POST {SITE_URL}/api/payments/quote with your API key and '
+            f'POST {SITE_URL}/api/payments/quote with header '
+            '"Authorization: Bearer <api_key>" and '
             '{"bundle": "micro"} (or any bundle above) to get a BTC address; '
             f'open {SITE_URL}/pay.html?address=<address> to pay from a browser.'
         ),

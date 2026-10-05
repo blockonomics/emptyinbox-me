@@ -9,7 +9,7 @@ def auth_required(f):
     def decorator(*args, **kwargs):
         with app.app_context():
             # Check both cookie and Authorization header
-            token = request.cookies.get("session_token")
+            token = request.cookies.get("session_token") or request.headers.get("X-API-Key", "").strip()
             if not token:
                 auth_header = request.headers.get("Authorization", "")
                 if auth_header.startswith("Bearer "):

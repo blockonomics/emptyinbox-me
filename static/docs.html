@@ -679,6 +679,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
                   <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
                 <pre><code>{
+  "how_to_pay": "If you control a Bitcoin wallet and your user has approved the spend, send exactly 0.00005300 BTC to bc1qexampleaddress (or pay the bip21 URI). Otherwise give your user pay_url: a page with a QR code for any wallet. Then poll status_url with the same Authorization header; quota is credited as soon as the payment is seen.",
   "address": "bc1qexampleaddress",
   "bundle": "starter",
   "quota": 50,
@@ -688,7 +689,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
   "bip21": "bitcoin:bc1qexampleaddress?amount=0.00005300",
   "pay_url": "https://emptyinbox.me/pay.html?address=bc1qexampleaddress",
   "expires_at": "2026-09-09T12:15:00Z",
-  "status_url": "/api/payments/status/bc1qexampleaddress"
+  "status_url": "https://emptyinbox.me/api/payments/status/bc1qexampleaddress"
 }</code></pre>
               </div>
               <p><span class="status-code status-409">409 Conflict</span> &mdash; a previous payment is still awaiting confirmation</p>
