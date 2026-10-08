@@ -159,6 +159,9 @@
             <a href="#inbox-list" class="nav-link">
               <span class="nav-method nav-get">GET</span>/inboxes
             </a>
+            <a href="#inbox-keep" class="nav-link">
+              <span class="nav-method nav-post">POST</span>/inbox/{address}/keep
+            </a>
           </div>
           <div class="nav-group">
             <span class="nav-group-label">Messages</span>
@@ -179,6 +182,12 @@
             </a>
             <a href="#payments-status" class="nav-link">
               <span class="nav-method nav-get">GET</span>/payments/status/{address}
+            </a>
+          </div>
+          <div class="nav-group">
+            <span class="nav-group-label">Support</span>
+            <a href="#feedback" class="nav-link">
+              <span class="nav-method nav-post">POST</span>/feedback
             </a>
           </div>
           <div class="nav-group">
@@ -256,6 +265,11 @@
             <li><span class="workflow-step">4</span>Poll <code>GET /messages</code> until the email arrives</li>
             <li><span class="workflow-step">5</span>Read <code>code</code> or <code>action_url</code> straight off the message — no parsing needed</li>
           </ol>
+        </div>
+
+        <div class="info-block">
+          <h3>Stuck? Tell us</h3>
+          <p>If a call fails in a way retrying won't fix, a payment won't go through, or something is missing, send <a href="#feedback"><code>POST /feedback</code></a> (MCP: <code>report_issue</code>). No API key needed. A human reads every report.</p>
         </div>
       </section>
 
@@ -395,7 +409,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
             <code class="endpoint-path">/inbox</code>
           </div>
           <div class="endpoint-body">
-            <p class="endpoint-description">Creates a new disposable email inbox. Returns the email address as plain text. Each inbox consumes 1 from your quota. All accounts start with 5 inboxes. When quota runs out this returns <strong>402</strong> with links for buying more with Bitcoin. Humans can also buy at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a>.</p>
+            <p class="endpoint-description">Creates a new email inbox. Returns the email address as plain text, or JSON with <code>?format=json</code>. The inbox expires <strong>30 days</strong> after creation and then stops receiving mail; <a href="#inbox-keep">keep it</a> if it will receive password resets. The expiry is also in the <code>X-Inbox-Expires-At</code> header. Each inbox consumes 1 from your quota. All accounts start with 5 inboxes. When quota runs out this returns <strong>402</strong> with links for buying more with Bitcoin. Humans can also buy at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a>.</p>
 
             <div class="response-example">
               <h4>Example Request</h4>
@@ -430,7 +444,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
             <code class="endpoint-path">/inboxes</code>
           </div>
           <div class="endpoint-body">
-            <p class="endpoint-description">Returns all inboxes on this account, newest first.</p>
+            <p class="endpoint-description">Returns all inboxes on this account, newest first. <code>expires_at</code> is <code>null</code> for a permanent inbox; <code>expired</code> inboxes no longer receive mail.</p>
 
             <div class="response-example">
               <h4>Example Request</h4>
@@ -455,14 +469,64 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
                 <pre><code>[
   {
     "inbox": "clever.sunny.butterfly@emptyinbox.me",
-    "created_at": "2024-01-01T10:00:00"
+    "created_at": "2026-10-01T10:00:00",
+    "expires_at": "2026-10-31T10:00:00Z",
+    "permanent": false,
+    "expired": false
   },
   {
     "inbox": "quick.blue.elephant@emptyinbox.me",
-    "created_at": "2024-01-01T09:00:00"
+    "created_at": "2026-09-01T09:00:00",
+    "expires_at": null,
+    "permanent": true,
+    "expired": false
   }
 ]</code></pre>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint" id="inbox-keep">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-post">POST</span>
+            <code class="endpoint-path">/inbox/{address}/keep</code>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description">Makes an inbox permanent for <strong>30 credits</strong>, once. Use it when the address signed up for an account the user will keep: that account's password resets go there. Works on an expired inbox too, because an address is never given to anyone else. Calling it on an inbox that is already permanent costs nothing.</p>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl -X POST "https://emptyinbox.me/api/inbox/clever.sunny.butterfly@emptyinbox.me/keep" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+              </div>
+            </div>
+
+            <div class="response-example">
+              <h4>Response</h4>
+              <p><span class="status-code status-200">200 OK</span></p>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">json</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>{
+  "inbox": "clever.sunny.butterfly@emptyinbox.me",
+  "expires_at": null,
+  "permanent": true,
+  "expired": false,
+  "charged_credits": 30,
+  "inbox_quota": 20,
+  "message": "Inbox is now permanent."
+}</code></pre>
+              </div>
+              <p><span class="status-code status-402">402 Payment Required</span> — Not enough credits; body carries <code>credits_needed</code>, <code>credits_available</code> and <code>suggested_purchase.usd</code>, the smallest amount to pass to <code>POST /payments/quote</code></p>
+              <p><span class="status-code status-404">404 Not Found</span> — No such inbox on this account</p>
             </div>
           </div>
         </div>
@@ -743,6 +807,96 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
         </div>
       </section>
 
+      <!-- Support -->
+      <section class="docs-section" id="support">
+        <h2>Support</h2>
+
+        <div class="endpoint" id="feedback">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-post">POST</span>
+            <code class="endpoint-path">/feedback</code>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-description">Report a bug, a payment that won't go through, confusing docs or a missing feature. A human reads every report. Agents are welcome to call this themselves when they get stuck, or when a user decides not to buy and says why. The API key is optional; send it so the report is tied to your account. Never include passwords, verification codes or email contents.</p>
+
+            <h4>Request Body</h4>
+            <table class="parameter-table">
+              <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><code>message</code></td>
+                  <td>string</td>
+                  <td><span class="param-required">Required</span></td>
+                  <td>10–4000 chars: what you were doing, what happened, what you expected.</td>
+                </tr>
+                <tr>
+                  <td><code>category</code></td>
+                  <td>string</td>
+                  <td><span class="param-optional">Optional</span></td>
+                  <td><code>bug</code>, <code>payment</code>, <code>docs</code>, <code>feature_request</code> or <code>other</code> (default).</td>
+                </tr>
+                <tr>
+                  <td><code>tool</code></td>
+                  <td>string</td>
+                  <td><span class="param-optional">Optional</span></td>
+                  <td>The endpoint or MCP tool involved, e.g. <code>buy_quota</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>error</code></td>
+                  <td>string</td>
+                  <td><span class="param-optional">Optional</span></td>
+                  <td>The exact error text you saw.</td>
+                </tr>
+                <tr>
+                  <td><code>context</code></td>
+                  <td>object</td>
+                  <td><span class="param-optional">Optional</span></td>
+                  <td>Small extra details, up to 4 KB of JSON.</td>
+                </tr>
+                <tr>
+                  <td><code>contact</code></td>
+                  <td>string</td>
+                  <td><span class="param-optional">Optional</span></td>
+                  <td>Email for a reply, only if you want one.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="response-example">
+              <h4>Example Request</h4>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">curl</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>curl -X POST "https://emptyinbox.me/api/feedback" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"category": "payment", "tool": "buy_quota", "message": "User has no Bitcoin wallet and wanted to pay by card"}'</code></pre>
+              </div>
+            </div>
+
+            <div class="response-example">
+              <h4>Response</h4>
+              <p><span class="status-code status-201">201 Created</span></p>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">json</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>{
+  "id": "fb_3f9c1a2b7d04",
+  "status": "received",
+  "message": "Thanks. A human reads every report. Include \"contact\" if you want a reply."
+}</code></pre>
+              </div>
+              <p><span class="status-code status-400">400 Bad Request</span> — Missing or too short <code>message</code></p>
+              <p><span class="status-code status-429">429 Too Many Requests</span> — More than 10 reports from one address in an hour</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Error Codes -->
       <section class="docs-section" id="error-codes">
         <h2>Error Codes</h2>
@@ -767,7 +921,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
             <tr>
               <td><span class="status-code status-404">404</span></td>
               <td>Not Found</td>
-              <td>Message ID doesn't exist</td>
+              <td>Message ID or inbox doesn't exist on this account</td>
             </tr>
             <tr>
               <td><span class="status-code status-429">429</span></td>
@@ -786,6 +940,8 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
             <li>All accounts start with <strong>5 inbox quota</strong></li>
             <li>Creating an inbox consumes 1 quota unit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a></li>
             <li>Messages are automatically deleted after <strong>7 days</strong></li>
+            <li>Inboxes expire <strong>30 days</strong> after creation and stop receiving mail; <a href="#inbox-keep">keeping one</a> costs 30 credits, once</li>
+            <li>Feedback: up to <strong>10 reports per hour</strong> per address</li>
             <li>Free starting quota is graded down per network after <strong>3 accounts in 24 hours</strong>, and drops to none for <strong>7 days</strong> after that — reuse your key</li>
             <li>Full OpenAPI 3.1 spec available at <a href="/openapi.yaml">/openapi.yaml</a></li>
           </ul>
