@@ -77,12 +77,13 @@ web3-payment #web3-payment button:not(#disconnectWallet):hover:not([disabled]) {
 }
 
 /* Disabled read as an orange warning outline. The error line under it already
- * says why, so the button only needs to look unavailable. */
+ * says why, so the button only needs to look unavailable - and the amount must
+ * stay readable, since it is what the user needs to top the wallet up to. So
+ * the state is carried by shape (dashed outline, no fill), not by dim text. */
 web3-payment #web3-payment button[disabled] {
-  border: 1px solid var(--color-border);
-  background-color: var(--color-bg-subtle);
-  /* Muted text on the subtle fill was too faint to read the amount. */
-  color: var(--color-text-secondary);
+  border: 1px dashed var(--color-border);
+  background-color: transparent;
+  color: var(--color-text-primary);
   cursor: not-allowed;
 }
 
