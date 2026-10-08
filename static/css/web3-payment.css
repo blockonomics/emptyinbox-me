@@ -1,0 +1,91 @@
+/* Theme for Blockonomics' <web3-payment> USDT widget.
+ *
+ * The widget renders into the light DOM and ships its own <style> with colours
+ * fixed for a white page: #333 text, #f5f5f5 fields, a blue accent. On our
+ * dark theme that left the active step label and the network field unreadable,
+ * since our inputs inherit light text. Its colours mostly flow from custom
+ * properties set on #web3-payment, so those are remapped to our tokens here,
+ * plus the handful of hard-coded values it does not route through them.
+ *
+ * Every selector is prefixed with the element name to outrank the widget's
+ * own ID selectors, which load later and would otherwise win on order. */
+
+web3-payment #web3-payment {
+  --primary-color: var(--color-primary);
+  --text-color: var(--color-text-primary);
+  --error-color: var(--color-danger);
+  --disabled-color: var(--color-text-muted);
+  --border-color: var(--color-border);
+  --highlight-color: var(--color-primary-alpha);
+  --warning-color: var(--color-warning);
+  --connection-status-bg-color: var(--color-primary-alpha);
+  --connection-status-dot-color: var(--color-success);
+  color: var(--color-text-primary);
+  margin: 0 auto;
+}
+
+/* Steps: inactive labels and circles were a fixed #666. */
+web3-payment #web3-payment .step,
+web3-payment #web3-payment .step-text {
+  color: var(--color-text-muted);
+}
+
+web3-payment #web3-payment .step {
+  background: var(--color-surface);
+}
+
+web3-payment #web3-payment .step.active,
+web3-payment #web3-payment .step-text.active {
+  color: var(--color-text-primary);
+}
+
+/* Read-only wallet and network fields. */
+web3-payment .wallet-address,
+web3-payment .network-address {
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+}
+
+web3-payment .wallet-address {
+  font-family: var(--font-mono, ui-monospace, "SFMono-Regular", Consolas, monospace);
+}
+
+web3-payment .input-label {
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+}
+
+web3-payment .input-field button {
+  color: var(--color-text-muted);
+}
+
+web3-payment #web3-payment .input-field #disconnectWallet {
+  color: var(--color-danger);
+}
+
+/* Pay / connect button: white on the accent rather than body text on it. */
+web3-payment #web3-payment button:not(#disconnectWallet) {
+  color: var(--color-text-inverse);
+  font-weight: 600;
+  transition: background-color var(--duration-fast, 150ms) ease;
+}
+
+web3-payment #web3-payment button:not(#disconnectWallet):hover:not([disabled]) {
+  background-color: var(--color-primary-dark);
+}
+
+/* Disabled read as an orange warning outline. The error line under it already
+ * says why, so the button only needs to look unavailable. */
+web3-payment #web3-payment button[disabled] {
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+web3-payment #web3-payment .error {
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+}
