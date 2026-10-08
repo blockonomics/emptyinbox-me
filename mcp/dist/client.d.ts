@@ -74,6 +74,14 @@ export interface PaymentState {
     txid: string | null;
     expires_at: string;
 }
+export interface FeedbackReport {
+    message: string;
+    category?: "bug" | "payment" | "docs" | "feature_request" | "other";
+    tool?: string;
+    error?: string;
+    context?: Record<string, unknown>;
+    contact?: string;
+}
 /** Thrown when the account is out of inbox quota and must pay to continue. */
 export declare class QuotaExhaustedError extends Error {
     readonly detail: Record<string, unknown>;
@@ -120,6 +128,15 @@ export declare class EmptyInboxClient {
     }>;
     createQuote(bundle?: string, usd?: number): Promise<Quote>;
     getPaymentStatus(address: string): Promise<PaymentState>;
+    /**
+     * File a report. Works with or without a key: the callers with the most to
+     * report include those whose registration or key is the problem.
+     */
+    sendFeedback(report: FeedbackReport): Promise<{
+        id: string;
+        status: string;
+        message: string;
+    }>;
     getQuota(): Promise<{
         inbox_quota: number;
         username: string;

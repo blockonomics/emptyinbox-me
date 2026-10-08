@@ -185,6 +185,25 @@ class PaymentCallback(db.Model):
     seen_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class Feedback(db.Model):
+    """A report from POST /feedback. Every field but the ids and timestamps is
+    caller-supplied, untrusted text."""
+    __tablename__ = 'feedback'
+
+    id = db.Column(db.String(16), primary_key=True)
+    api_key = db.Column(db.String(250), index=True)   # null when sent without a valid key
+    category = db.Column(db.String(32), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    tool = db.Column(db.String(64))                   # the tool or endpoint that failed
+    error = db.Column(db.String(1000))                # the error the caller saw
+    context = db.Column(JSON)
+    contact = db.Column(db.String(255))               # where to reply, if the caller wants one
+    ip = db.Column(db.String(64), index=True)
+    client = db.Column(db.String(64))                 # X-Client header
+    status = db.Column(db.String(16), nullable=False, default='open')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+
 def main():
     from config import app, db
     with app.app_context():

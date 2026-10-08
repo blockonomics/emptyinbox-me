@@ -91,6 +91,15 @@ export interface PaymentState {
   expires_at: string;
 }
 
+export interface FeedbackReport {
+  message: string;
+  category?: "bug" | "payment" | "docs" | "feature_request" | "other";
+  tool?: string;
+  error?: string;
+  context?: Record<string, unknown>;
+  contact?: string;
+}
+
 /** Thrown when the account is out of inbox quota and must pay to continue. */
 export class QuotaExhaustedError extends Error {
   constructor(public readonly detail: Record<string, unknown>) {
@@ -217,6 +226,20 @@ export class EmptyInboxClient {
   async getPaymentStatus(address: string): Promise<PaymentState> {
     const res = await fetch(`${BASE_URL}/payments/status/${address}`, { headers: this.headers });
     if (!res.ok) throw new Error(`getPaymentStatus failed: ${res.status} ${await res.text()}`);
+    return res.json();
+  }
+
+  /**
+   * File a report. Works with or without a key: the callers with the most to
+   * report include those whose registration or key is the problem.
+   */
+  async sendFeedback(report: FeedbackReport): Promise<{ id: string; status: string; message: string }> {
+    const res = await fetch(`${BASE_URL}/feedback`, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify(report),
+    });
+    if (!res.ok) throw new Error(`sendFeedback failed: ${res.status} ${await res.text()}`);
     return res.json();
   }
 

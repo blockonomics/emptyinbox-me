@@ -40,11 +40,13 @@ if __name__ != '__main__':
 # Import blueprints
 from auth import auth_bp
 from payments import payments_bp
+from feedback import feedback_bp
 
 DOMAIN = os.getenv('DOMAIN')
 
 app.register_blueprint(auth_bp, url_prefix=url_prefix + '/auth')
 app.register_blueprint(payments_bp, url_prefix=url_prefix + '/payments')
+app.register_blueprint(feedback_bp, url_prefix=url_prefix + '/feedback')
 
 MAX_MESSAGE_LIMIT = 200
 DEFAULT_MESSAGE_LIMIT = 50

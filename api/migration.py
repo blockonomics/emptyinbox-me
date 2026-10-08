@@ -137,11 +137,42 @@ def migrate_registration_tracking():
     print("Migration completed: signup tracking columns and registration_attempts.")
 
 
+def migrate_feedback():
+    """Tickets from POST /feedback. New table, nothing else touched."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS feedback (
+            id         VARCHAR(16) NOT NULL,
+            api_key    VARCHAR(250),
+            category   VARCHAR(32) NOT NULL,
+            message    TEXT NOT NULL,
+            tool       VARCHAR(64),
+            error      VARCHAR(1000),
+            context    JSON,
+            contact    VARCHAR(255),
+            ip         VARCHAR(64),
+            client     VARCHAR(64),
+            status     VARCHAR(16) NOT NULL DEFAULT 'open',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id)
+        );
+    """)
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_feedback_api_key ON feedback(api_key);")
+    # The per-address rate limit filters on both on every submission.
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_feedback_ip ON feedback(ip, created_at);")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at);")
+    conn.commit()
+    conn.close()
+    print("Migration completed: feedback table.")
+
+
 def main():
     """Every migration is idempotent, so a deploy runs the whole set."""
     migrate_passkey_challenges()
     migrate_btc_payments()
     migrate_registration_tracking()
+    migrate_feedback()
 
 
 if __name__ == "__main__":

@@ -62,7 +62,7 @@ Leave it out otherwise: a placeholder value is sent as the key and every call fa
 
 Tools: `create_inbox`, `list_inboxes`, `list_messages`, `get_message`,
 `wait_for_message`, `get_quota`, `list_bundles`, `buy_quota`, `check_payment`,
-`register_account`.
+`register_account`, `report_issue`.
 
 ## REST API Endpoints
 
@@ -75,6 +75,7 @@ Tools: `create_inbox`, `list_inboxes`, `list_messages`, `get_message`,
 - `POST /api/payments/quote` — get a Bitcoin address, amount, and `pay_url` to buy quota `{bundle}` or `{usd}`
 - `GET /api/payments/status/{address}` — check whether a payment landed and quota was credited
 - `GET /api/payments/pay/{address}` — public view of a quote for the person paying, no auth required
+- `POST /api/feedback` — report a bug, a blocked payment, confusing docs or a missing feature; API key optional
 
 ## Guides
 
@@ -136,6 +137,25 @@ curl -X POST https://emptyinbox.me/api/payments/quote   -H "Authorization: Beare
 
 Quota is credited as soon as the payment is seen on the network, without waiting
 for confirmations. The MCP tools `buy_quota` and `check_payment` wrap this flow.
+
+## Feedback
+
+Stuck? Tell us. A human reads every report, and agent reports are the most
+useful ones we get: when a call fails, a payment will not go through, or a
+user decides not to buy, say what happened.
+
+```bash
+curl -X POST https://emptyinbox.me/api/feedback -H "Authorization: Bearer <api_key>" -H "Content-Type: application/json"   -d '{"category": "payment", "message": "User has no BTC wallet; wanted to pay by card", "tool": "buy_quota"}'
+```
+
+- `message` (required, 10–4000 chars): what you were doing and what got in the way
+- `category`: `bug`, `payment`, `docs`, `feature_request` or `other`
+- `tool`, `error`, `context` (small JSON object), `contact` (only if a reply is wanted): optional
+- The API key is optional; send it so the report can be tied to the account
+- Never include passwords, verification codes or email contents
+- Limit: 10 reports per hour per address
+
+The MCP `report_issue` tool wraps this.
 
 ## Pricing
 

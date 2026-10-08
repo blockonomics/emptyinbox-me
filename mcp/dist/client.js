@@ -130,6 +130,20 @@ export class EmptyInboxClient {
             throw new Error(`getPaymentStatus failed: ${res.status} ${await res.text()}`);
         return res.json();
     }
+    /**
+     * File a report. Works with or without a key: the callers with the most to
+     * report include those whose registration or key is the problem.
+     */
+    async sendFeedback(report) {
+        const res = await fetch(`${BASE_URL}/feedback`, {
+            method: "POST",
+            headers: this.headers,
+            body: JSON.stringify(report),
+        });
+        if (!res.ok)
+            throw new Error(`sendFeedback failed: ${res.status} ${await res.text()}`);
+        return res.json();
+    }
     async getQuota() {
         const res = await fetch(`${BASE_URL}/auth/me`, { headers: this.headers });
         if (!res.ok)

@@ -59,6 +59,7 @@ Get an API key at https://emptyinbox.me/settings.html
 | `list_bundles` | List quota bundles and prices |
 | `buy_quota` | Quote a Bitcoin payment; returns a `pay_url` for the user plus address, amount and BIP21 URI |
 | `check_payment` | Check whether a payment landed and quota was credited |
+| `report_issue` | Send a bug, payment problem, docs gap or feature request to the team; never creates an account |
 
 ## Example agent workflow
 

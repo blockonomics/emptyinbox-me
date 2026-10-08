@@ -389,6 +389,88 @@ paths:
                   quote_url:
                     type: string
                     example: https://emptyinbox.me/api/payments/quote
+                  feedback:
+                    type: string
+                    description: How to report a price or payment problem.
+
+  /feedback:
+    post:
+      operationId: submitFeedback
+      summary: Report a problem or send feedback
+      description: |
+        File a report with the EmptyInbox team: a bug, a payment that will not
+        go through, confusing docs, or a missing feature. A human reads every
+        report. Call this when something blocks you, or when the user decides
+        not to buy and says why.
+
+        Auth is optional. Send the API key when you have one so the report is
+        tied to the account. Never include passwords, verification codes or
+        email contents. Limited to 10 reports per hour per address.
+      security:
+        - ApiKeyAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                  minLength: 10
+                  maxLength: 4000
+                  description: What you were trying to do, what happened, and what you expected.
+                category:
+                  type: string
+                  enum: [bug, payment, docs, feature_request, other]
+                  default: other
+                tool:
+                  type: string
+                  maxLength: 64
+                  description: The tool or endpoint involved.
+                  example: buy_quota
+                error:
+                  type: string
+                  maxLength: 1000
+                  description: The exact error text, if any.
+                context:
+                  type: object
+                  additionalProperties: true
+                  description: Small extra details (at most 4 KB of JSON).
+                contact:
+                  type: string
+                  maxLength: 255
+                  description: Email for a reply, only if one is wanted.
+      responses:
+        "201":
+          description: Report received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: fb_3f9c1a2b7d04
+                  status:
+                    type: string
+                    example: received
+                  message:
+                    type: string
+        "400":
+          description: Missing or too short `message`, or a body that is not a JSON object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Too many reports from this address in the last hour
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /inboxes:
     get:

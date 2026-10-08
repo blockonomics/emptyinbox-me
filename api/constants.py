@@ -61,6 +61,10 @@ def purchase_block(unused_credits_nearby: int = 0) -> dict:
         ),
         'bundles_url': f'{SITE_URL}/api/payments/bundles',
         'quote_url': f'{SITE_URL}/api/payments/quote',
+        'feedback': (
+            f'Price, payment or anything else in the way? POST {FEEDBACK_URL} '
+            'with {"category": "payment", "message": "..."}; a human reads it.'
+        ),
         'reuse_note': (
             'One account creates many inboxes. Persist this API key and reuse '
             'it across runs instead of registering a new account each time; '
@@ -159,6 +163,19 @@ REGISTER_HARD_CAP = 200
 # handing the latter a free pass.
 REGISTER_V4_PREFIX = 24
 REGISTER_V6_PREFIX = 64
+
+# --- Feedback ---
+#
+# POST /feedback takes reports without auth, so the bounds below are what stand
+# between it and a free text store. Per address is the real limit; the daily
+# cap only bounds table growth if many addresses pile on at once.
+FEEDBACK_CATEGORIES = ('bug', 'payment', 'docs', 'feature_request', 'other')
+FEEDBACK_MIN_MESSAGE = 10
+FEEDBACK_MAX_MESSAGE = 4000
+FEEDBACK_MAX_CONTEXT = 4096   # bytes of JSON
+FEEDBACK_PER_IP_HOUR = 10
+FEEDBACK_DAILY_CAP = 500
+FEEDBACK_URL = 'https://emptyinbox.me/api/feedback'
 
 # Retention for the registration ledger. It exists to drive the grading above
 # and to answer how many accounts arrive, from where, and through which client.

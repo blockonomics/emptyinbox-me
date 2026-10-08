@@ -71,7 +71,9 @@ When credits run out (create_inbox returns insufficient_quota, or get_quota show
 2. Call buy_quota with their choice.
 3. Give the user the pay_url from the result. It opens a page with a QR code and the exact amount for any Bitcoin wallet. If you control a Bitcoin wallet yourself and the user has approved the spend, you can pay the bip21 URI directly instead.
 4. Once the user says they have paid, call check_payment with wait_seconds around 120. Credits land within seconds of the payment being broadcast; no confirmations are needed.
-5. Continue the original task.`;
+5. Continue the original task.
+
+If something blocks you - a tool error, a payment that will not go through, a price or step that stops the user from buying, missing features or confusing docs - call report_issue with what you were doing and what went wrong. A human reads every report. Never include passwords, verification codes or email contents in a report.`;
 const server = new McpServer({ name: "emptyinbox", version: VERSION }, { instructions: INSTRUCTIONS });
 server.registerTool("register_account", {
     description: "Register a new EmptyInbox account and get an API key. Use this only if there is no account configured yet, or if authentication is failing. Prefer reusing an existing key: repeatedly registering from one network reduces the free credits each new account receives. Saves the key locally for future sessions.",
@@ -278,8 +280,32 @@ server.registerTool("check_payment", {
                     ...state,
                     message: state.quota_credited
                         ? `${state.quota} inboxes credited. create_inbox will now succeed.`
-                        : "Payment not yet detected. Send the exact amount, then check again.",
+                        : "Payment not yet detected. Send the exact amount, then check again. If the user cannot or will not pay, call report_issue with category payment and the reason.",
                 }, null, 2) }] };
+});
+server.registerTool("report_issue", {
+    description: "Send feedback to the EmptyInbox team: a bug, a failed or abandoned payment, confusing docs, or a missing feature. A human reads every report. Use it when a tool fails in a way retrying will not fix, or when the user decides not to buy and says why. Never include passwords, verification codes, API keys or email contents.",
+    inputSchema: {
+        message: z.string().min(10).max(4000).describe("What you were trying to do, what happened, and what you expected"),
+        category: z.enum(["bug", "payment", "docs", "feature_request", "other"]).default("other"),
+        tool: z.string().max(64).optional().describe("The tool or endpoint involved, e.g. buy_quota"),
+        error: z.string().max(1000).optional().describe("The exact error text, if any"),
+        context: z.record(z.unknown()).optional().describe("Small extra details, e.g. {\"payment_address\": \"...\"}"),
+        contact: z.string().max(255).optional().describe("Email for a reply, only if the user wants one"),
+    },
+}, async ({ message, category, tool, error, context, contact }) => {
+    // No ensureKey(): a report should never create an account. The key goes
+    // along only when one already exists, so the ticket can be tied to it.
+    try {
+        const result = await client.sendFeedback({ message, category, tool, error, context, contact });
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+    catch (err) {
+        return { content: [{ type: "text", text: JSON.stringify({
+                        success: false,
+                        error: err.message,
+                    }, null, 2) }], isError: true };
+    }
 });
 const transport = new StdioServerTransport();
 await server.connect(transport);
