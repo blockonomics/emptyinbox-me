@@ -24,7 +24,23 @@ class Inbox(db.Model):
     inbox = db.Column(db.String(250), primary_key=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     connected_services = db.Column(JSON, default=list)
-    
+    # Null means permanent: either kept (kept_at set) or created before inboxes
+    # expired at all. Rows are never deleted, so an address is never reissued.
+    expires_at = db.Column(db.DateTime)
+    kept_at = db.Column(db.DateTime)
+
+    def is_expired(self, now=None):
+        return self.expires_at is not None and self.expires_at <= (now or datetime.utcnow())
+
+    def to_dict(self):
+        return {
+            'inbox': self.inbox,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'expires_at': self.expires_at.isoformat() + 'Z' if self.expires_at else None,
+            'permanent': self.expires_at is None,
+            'expired': self.is_expired(),
+        }
+
 class User(db.Model):
     __tablename__ = 'users'
 

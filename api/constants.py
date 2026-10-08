@@ -164,6 +164,22 @@ REGISTER_HARD_CAP = 200
 REGISTER_V4_PREFIX = 24
 REGISTER_V6_PREFIX = 64
 
+# --- Inbox lifetime ---
+#
+# Inboxes are free to create and expire after FREE_INBOX_DAYS. Most agent use
+# is a one-off verification code, for which a month is plenty. An address used
+# to sign up for something the user keeps is different: it is where that
+# account's password resets go, and keeping it is the thing worth paying for.
+# Credits rather than a separate product, so the purchase reuses the quote and
+# pay_url flow agents already know, and an agent holding spare credits can
+# keep an address without a human or a payment at all.
+#
+# Inboxes created before expiry existed have no expires_at and stay permanent.
+# An expired address is never handed to anyone else: its row is kept, which
+# reserves it, and it can still be kept (revived) by its owner.
+FREE_INBOX_DAYS = 30
+KEEP_INBOX_CREDITS = 30
+
 # --- Feedback ---
 #
 # POST /feedback takes reports without auth, so the bounds below are what stand

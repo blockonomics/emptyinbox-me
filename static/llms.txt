@@ -62,13 +62,14 @@ Leave it out otherwise: a placeholder value is sent as the key and every call fa
 
 Tools: `create_inbox`, `list_inboxes`, `list_messages`, `get_message`,
 `wait_for_message`, `get_quota`, `list_bundles`, `buy_quota`, `check_payment`,
-`register_account`, `report_issue`.
+`register_account`, `keep_inbox`, `report_issue`.
 
 ## REST API Endpoints
 
 - `POST /api/auth/register` — create an account and get an API key, no auth required
-- `POST /api/inbox` — create a new disposable inbox, returns email address as plain text
-- `GET /api/inboxes` — list all inboxes `[{inbox, created_at}]`
+- `POST /api/inbox` — create a new inbox, returns the address as plain text (`?format=json` for `{inbox, expires_at, ...}`)
+- `POST /api/inbox/{address}/keep` — make an inbox permanent for 30 credits
+- `GET /api/inboxes` — list all inboxes `[{inbox, created_at, expires_at, permanent, expired}]`
 - `GET /api/messages` — list all messages `[{id, inbox, subject, text_body, html_body, sender, timestamp}]`
 - `GET /api/message/{id}` — get full message content
 - `GET /api/payments/bundles` — quota bundles for sale, no auth required
@@ -138,6 +139,25 @@ curl -X POST https://emptyinbox.me/api/payments/quote   -H "Authorization: Beare
 Quota is credited as soon as the payment is seen on the network, without waiting
 for confirmations. The MCP tools `buy_quota` and `check_payment` wrap this flow.
 
+## Inbox lifetime
+
+New inboxes expire 30 days after creation and then stop receiving mail.
+Messages are kept 7 days either way. For one-off verification codes that is
+all you need.
+
+If the address was used to sign up for an account the user will keep, it is
+where that account's password resets go. Keep it:
+
+```bash
+curl -X POST https://emptyinbox.me/api/inbox/<address>/keep -H "Authorization: Bearer <api_key>"
+```
+
+- Costs 30 credits, once. The inbox never expires after that.
+- Works on an already expired inbox too: an address is never given to anyone else.
+- Keeping an inbox that is already permanent costs nothing.
+- Short on credits: `402` with `suggested_purchase.usd`, the smallest amount that covers it.
+- `POST /api/inbox` also returns the expiry in the `X-Inbox-Expires-At` header.
+
 ## Feedback
 
 Stuck? Tell us. A human reads every report, and agent reports are the most
@@ -159,7 +179,8 @@ The MCP `report_issue` tool wraps this.
 
 ## Pricing
 
-- Free: 5 inboxes per account, agents included
+- Free: 5 inboxes per account, agents included; inboxes expire after 30 days
+- Keep an inbox permanently: 30 credits, one time (about $1.60–$3)
 - Paid: from 10 inboxes per USD — bundles at $1 / 10, $5 / 50, $15 / 200, $40 / 750
 - Or any whole-dollar amount from $1 to $100, at the best bundle rate that amount qualifies for
 - Payments via Blockonomics: Bitcoin for agents, BTC or USDT for humans — no credit card, no KYC

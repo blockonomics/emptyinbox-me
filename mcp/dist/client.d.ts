@@ -43,6 +43,20 @@ export interface ListMessagesOptions {
 export interface Inbox {
     inbox: string;
     created_at: string;
+    /** Null when permanent. After it passes the inbox stops receiving mail. */
+    expires_at: string | null;
+    permanent: boolean;
+    expired: boolean;
+}
+export interface CreatedInbox extends Inbox {
+    keep_cost_credits: number;
+    keep_url: string;
+    note: string;
+}
+export interface KeepResult extends Inbox {
+    charged_credits: number;
+    inbox_quota?: number;
+    message: string;
 }
 export interface Bundle {
     id: string;
@@ -115,7 +129,9 @@ export declare class EmptyInboxClient {
      */
     constructor(apiKey: string | null);
     setKey(apiKey: string): void;
-    createInbox(): Promise<string>;
+    createInbox(): Promise<CreatedInbox>;
+    /** Make an inbox permanent. Costs credits; a no-op on one already permanent. */
+    keepInbox(address: string): Promise<KeepResult>;
     listInboxes(): Promise<Inbox[]>;
     listMessages(options?: ListMessagesOptions): Promise<Message[]>;
     getMessage(msgid: string): Promise<Message>;

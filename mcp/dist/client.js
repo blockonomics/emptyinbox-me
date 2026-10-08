@@ -57,7 +57,7 @@ export class EmptyInboxClient {
         this.headers["Authorization"] = `Bearer ${apiKey}`;
     }
     async createInbox() {
-        const res = await fetch(`${BASE_URL}/inbox`, {
+        const res = await fetch(`${BASE_URL}/inbox?format=json`, {
             method: "POST",
             headers: this.headers,
         });
@@ -65,7 +65,19 @@ export class EmptyInboxClient {
             throw new QuotaExhaustedError(await res.json());
         if (!res.ok)
             throw new Error(`createInbox failed: ${res.status} ${await res.text()}`);
-        return res.text();
+        return res.json();
+    }
+    /** Make an inbox permanent. Costs credits; a no-op on one already permanent. */
+    async keepInbox(address) {
+        const res = await fetch(`${BASE_URL}/inbox/${encodeURIComponent(address)}/keep`, {
+            method: "POST",
+            headers: this.headers,
+        });
+        if (res.status === 402)
+            throw new QuotaExhaustedError(await res.json());
+        if (!res.ok)
+            throw new Error(`keepInbox failed: ${res.status} ${await res.text()}`);
+        return res.json();
     }
     async listInboxes() {
         const res = await fetch(`${BASE_URL}/inboxes`, { headers: this.headers });

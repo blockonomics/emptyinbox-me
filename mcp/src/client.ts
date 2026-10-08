@@ -56,6 +56,22 @@ export interface ListMessagesOptions {
 export interface Inbox {
   inbox: string;
   created_at: string;
+  /** Null when permanent. After it passes the inbox stops receiving mail. */
+  expires_at: string | null;
+  permanent: boolean;
+  expired: boolean;
+}
+
+export interface CreatedInbox extends Inbox {
+  keep_cost_credits: number;
+  keep_url: string;
+  note: string;
+}
+
+export interface KeepResult extends Inbox {
+  charged_credits: number;
+  inbox_quota?: number;
+  message: string;
 }
 
 export interface Bundle {
@@ -160,14 +176,25 @@ export class EmptyInboxClient {
     this.headers["Authorization"] = `Bearer ${apiKey}`;
   }
 
-  async createInbox(): Promise<string> {
-    const res = await fetch(`${BASE_URL}/inbox`, {
+  async createInbox(): Promise<CreatedInbox> {
+    const res = await fetch(`${BASE_URL}/inbox?format=json`, {
       method: "POST",
       headers: this.headers,
     });
     if (res.status === 402) throw new QuotaExhaustedError(await res.json());
     if (!res.ok) throw new Error(`createInbox failed: ${res.status} ${await res.text()}`);
-    return res.text();
+    return res.json();
+  }
+
+  /** Make an inbox permanent. Costs credits; a no-op on one already permanent. */
+  async keepInbox(address: string): Promise<KeepResult> {
+    const res = await fetch(`${BASE_URL}/inbox/${encodeURIComponent(address)}/keep`, {
+      method: "POST",
+      headers: this.headers,
+    });
+    if (res.status === 402) throw new QuotaExhaustedError(await res.json());
+    if (!res.ok) throw new Error(`keepInbox failed: ${res.status} ${await res.text()}`);
+    return res.json();
   }
 
   async listInboxes(): Promise<Inbox[]> {

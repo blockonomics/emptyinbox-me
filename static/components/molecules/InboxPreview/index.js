@@ -1,4 +1,17 @@
 import { createElement } from "../../../utils/domHelpers.js";
+import { keepInbox } from "../../../services/apiService.js";
+import { showToast } from "../../atoms/Toast/index.js";
+import { KEEP_INBOX_CREDITS } from "../../../utils/constants.js";
+
+const DAY_MS = 86400000;
+
+function lifetimeLabel(inbox) {
+  if (inbox.permanent) return { text: "Permanent", tone: "permanent" };
+  if (inbox.expired) return { text: "Expired · no longer receiving mail", tone: "expired" };
+  const days = Math.ceil((new Date(inbox.expires_at) - Date.now()) / DAY_MS);
+  const text = days <= 1 ? "Expires within a day" : `Expires in ${days} days`;
+  return { text, tone: days <= 7 ? "soon" : "temporary" };
+}
 
 export function createInboxPreview(inbox) {
   const container = createElement("div", "inbox-card");
@@ -26,7 +39,48 @@ export function createInboxPreview(inbox) {
     </div>
   `;
 
+  // Inboxes from before expiry existed come back without the field; treat
+  // them as what they are, permanent.
+  if (inbox.permanent === undefined) return container;
+
+  const life = lifetimeLabel(inbox);
+  const footer = createElement("div", "inbox-lifetime");
+  footer.innerHTML = `<span class="lifetime-badge lifetime-${life.tone}">${life.text}</span>`;
+  if (!inbox.permanent) {
+    const keep = createElement("button", "keep-inbox-btn");
+    keep.type = "button";
+    keep.textContent = inbox.expired
+      ? `Restore permanently · ${KEEP_INBOX_CREDITS} credits`
+      : `Keep permanently · ${KEEP_INBOX_CREDITS} credits`;
+    keep.title = "Keep this address receiving mail forever, e.g. for password resets";
+    keep.addEventListener("click", () => onKeep(inbox, keep, footer));
+    footer.appendChild(keep);
+  }
+  container.appendChild(footer);
+
   return container;
+}
+
+async function onKeep(inbox, button, footer) {
+  if (!confirm(`Keep ${inbox.inbox} permanently for ${KEEP_INBOX_CREDITS} credits?`)) return;
+  button.disabled = true;
+  try {
+    const { status, ok, body } = await keepInbox(inbox.inbox);
+    if (ok) {
+      footer.innerHTML = `<span class="lifetime-badge lifetime-permanent">Permanent</span>`;
+      showToast("Inbox is now permanent");
+      return;
+    }
+    if (status === 402) {
+      showToast(`Needs ${KEEP_INBOX_CREDITS} credits, you have ${body.credits_available ?? 0}. Buy more first.`, "error");
+      document.getElementById("buy-quota-btn")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      showToast(body.message || "Could not keep inbox", "error");
+    }
+  } catch {
+    showToast("Could not keep inbox", "error");
+  }
+  button.disabled = false;
 }
 
 // Global copy function for inbox email

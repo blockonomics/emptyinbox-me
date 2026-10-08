@@ -3,7 +3,7 @@
   "name": "io.github.cnohall/emptyinbox",
   "title": "EmptyInbox",
   "description": "Zero-config disposable email inboxes for AI agents: create, read mail, await verify codes.",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "repository": {
     "url": "https://github.com/blockonomics/emptyinbox-me",
     "source": "github",
@@ -14,7 +14,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "emptyinbox-mcp",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "transport": {
         "type": "stdio"
       },

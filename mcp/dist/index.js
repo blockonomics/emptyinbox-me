@@ -66,6 +66,8 @@ const INSTRUCTIONS = `EmptyInbox gives you real, private email addresses for sig
 Typical flow: create_inbox -> use the address -> wait_for_message (returns the parsed code and link).
 Reuse inboxes when you can; each new one costs one credit. Accounts start with a few free credits and register themselves on first use.
 
+Inboxes expire 30 days after creation and then stop receiving mail. That is fine for one-off codes. But if you used the address to create an account the user will keep, the address is where that account's password resets go: tell the user it will expire and offer keep_inbox, which makes it permanent for 30 credits. Ask before spending; if credits are short, the purchase flow below applies.
+
 When credits run out (create_inbox returns insufficient_quota, or get_quota shows 0):
 1. Tell the user, and show the prices from list_bundles. Let the user choose; do not buy on your own initiative.
 2. Call buy_quota with their choice.
@@ -119,12 +121,16 @@ server.registerTool("get_quota", {
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
 });
 server.registerTool("create_inbox", {
-    description: "Create a new disposable email inbox. Returns the email address. Use this before triggering any signup or email verification flow.",
+    description: "Create a new disposable email inbox. Returns the email address and when it expires (30 days). Use this before triggering any signup or email verification flow.",
 }, async () => {
     await ensureKey();
     try {
-        const email = await client.createInbox();
-        return { content: [{ type: "text", text: email.trim() }] };
+        const inbox = await client.createInbox();
+        return { content: [{ type: "text", text: JSON.stringify({
+                        email: inbox.inbox,
+                        expires_at: inbox.expires_at,
+                        note: inbox.note,
+                    }, null, 2) }] };
     }
     catch (err) {
         if (err instanceof QuotaExhaustedError) {
@@ -141,8 +147,35 @@ server.registerTool("create_inbox", {
         throw err;
     }
 });
+server.registerTool("keep_inbox", {
+    description: "Make an inbox permanent so it never expires, for 30 credits. Use when the address was used to sign up for an account the user will keep (password resets go there). Ask the user first. Also brings back an expired inbox: addresses are never given to anyone else. Free if the inbox is already permanent.",
+    inputSchema: {
+        inbox: z.string().describe("Inbox email address to keep"),
+    },
+}, async ({ inbox }) => {
+    await ensureKey();
+    try {
+        const result = await client.keepInbox(inbox);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+    catch (err) {
+        if (err instanceof QuotaExhaustedError) {
+            const d = err.detail;
+            return { content: [{ type: "text", text: JSON.stringify({
+                            error: "insufficient_quota",
+                            message: d.message,
+                            credits_needed: d.credits_needed,
+                            credits_available: d.credits_available,
+                            next_step: d.suggested_purchase
+                                ? `Offer the user to buy credits: buy_quota with usd ${d.suggested_purchase.usd} covers it. Give them the pay_url, then call keep_inbox again once check_payment shows the credits.`
+                                : "Offer the user a bundle from list_bundles via buy_quota, then call keep_inbox again.",
+                        }, null, 2) }], isError: true };
+        }
+        throw err;
+    }
+});
 server.registerTool("list_inboxes", {
-    description: "List all disposable email inboxes on this account.",
+    description: "List all email inboxes on this account, with when each expires (null = permanent) and whether it already has.",
 }, async () => {
     await ensureKey();
     const inboxes = await client.listInboxes();

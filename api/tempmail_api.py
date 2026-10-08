@@ -2,7 +2,7 @@ from flask import request, jsonify
 from config import app,db
 from db_models import Message, Inbox, User
 from email.parser import Parser
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import uuid4
 from functools import wraps
 from flask import abort
@@ -15,7 +15,7 @@ import sqlite3
 import logging
 from words import adjectives, nouns
 from auth_utils import auth_required, get_api_key_from_token
-from constants import purchase_block
+from constants import purchase_block, FREE_INBOX_DAYS, KEEP_INBOX_CREDITS, SITE_URL, QUOTA_PER_USDT
 import message_parse
 
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
@@ -39,7 +39,7 @@ if __name__ != '__main__':
 
 # Import blueprints
 from auth import auth_bp
-from payments import payments_bp
+from payments import payments_bp, quota_for_usd
 from feedback import feedback_bp
 
 DOMAIN = os.getenv('DOMAIN')
@@ -210,6 +210,26 @@ def get_mailboxname():
     noun = random.choice(nouns)
     return f'{adjective_part}.{noun}'
 
+def unused_address():
+    '''An address no account has ever held.
+
+    The name space is about two million, so by a few thousand inboxes a random
+    draw starts landing on taken names. Without this check two keys could hold
+    one address and both read its mail, since messages are matched on the
+    address alone. Expired rows count as taken: an address that once received
+    someone's password resets must never be handed to anyone else.'''
+    for _ in range(20):
+        candidate = f'{get_mailboxname()}@{DOMAIN}'
+        if not db.session.query(Inbox.inbox).filter(Inbox.inbox == candidate).first():
+            return candidate
+    return None
+
+def keep_info(address):
+    return {
+        'keep_cost_credits': KEEP_INBOX_CREDITS,
+        'keep_url': f'{SITE_URL}/api/inbox/{address}/keep',
+    }
+
 def consume_quota(api_key):
     """Spend one inbox credit, returning False if there were none left.
 
@@ -268,12 +288,101 @@ def create_mailbox(token):
         }
         body.update(purchase_block())
         return jsonify(body), 402
-    email_address = f'{get_mailboxname()}@{DOMAIN}'
+    email_address = unused_address()
+    if not email_address:
+        db.session.rollback()
+        return jsonify({'error': 'address_unavailable',
+                        'message': 'Could not allocate a free address. Retry.'}), 503
     # The credit was spent above and is committed with the inbox it paid for,
     # so a failed insert takes the decrement down with it.
-    db.session.add(Inbox(api_key=api_key, inbox=email_address))
+    inbox = Inbox(api_key=api_key, inbox=email_address,
+                  expires_at=datetime.utcnow() + timedelta(days=FREE_INBOX_DAYS))
+    db.session.add(inbox)
     db.session.commit()
-    return email_address, 201
+
+    # Plain text stays the default body: every client written so far reads the
+    # address straight off it. The expiry rides in headers for those, and in
+    # full under format=json for clients that want to tell their user.
+    if (request.args.get('format') or '').lower() == 'json':
+        body = inbox.to_dict()
+        body.update(keep_info(email_address))
+        body['note'] = (
+            f'Expires in {FREE_INBOX_DAYS} days and then stops receiving mail. '
+            f'If this address is used for an account the user will keep, keep it '
+            f'permanently for {KEEP_INBOX_CREDITS} credits so password resets keep working.'
+        )
+        return jsonify(body), 201
+    return email_address, 201, {
+        'X-Inbox-Expires-At': inbox.to_dict()['expires_at'],
+        'X-Keep-Cost-Credits': str(KEEP_INBOX_CREDITS),
+    }
+
+@app.route(f'{url_prefix}/inbox/<path:address>/keep', methods=['POST'])
+@auth_required
+def keep_mailbox(token, address):
+    '''Make an inbox permanent for KEEP_INBOX_CREDITS credits.
+
+    Works on an expired inbox too: the address was never reissued, so its
+    owner can still bring it back. Keeping an inbox that is already permanent
+    is a no-op and costs nothing, so a retried call never charges twice.'''
+    api_key = get_api_key_from_token(token)
+    inbox = db.session.execute(
+        db.select(Inbox).filter(Inbox.api_key == api_key, Inbox.inbox == address)
+    ).scalar_one_or_none()
+    if not inbox:
+        return jsonify({'error': 'not_found', 'message': 'No such inbox on this account.'}), 404
+    if inbox.expires_at is None:
+        return jsonify({**inbox.to_dict(), 'charged_credits': 0,
+                        'message': 'Already permanent.'}), 200
+
+    # Charge and keep in one transaction, with the balance check inside the
+    # UPDATE, for the same reason consume_quota does it: two concurrent calls
+    # must not both pass a read of the balance.
+    spent = db.session.query(User).filter(
+        User.api_key == api_key,
+        User.inbox_quota >= KEEP_INBOX_CREDITS,
+    ).update({'inbox_quota': User.inbox_quota - KEEP_INBOX_CREDITS}, synchronize_session=False)
+    if not spent:
+        db.session.rollback()
+        record_quota_block(api_key)
+        have = db.session.query(User.inbox_quota).filter(User.api_key == api_key).scalar() or 0
+        body = {
+            'error': 'insufficient_quota',
+            'message': (
+                f'Keeping an inbox costs {KEEP_INBOX_CREDITS} credits; this key has {have}. '
+                'Buy credits with Bitcoin, then call this again.'
+            ),
+            'credits_needed': KEEP_INBOX_CREDITS,
+            'credits_available': have,
+        }
+        body.update(purchase_block())
+        # The bundle list leads with $1 = 10, which does not cover a keep. Name
+        # the smallest purchase that does, so the agent does not buy short.
+        short_by = KEEP_INBOX_CREDITS - have
+        usd = -(-short_by // QUOTA_PER_USDT)
+        body['suggested_purchase'] = {
+            'usd': usd,
+            'credits': quota_for_usd(usd),
+            'how': f'POST {SITE_URL}/api/payments/quote with {{"usd": {usd}}}',
+        }
+        return jsonify(body), 402
+
+    # Conditional on still being temporary: a concurrent keep that already won
+    # must not be paid for twice.
+    kept = db.session.query(Inbox).filter(
+        Inbox.api_key == api_key, Inbox.inbox == address, Inbox.expires_at.isnot(None),
+    ).update({'expires_at': None, 'kept_at': datetime.utcnow()}, synchronize_session=False)
+    if not kept:
+        db.session.rollback()
+        db.session.refresh(inbox)
+        return jsonify({**inbox.to_dict(), 'charged_credits': 0,
+                        'message': 'Already permanent.'}), 200
+    db.session.commit()
+    db.session.refresh(inbox)
+    remaining = db.session.query(User.inbox_quota).filter(User.api_key == api_key).scalar()
+    return jsonify({**inbox.to_dict(), 'charged_credits': KEEP_INBOX_CREDITS,
+                    'inbox_quota': remaining,
+                    'message': 'Inbox is now permanent.'}), 200
 
 @app.route(f'{url_prefix}/inboxes', methods=['GET']) 
 @auth_required
@@ -286,16 +395,16 @@ def get_mailboxes(token):
           .order_by(Inbox.created_at.desc())
     ).scalars().all()
 
-    result = [{
-        'inbox': inbox.inbox,
-        'created_at': inbox.created_at.isoformat(),
-    } for inbox in inboxes]
-
-    return result
+    return [inbox.to_dict() for inbox in inboxes]
 
 def query_inbox(inbox):
-    inbox = db.session.execute(db.select(Inbox).filter(Inbox.inbox==inbox)).first()
-    return inbox
+    '''Whether this address should accept mail: it exists and has not expired.'''
+    return db.session.execute(
+        db.select(Inbox.inbox).filter(
+            Inbox.inbox == inbox,
+            db.or_(Inbox.expires_at.is_(None), Inbox.expires_at > datetime.utcnow()),
+        )
+    ).first()
 
 @app.route('/email', methods=['POST'])
 def create_email():

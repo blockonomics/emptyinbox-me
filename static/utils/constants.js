@@ -73,4 +73,7 @@ export const LOCAL_STORAGE_KEYS = {
 
 export const QUOTA_PER_USDT = 10;
 
+// Mirrors KEEP_INBOX_CREDITS in api/constants.py.
+export const KEEP_INBOX_CREDITS = 30;
+
 export const USER_STARTING_QUOTA = 5;

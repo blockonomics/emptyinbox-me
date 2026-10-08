@@ -191,6 +191,14 @@ components:
         created_at:
           type: string
           format: date-time
+        expires_at:
+          type: ["string", "null"]
+          format: date-time
+          description: When the inbox stops receiving mail. Null means permanent.
+        permanent:
+          type: boolean
+        expired:
+          type: boolean
 
     RegisterResult:
       type: object
@@ -343,19 +351,51 @@ paths:
       operationId: createInbox
       summary: Create a new disposable email inbox
       description: |
-        Creates a new inbox and returns its email address as plain text.
+        Creates a new inbox and returns its email address as plain text, or
+        JSON with `?format=json`. The inbox expires 30 days after creation and
+        then stops receiving mail; `POST /inbox/{address}/keep` makes it
+        permanent. The expiry is also in the `X-Inbox-Expires-At` header.
         Each inbox consumes 1 from your quota. Accounts normally start with 5;
         read `inbox_quota` from registration or `GET /auth/me` rather than assuming.
         When quota runs out this returns 402 with a link to POST /payments/quote,
         which sells more quota for Bitcoin. Humans can also buy at https://emptyinbox.me/inboxes.html
+      parameters:
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [text, json]
+            default: text
       responses:
         "201":
           description: Inbox created — returns the email address
+          headers:
+            X-Inbox-Expires-At:
+              schema:
+                type: string
+                format: date-time
+            X-Keep-Cost-Credits:
+              schema:
+                type: integer
           content:
             text/plain:
               schema:
                 type: string
               example: clever.sunny.butterfly@emptyinbox.me
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Inbox"
+                  - type: object
+                    properties:
+                      keep_cost_credits:
+                        type: integer
+                        example: 30
+                      keep_url:
+                        type: string
+                      note:
+                        type: string
         "401":
           description: Missing or invalid API key
         "402":
@@ -392,6 +432,71 @@ paths:
                   feedback:
                     type: string
                     description: How to report a price or payment problem.
+
+  /inbox/{address}/keep:
+    post:
+      operationId: keepInbox
+      summary: Make an inbox permanent
+      description: |
+        Charges 30 credits once and removes the inbox's expiry, so it keeps
+        receiving mail. Use it for an address that signed up for an account the
+        user will keep: password resets go there. Works on an expired inbox
+        too, since addresses are never reissued. Free and idempotent on an inbox
+        that is already permanent.
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          example: clever.sunny.butterfly@emptyinbox.me
+      responses:
+        "200":
+          description: Inbox is permanent
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Inbox"
+                  - type: object
+                    properties:
+                      charged_credits:
+                        type: integer
+                        description: 30, or 0 if it was already permanent
+                      inbox_quota:
+                        type: integer
+                      message:
+                        type: string
+        "401":
+          description: Missing or invalid API key
+        "402":
+          description: |
+            Not enough credits. Carries `credits_needed`, `credits_available`,
+            `suggested_purchase` (`usd` for `POST /payments/quote`) and the
+            usual purchase links.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: insufficient_quota
+                  credits_needed:
+                    type: integer
+                  credits_available:
+                    type: integer
+                  suggested_purchase:
+                    type: object
+                    properties:
+                      usd:
+                        type: integer
+                      credits:
+                        type: integer
+                      how:
+                        type: string
+        "404":
+          description: No such inbox on this account
 
   /feedback:
     post:

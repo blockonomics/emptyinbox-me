@@ -57,6 +57,16 @@ export async function createInbox() {
   return { response, success: response.ok };
 }
 
+// 📌 Keep an inbox permanently (costs credits)
+export async function keepInbox(address) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/inbox/${encodeURIComponent(address)}/keep`,
+    { method: "POST", credentials: "include" }
+  );
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, ok: response.ok, body };
+}
+
 // 🔍 Check username
 export async function checkUsername(username) {
   const response = await fetch(`${API_BASE_URL}/api/auth/check-username`, {

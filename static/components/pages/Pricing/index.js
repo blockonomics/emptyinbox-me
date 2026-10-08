@@ -24,7 +24,7 @@ const FREE_FEATURES = [
   "5 inbox credits — create 5 inboxes total",
   "REST API &amp; MCP server access",
   "Email polling via <code>wait_for_message</code>",
-  "Auto-delete after 7 days",
+  "Inboxes last 30 days, messages 7 — keep one forever for 30 credits",
   "API key auth — no browser needed",
 ];
 

@@ -50,7 +50,7 @@ Get an API key at https://emptyinbox.me/settings.html
 
 | Tool | Description |
 |------|-------------|
-| `create_inbox` | Create a new disposable email address |
+| `create_inbox` | Create a new email address; it expires after 30 days unless kept |
 | `list_inboxes` | List all inboxes on your account |
 | `list_messages` | List received messages, each with its extracted code, action link and text preview |
 | `get_message` | Get one message parsed (code, links, plain text), or `format="text"` for a flat rendering |
@@ -59,6 +59,7 @@ Get an API key at https://emptyinbox.me/settings.html
 | `list_bundles` | List quota bundles and prices |
 | `buy_quota` | Quote a Bitcoin payment; returns a `pay_url` for the user plus address, amount and BIP21 URI |
 | `check_payment` | Check whether a payment landed and quota was credited |
+| `keep_inbox` | Make an inbox permanent (30 credits) so it keeps receiving mail, e.g. password resets |
 | `report_issue` | Send a bug, payment problem, docs gap or feature request to the team; never creates an account |
 
 ## Example agent workflow

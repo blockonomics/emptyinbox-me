@@ -414,6 +414,7 @@ Your verification code is 482910. It expires in 10 minutes.</div>
           <li style="margin-bottom: 0.5rem;">All accounts start with <strong>5 inbox quota</strong></li>
           <li style="margin-bottom: 0.5rem;">Creating an inbox consumes 1 quota unit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html" style="color: var(--color-primary);">emptyinbox.me/inboxes.html</a></li>
           <li style="margin-bottom: 0.5rem;">Messages are automatically deleted after <strong>7 days</strong></li>
+          <li style="margin-bottom: 0.5rem;">Inboxes expire <strong>30 days</strong> after creation and stop receiving mail. <code>POST /api/inbox/{address}/keep</code> makes one permanent for 30 credits &mdash; for addresses that receive password resets</li>
           <li style="margin-bottom: 0.5rem;">Registration is limited to <strong>3 new accounts per IP per 24 hours</strong></li>
           <li>Full OpenAPI 3.1 spec available at <a href="/openapi.yaml" style="color: var(--color-primary);">/openapi.yaml</a></li>
         </ul>

@@ -167,12 +167,31 @@ def migrate_feedback():
     print("Migration completed: feedback table.")
 
 
+def migrate_inbox_expiry():
+    """Expiry on inboxes. Existing rows get NULL expires_at, which means
+    permanent: nobody loses an address they already have."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("PRAGMA table_info(inboxes);")
+    columns = {row[1] for row in cur.fetchall()}
+    for name in ("expires_at", "kept_at"):
+        if name not in columns:
+            cur.execute(f"ALTER TABLE inboxes ADD COLUMN {name} DATETIME;")
+    # The primary key leads with api_key, so lookups by address alone - every
+    # inbound mail, and the uniqueness check on create - had no index.
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_inboxes_inbox ON inboxes(inbox);")
+    conn.commit()
+    conn.close()
+    print("Migration completed: inbox expiry columns.")
+
+
 def main():
     """Every migration is idempotent, so a deploy runs the whole set."""
     migrate_passkey_challenges()
     migrate_btc_payments()
     migrate_registration_tracking()
     migrate_feedback()
+    migrate_inbox_expiry()
 
 
 if __name__ == "__main__":
