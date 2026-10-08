@@ -81,7 +81,8 @@ web3-payment #web3-payment button:not(#disconnectWallet):hover:not([disabled]) {
 web3-payment #web3-payment button[disabled] {
   border: 1px solid var(--color-border);
   background-color: var(--color-bg-subtle);
-  color: var(--color-text-muted);
+  /* Muted text on the subtle fill was too faint to read the amount. */
+  color: var(--color-text-secondary);
   cursor: not-allowed;
 }
 
