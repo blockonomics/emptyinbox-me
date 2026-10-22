@@ -1,5 +1,7 @@
 # More explicit version
 USDT_DECIMALS = 1_000_000  # 6 decimal places
+# The micro bundle's rate, and the flat rate every USDT purchase used before
+# USDT moved onto the bundle rates. Old payment rows are priced back from it.
 QUOTA_PER_USDT = 10
 
 BTC_DECIMALS = 100_000_000  # satoshis per BTC
@@ -7,10 +9,11 @@ BTC_DECIMALS = 100_000_000  # satoshis per BTC
 USER_STARTING_QUOTA = 5
 AGENT_STARTING_QUOTA = 5
 
-# Quota bundles sold for BTC. Bigger bundles buy a better per-inbox rate,
-# because the network fee is a fixed cost the buyer pays on top and it eats a
-# far larger share of a small purchase. The smallest bundle matches
-# QUOTA_PER_USDT: a dollar must never buy less over BTC than it does over USDT.
+# Quota bundles, the one price list for both BTC and USDT. Bigger bundles buy
+# a better per-inbox rate, because the network fee is a fixed cost the buyer
+# pays on top and it eats a far larger share of a small purchase. A USDT
+# payment is credited at the best rate its amount reaches (quota_for_usd), so
+# paying a bundle's price in either coin buys the same quota.
 QUOTA_BUNDLES = {
     'micro':    {'quota': QUOTA_PER_USDT, 'usd': 1},
     'starter':  {'quota': 50,  'usd': 5},
@@ -27,6 +30,14 @@ DEFAULT_BUNDLE = 'starter'
 # is the technical one, and it bites at a different place.
 MIN_CUSTOM_USD = 1
 MAX_CUSTOM_USD = 100
+
+# A 402 on POST /inbox is only worth counting once per sitting. The ledger has
+# a client retrying a 402 in a tight loop - 1,428 blocks in twenty minutes on
+# one key - which says nothing about purchase intent and drowns the accounts
+# that hit the wall a handful of times. Blocks closer together than this are
+# one contact. The same figure goes out as Retry-After, so a client that honours
+# it stops looping, and one that does not at least stops inflating the count.
+QUOTA_BLOCK_WINDOW = 60  # seconds
 
 # The purchase block attached to every response that turns a caller away for
 # want of credits: the 402 on POST /inbox and the zero-grant on registration.

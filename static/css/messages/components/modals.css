@@ -183,6 +183,74 @@
   color: var(--color-primary-darker);
 }
 
+/* ===== Payment method toggle ===== */
+.qm-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+.qm-method {
+  padding: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: "Poppins", sans-serif;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+.qm-method:hover { color: var(--color-text-primary); }
+.qm-method.active {
+  background: var(--color-surface);
+  color: var(--color-primary-darker);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== Bitcoin bundles ===== */
+.qm-bundles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: var(--space-2);
+}
+
+.qm-bundle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  font-family: "Poppins", sans-serif;
+  text-align: left;
+  background: var(--color-bg-subtle);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) ease, background var(--duration-fast) ease;
+}
+.qm-bundle:hover { border-color: var(--color-primary); }
+.qm-bundle.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-alpha);
+}
+
+.qm-bundle-qty {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.qm-bundle-price {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
 /* ===== Total row ===== */
 .qm-total-row {
   display: flex;

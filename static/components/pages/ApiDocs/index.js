@@ -31,7 +31,7 @@ export function renderApiDocsPage() {
   "mcpServers": {
     "emptyinbox": {
       "command": "npx",
-      "args": ["-y", "emptyinbox-mcp"]
+      "args": ["-y", "emptyinbox-mcp@latest"]
     }
   }
 }</div>

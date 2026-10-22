@@ -14,7 +14,7 @@ from auth_utils import auth_required
 from db_models import (AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus,
                        PasskeyCredential, PasskeyChallenge, BtcPaymentIntent,
                        RegistrationAttempt)
-from constants import (USER_STARTING_QUOTA, AGENT_STARTING_QUOTA, QUOTA_PER_USDT,
+from constants import (USER_STARTING_QUOTA, AGENT_STARTING_QUOTA, QUOTA_PER_USDT, USDT_DECIMALS,
                        REGISTER_WINDOW, REGISTER_GRADES, REGISTER_HARD_CAP,
                        REGISTER_ZERO_STICKY,
                        REGISTER_V4_PREFIX, REGISTER_V6_PREFIX, purchase_block)
@@ -591,7 +591,7 @@ def auth_me(token):
                 'txhash': p.txhash,
                 'amount': p.amount,
                 'currency': 'USDT',
-                'usd': p.amount / QUOTA_PER_USDT,
+                'usd': p.value / USDT_DECIMALS if p.value is not None else p.amount / QUOTA_PER_USDT,
                 'created_at': p.created_at.isoformat()
             }
             for p in payments

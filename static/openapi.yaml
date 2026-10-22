@@ -286,6 +286,16 @@ paths:
 
         Always read `inbox_quota` off the response rather than assuming 5.
       security: []
+      parameters:
+        - in: header
+          name: X-Client
+          required: false
+          description: |
+            Optional. Your agent, framework or tool, e.g. `langchain-agent/0.3`.
+            No effect on quota; it tells us which integrations to support.
+          schema:
+            type: string
+            maxLength: 64
       requestBody:
         required: false
         content:

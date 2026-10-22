@@ -61,7 +61,8 @@ class User(db.Model):
     # Paywall contact. An account that has hit 402 wanted an inbox it could not
     # have, which is the one moment a free user has declared intent to buy.
     # Counting it here keeps the funnel answerable from the accounts table
-    # rather than from log scraping.
+    # rather than from log scraping. Counts contacts, not requests: a retry
+    # within QUOTA_BLOCK_WINDOW of the last block is not counted again.
     quota_blocks = db.Column(db.Integer, default=0, nullable=False)
     last_quota_block_at = db.Column(db.DateTime)
 
@@ -163,6 +164,9 @@ class PaymentIntent(db.Model):
     user_id = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     amount = db.Column(db.Integer)
+    # micro-USDT received. NULL on rows from before USDT used the bundle
+    # rates, all of which were bought at QUOTA_PER_USDT.
+    value = db.Column(db.BigInteger)
     status = db.Column(db.String(1), nullable=False, default="0")
 
 

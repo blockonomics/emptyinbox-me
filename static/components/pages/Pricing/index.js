@@ -132,7 +132,7 @@ export async function renderPricingPage() {
       <section class="pricing-bundles-section">
         <div class="bundles-header">
           <h2 class="bundles-title">Bitcoin bundles</h2>
-          <p class="bundles-note">Or name your own amount from $1 to $100 — pass <code>usd</code> instead of a bundle. The network fee is the same whatever the size of the payment, so it eats a far larger share of a small one. Paying in USDT instead? Send any amount — $1 buys 10 credits.</p>
+          <p class="bundles-note">Or name your own amount from $1 to $100 — pass <code>usd</code> instead of a bundle. The network fee is the same whatever the size of the payment, so it eats a far larger share of a small one. Paying in USDT? The same bundles and rates apply — any amount is credited at the best bundle rate it reaches.</p>
         </div>
 
         <div class="bundle-tiles">

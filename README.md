@@ -11,7 +11,7 @@ Disposable email inbox API for AI agents and developers. Create temporary email 
 Zero config. No API key: the server registers an account on its first tool call.
 
 ```
-claude mcp add emptyinbox -- npx -y emptyinbox-mcp
+claude mcp add emptyinbox -- npx -y emptyinbox-mcp@latest
 ```
 
 ```json
@@ -19,7 +19,7 @@ claude mcp add emptyinbox -- npx -y emptyinbox-mcp
   "mcpServers": {
     "emptyinbox": {
       "command": "npx",
-      "args": ["-y", "emptyinbox-mcp"]
+      "args": ["-y", "emptyinbox-mcp@latest"]
     }
   }
 }

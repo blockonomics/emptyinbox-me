@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#f8f9fb" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#1c1e24" media="(prefers-color-scheme: dark)" />
-  <!-- One page per quote, reached only through a link an agent hands its user. -->
+  <!-- One page per quote, reached through a link an agent hands its user, or
+       from the buy modal on the inboxes page (from=web). -->
   <meta name="robots" content="noindex, nofollow" />
   <title>Pay with Bitcoin — EmptyInbox</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -124,6 +125,8 @@
     .status[data-state="expired"] { background: var(--color-danger-soft); color: var(--color-on-danger-soft); }
 
     .fine { margin-top: 1rem; font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.5; }
+    #back:not([hidden]) { display: block; text-decoration: none; }
+    #back:hover { color: var(--color-text-primary); }
 
     @media (prefers-reduced-motion: no-preference) {
       .status[data-state="waiting"]::before {
@@ -167,15 +170,30 @@
 
     <p class="fine" id="fine" hidden>
       Send the exact amount. Credits are added as soon as the payment is seen
-      on the network, usually within seconds, before it confirms. Keep this
-      page open or close it: your agent can check the payment itself.
+      on the network, usually within seconds, before it confirms.
+      <span id="fine-who">Keep this page open or close it: your agent can check the payment itself.</span>
     </p>
+
+    <a class="fine" id="back" href="/inboxes.html" hidden>&larr; Back to inboxes</a>
   </main>
 
   <script src="/utils/qrcode.js"></script>
   <script>
     const $ = (id) => document.getElementById(id);
-    const address = new URLSearchParams(location.search).get('address');
+    const params = new URLSearchParams(location.search);
+    const address = params.get('address');
+    // A signed-in user buying for themselves, not a user handed a link by an
+    // agent. Only the wording changes; the quote and polling are the same.
+    const fromWeb = params.get('from') === 'web';
+    const COPY = fromWeb ? {
+      ready: 'The credits are on your account. You can create inboxes now.',
+      fine: 'Keep this page open to watch for the payment.',
+      renew: 'Go back to your inboxes and start a new payment.',
+    } : {
+      ready: 'The credits are on the account and your agent can create inboxes now.',
+      fine: 'Keep this page open or close it: your agent can check the payment itself.',
+      renew: 'Ask your agent for a new one.',
+    };
     const POLL_MS = 5000;
     let quote = null;
     let timer = null;
@@ -228,9 +246,7 @@
         $('pay').hidden = true;
         $('fine').hidden = true;
         $('title').textContent = `${q.quota} inboxes added`;
-        setStatus('credited', q.settled
-          ? 'Payment confirmed. The credits are on the account and your agent can create inboxes now.'
-          : 'Payment seen on the network. The credits are on the account already; your agent can create inboxes now.');
+        setStatus('credited', `${q.settled ? 'Payment confirmed.' : 'Payment seen on the network.'} ${COPY.ready}`);
         return stop();
       }
       if (q.received_satoshis > 0) {
@@ -243,7 +259,7 @@
       if (q.expired) {
         $('pay').hidden = true;
         $('fine').hidden = true;
-        setStatus('expired', 'This quote expired before a payment arrived. Ask your agent for a new one — the Bitcoin price has moved.');
+        setStatus('expired', `This quote expired before a payment arrived, and the Bitcoin price has moved since. ${COPY.renew}`);
         return stop();
       }
       const left = timeLeft(q.expires_at);
@@ -275,6 +291,9 @@
         setTimeout(() => (btn.textContent = 'Copy'), 1500);
       });
     });
+
+    $('fine-who').textContent = COPY.fine;
+    $('back').hidden = !fromWeb;
 
     if (!address) {
       fail('No payment selected', 'Open the payment link your agent gave you.');

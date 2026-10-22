@@ -15,7 +15,9 @@ import sqlite3
 import logging
 from words import adjectives, nouns
 from auth_utils import auth_required, get_api_key_from_token
-from constants import purchase_block, FREE_INBOX_DAYS, KEEP_INBOX_CREDITS, SITE_URL, QUOTA_PER_USDT
+from constants import (purchase_block, FREE_INBOX_DAYS, KEEP_INBOX_CREDITS, SITE_URL,
+                       QUOTA_PER_USDT, QUOTA_BLOCK_WINDOW)
+from sqlalchemy import or_
 import message_parse
 
 FLASK_ENV = os.getenv('FLASK_ENV', 'production')
@@ -38,7 +40,7 @@ if __name__ != '__main__':
     app.logger.setLevel(gunicorn_logger.level)
 
 # Import blueprints
-from auth import auth_bp
+from auth import auth_bp, client_ip, subnet_key, unused_credits_nearby
 from payments import payments_bp, quota_for_usd
 from feedback import feedback_bp
 
@@ -247,10 +249,17 @@ def record_quota_block(api_key):
 
     Counted rather than stamped alone, because how many times an account came
     back and hit the wall says more about intent than the fact it happened
-    once. Failure here is swallowed: losing a funnel datapoint must never turn
-    into a failed API call for the user."""
+    once. A retry inside QUOTA_BLOCK_WINDOW of the last block is the same
+    contact, not a new one, so it is not counted. Failure here is swallowed:
+    losing a funnel datapoint must never turn into a failed API call for the
+    user."""
     try:
-        db.session.query(User).filter(User.api_key == api_key).update(
+        now = datetime.utcnow()
+        db.session.query(User).filter(
+            User.api_key == api_key,
+            or_(User.last_quota_block_at.is_(None),
+                User.last_quota_block_at < now - timedelta(seconds=QUOTA_BLOCK_WINDOW)),
+        ).update(
             {
                 "quota_blocks": User.quota_blocks + 1,
                 "last_quota_block_at": datetime.utcnow(),
@@ -286,8 +295,13 @@ def create_mailbox(token):
                 'hold with credits left, or buy more with Bitcoin.'
             ),
         }
-        body.update(purchase_block())
-        return jsonify(body), 402
+        # Same lookup the zero-grant registration does, so a key that ran dry
+        # is told when a sibling key from its network still holds credits
+        # rather than only being told one might.
+        body.update(purchase_block(unused_credits_nearby(subnet_key(client_ip()))))
+        resp = jsonify(body)
+        resp.headers['Retry-After'] = str(QUOTA_BLOCK_WINDOW)
+        return resp, 402
     email_address = unused_address()
     if not email_address:
         db.session.rollback()

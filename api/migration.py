@@ -185,6 +185,22 @@ def migrate_inbox_expiry():
     print("Migration completed: inbox expiry columns.")
 
 
+def migrate_usdt_value():
+    """The USDT amount actually paid, in micro-USDT. Quota no longer maps to
+    dollars at a flat rate once USDT uses the bundle rates, so the history can
+    no longer work the price back out of it. Existing rows stay NULL and were
+    all bought at the old flat rate, which the readers fall back to."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("PRAGMA table_info(payment_intents);")
+    columns = {row[1] for row in cur.fetchall()}
+    if "value" not in columns:
+        cur.execute("ALTER TABLE payment_intents ADD COLUMN value BIGINT;")
+    conn.commit()
+    conn.close()
+    print("Migration completed: payment_intents.value.")
+
+
 def main():
     """Every migration is idempotent, so a deploy runs the whole set."""
     migrate_passkey_challenges()
@@ -192,6 +208,7 @@ def main():
     migrate_registration_tracking()
     migrate_feedback()
     migrate_inbox_expiry()
+    migrate_usdt_value()
 
 
 if __name__ == "__main__":

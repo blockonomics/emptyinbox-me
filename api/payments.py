@@ -112,9 +112,10 @@ def get_payment_config():
 
 
 def quota_for_usd(usd):
-    """Quota for an arbitrary whole-dollar amount, at the best bundle rate the
+    """Quota for an arbitrary dollar amount, at the best bundle rate the
     amount qualifies for. Never beats the bundle above it, so buying $39 of
-    custom quota stays worse value than the $40 bundle."""
+    custom quota stays worse value than the $40 bundle. BTC quotes pass whole
+    dollars; a USDT payment passes whatever arrived on chain."""
     # An amount below every bundle has no rate to inherit. That cannot happen
     # while the cheapest bundle sits at MIN_CUSTOM_USD, but the two are set
     # independently, so fall back rather than raising out of an empty max().
@@ -495,13 +496,15 @@ def handle_usdt_callback(txid, addr, status, value):
     if status < 2 or intent.status == PaymentStatus.CONFIRMED.value:
         return
 
-    quota = int(value / USDT_DECIMALS * QUOTA_PER_USDT)
+    # Same rates as BTC, so a dollar buys the same quota whichever coin pays it.
+    quota = quota_for_usd(value / USDT_DECIMALS)
     if quota <= 0:
         app.logger.error(f'USDT payment below one inbox txid={txid} value={value}')
         return
 
     if credit(intent.user_id, quota):
         intent.amount = quota
+        intent.value = value
         intent.status = PaymentStatus.CONFIRMED.value
         app.logger.info(f'Credited {quota} inboxes to {intent.user_id} txid={txid}')
 

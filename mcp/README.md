@@ -11,7 +11,7 @@ Listed in the [official MCP Registry](https://registry.modelcontextprotocol.io) 
 **Claude Code:**
 
 ```
-claude mcp add emptyinbox -- npx -y emptyinbox-mcp
+claude mcp add emptyinbox -- npx -y emptyinbox-mcp@latest
 ```
 
 **Any other MCP client — add to its config:**
@@ -21,7 +21,7 @@ claude mcp add emptyinbox -- npx -y emptyinbox-mcp
   "mcpServers": {
     "emptyinbox": {
       "command": "npx",
-      "args": ["-y", "emptyinbox-mcp"]
+      "args": ["-y", "emptyinbox-mcp@latest"]
     }
   }
 }
@@ -35,7 +35,7 @@ No setup: the first tool call that needs an account registers one automatically 
   "mcpServers": {
     "emptyinbox": {
       "command": "npx",
-      "args": ["-y", "emptyinbox-mcp"],
+      "args": ["-y", "emptyinbox-mcp@latest"],
       "env": {
         "EMPTYINBOX_API_KEY": "your_api_key_here"
       }

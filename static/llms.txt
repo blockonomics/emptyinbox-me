@@ -14,7 +14,8 @@ Agents and scripts should register programmatically. No browser, no passkey,
 no email address, no human in the loop:
 
 ```bash
-curl -X POST https://emptyinbox.me/api/auth/register -H "Content-Type: application/json" -d '{}'
+curl -X POST https://emptyinbox.me/api/auth/register -H "Content-Type: application/json" \
+  -H "X-Client: my-agent/1.0" -d '{}'
 ```
 
 ```json
@@ -24,6 +25,10 @@ curl -X POST https://emptyinbox.me/api/auth/register -H "Content-Type: applicati
 `username` is optional. Send `{"username": "my-agent"}` to choose one, or an
 empty body and the server allocates it. Keep the returned key: it is the
 account, and it is the only credential the API needs.
+
+`X-Client` is optional: name your agent, framework or tool (up to 64 chars,
+e.g. `langchain-agent/0.3`). It has no effect on quota; it tells us which
+integrations people build, so we know what to support.
 
 Free quota is graded rather than refused. A network that has already created
 several accounts today gets a smaller grant, and past that a key with no free
@@ -45,13 +50,13 @@ saves the key to `~/.emptyinbox.json`.
   "mcpServers": {
     "emptyinbox": {
       "command": "npx",
-      "args": ["-y", "emptyinbox-mcp"]
+      "args": ["-y", "emptyinbox-mcp@latest"]
     }
   }
 }
 ```
 
-Claude Code: `claude mcp add emptyinbox -- npx -y emptyinbox-mcp`
+Claude Code: `claude mcp add emptyinbox -- npx -y emptyinbox-mcp@latest`
 
 To reuse an existing account, add `"env": { "EMPTYINBOX_API_KEY": "<key>" }`.
 Leave it out otherwise: a placeholder value is sent as the key and every call fails.

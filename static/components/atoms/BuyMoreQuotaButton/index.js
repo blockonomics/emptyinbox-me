@@ -1,4 +1,4 @@
-import { QUOTA_PER_USDT } from "../../../utils/constants.js";
+import { API_BASE_URL } from "../../../utils/constants.js";
 
 export function renderBuyQuotaButton(remaining) {
   const wrapper = document.createElement("div");
@@ -10,6 +10,13 @@ export function renderBuyQuotaButton(remaining) {
 
   return wrapper;
 }
+
+const HINT_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+const METHOD_HINTS = {
+  btc: "Any Bitcoin wallet &nbsp;&middot;&nbsp; credited within seconds of sending",
+  usdt: "USDT on Ethereum &nbsp;&middot;&nbsp; needs a browser wallet such as MetaMask",
+};
 
 function setupPaymentModal(remaining) {
   const buyBtn = document.getElementById("buy-quota-btn");
@@ -38,37 +45,32 @@ function setupPaymentModal(remaining) {
 
           <div class="qm-body">
             <div class="qm-field">
-              <label class="qm-label" for="quota-amount">Quantity</label>
-              <div class="qm-input-row">
-                <input type="number" id="quota-amount" class="qm-input" min="10" step="10" value="100">
-                <span class="qm-unit">inboxes</span>
-              </div>
+              <span class="qm-label">Bundle</span>
+              <div class="qm-bundles" id="bundles"></div>
             </div>
 
-            <div class="qm-chips">
-              <button class="qm-chip" data-quota="10">10</button>
-              <button class="qm-chip" data-quota="50">50</button>
-              <button class="qm-chip" data-quota="100">100</button>
-              <button class="qm-chip" data-quota="500">500</button>
+            <div class="qm-field">
+              <span class="qm-label">Pay with</span>
+              <div class="qm-methods" role="radiogroup" aria-label="Payment method">
+                <button class="qm-method active" data-method="btc" role="radio" aria-checked="true">Bitcoin</button>
+                <button class="qm-method" data-method="usdt" role="radio" aria-checked="false">USDT</button>
+              </div>
             </div>
 
             <div class="qm-total-row">
               <span class="qm-total-label">Total</span>
-              <span class="qm-total-value"><span id="usdt-cost">10.00</span> USDT</span>
+              <span class="qm-total-value" id="total">—</span>
             </div>
 
-            <p class="qm-hint">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              10 inboxes = 1 USDT &nbsp;&middot;&nbsp; requires a Web3 wallet
-            </p>
+            <p class="qm-hint">${HINT_ICON}<span id="method-hint">${METHOD_HINTS.btc}</span></p>
 
             <div id="select-error" class="qm-error hidden"></div>
 
-            <button id="proceed-payment-btn" class="btn btn-primary btn-full">Continue</button>
+            <button id="proceed-payment-btn" class="btn btn-primary btn-full" disabled>Continue</button>
           </div>
         </div>
 
-        <!-- Step 2: Confirm -->
+        <!-- Step 2: Confirm (USDT) -->
         <div class="modal-step hidden" id="step-confirm">
           <div class="qm-header">
             <button id="back-to-select" class="modal-back-btn">
@@ -83,13 +85,13 @@ function setupPaymentModal(remaining) {
 
             <div class="qm-receipt">
               <div class="qm-receipt-row">
-                <span id="confirm-slots">100 inboxes</span>
-                <span id="confirm-unit-cost" class="qm-receipt-muted">10 × 0.10 USDT</span>
+                <span id="confirm-slots">50 inboxes</span>
+                <span id="confirm-bundle" class="qm-receipt-muted">starter bundle</span>
               </div>
               <div class="qm-receipt-divider"></div>
               <div class="qm-receipt-row qm-receipt-total">
                 <span>Total due</span>
-                <span id="confirm-cost">10.00 USDT</span>
+                <span id="confirm-cost">5.00 USDT</span>
               </div>
             </div>
 
@@ -99,7 +101,7 @@ function setupPaymentModal(remaining) {
           </div>
         </div>
 
-        <!-- Step 3: Pay -->
+        <!-- Step 3: Pay (USDT) -->
         <div class="modal-step hidden" id="step-pay">
           <div class="qm-header">
             <button id="back-to-confirm" class="modal-back-btn">
@@ -112,7 +114,7 @@ function setupPaymentModal(remaining) {
           <div class="qm-body">
             <web3-payment
               id="web3-payment-widget"
-              order_amount="10"
+              order_amount="5"
               receive_address="0x5C0ed91604E92D7f488d62058293ce603BCC68eF"
               redirect_url="/inboxes.html?payment=success"
             ></web3-payment>
@@ -137,18 +139,27 @@ function setupPaymentModal(remaining) {
   });
 
   function setupModalEvents(modal) {
-    const quotaInput = modal.querySelector("#quota-amount");
-    const usdtCost = modal.querySelector("#usdt-cost");
-    const chips = modal.querySelectorAll(".qm-chip");
+    const bundlesEl = modal.querySelector("#bundles");
+    const methodBtns = modal.querySelectorAll(".qm-method");
+    const total = modal.querySelector("#total");
+    const methodHint = modal.querySelector("#method-hint");
     const proceedBtn = modal.querySelector("#proceed-payment-btn");
     const selectError = modal.querySelector("#select-error");
     const stepSelect = modal.querySelector("#step-select");
     const stepConfirm = modal.querySelector("#step-confirm");
     const stepPay = modal.querySelector("#step-pay");
     const confirmSlots = modal.querySelector("#confirm-slots");
-    const confirmUnitCost = modal.querySelector("#confirm-unit-cost");
+    const confirmBundle = modal.querySelector("#confirm-bundle");
     const confirmCost = modal.querySelector("#confirm-cost");
     const paymentWidget = modal.querySelector("#web3-payment-widget");
+
+    // One price list for both coins, loaded from the server so the modal
+    // never drifts from what a payment is actually credited at. Bitcoin is
+    // the default: it works from any wallet, where USDT needs a browser one.
+    let bundles = [];
+    let defaultBundle = null;
+    let bundle = null;
+    let method = "btc";
 
     function closeModal() {
       modal.style.display = "none";
@@ -164,56 +175,86 @@ function setupPaymentModal(remaining) {
       if (e.key === "Escape" && modal.style.display !== "none") closeModal();
     });
 
-    function snapToMultiple(val) {
-      return Math.max(10, Math.round(Math.max(0, val) / 10) * 10);
+    function showError(text) {
+      selectError.textContent = text;
+      selectError.classList.remove("hidden");
     }
 
-    function getQty() { return parseInt(quotaInput.value) || 0; }
-
-    function updateCost() {
-      const cost = getQty() / QUOTA_PER_USDT;
-      usdtCost.textContent = cost.toFixed(2);
-      paymentWidget?.setAttribute("order_amount", cost.toString());
-    }
-
-    quotaInput.addEventListener("input", () => {
-      selectError.classList.add("hidden");
-      updateCost();
-      const qty = getQty();
-      chips.forEach(c => c.classList.toggle("active", parseInt(c.dataset.quota) === qty));
-    });
-
-    quotaInput.addEventListener("blur", () => {
-      quotaInput.value = snapToMultiple(getQty());
-      updateCost();
-    });
-
-    chips.forEach(chip => {
-      chip.addEventListener("click", () => {
-        quotaInput.value = chip.dataset.quota;
-        updateCost();
-        selectError.classList.add("hidden");
-        chips.forEach(c => c.classList.remove("active"));
-        chip.classList.add("active");
+    function render() {
+      bundlesEl.querySelectorAll(".qm-bundle").forEach(el =>
+        el.classList.toggle("active", el.dataset.id === bundle?.id)
+      );
+      methodBtns.forEach(b => {
+        const on = b.dataset.method === method;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-checked", String(on));
       });
-    });
+      total.textContent = !bundle ? "—" : method === "btc" ? `$${bundle.usd}` : `${bundle.usd.toFixed(2)} USDT`;
+      methodHint.innerHTML = METHOD_HINTS[method];
+      proceedBtn.disabled = !bundle;
+    }
 
-    // Step 1 → Step 2
-    proceedBtn.addEventListener("click", () => {
-      const qty = snapToMultiple(getQty());
-      quotaInput.value = qty;
-      updateCost();
+    methodBtns.forEach(b => b.addEventListener("click", () => {
+      method = b.dataset.method;
+      selectError.classList.add("hidden");
+      render();
+    }));
 
-      if (qty < 10) {
-        selectError.textContent = "Minimum purchase is 10 inboxes.";
-        selectError.classList.remove("hidden");
-        return;
+    async function loadBundles() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/payments/bundles`);
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        bundles = data.bundles;
+        bundlesEl.innerHTML = bundles.map(b => `
+          <button class="qm-bundle" data-id="${b.id}">
+            <span class="qm-bundle-qty">${b.quota} inboxes</span>
+            <span class="qm-bundle-price">$${b.usd}</span>
+          </button>`).join("");
+        bundlesEl.querySelectorAll(".qm-bundle").forEach((el, i) =>
+          el.addEventListener("click", () => {
+            bundle = bundles[i];
+            selectError.classList.add("hidden");
+            render();
+          })
+        );
+        defaultBundle = bundles.find(b => b.id === data.default) || bundles[0];
+        bundle = defaultBundle;
+        render();
+      } catch {
+        showError("Could not load prices. Close this and try again in a moment.");
       }
+    }
 
-      const cost = qty / QUOTA_PER_USDT;
-      confirmSlots.textContent = `${qty} inboxes`;
-      confirmUnitCost.textContent = `${qty} × 0.10 USDT`;
-      confirmCost.textContent = `${cost.toFixed(2)} USDT`;
+    async function payWithBitcoin() {
+      proceedBtn.disabled = true;
+      proceedBtn.textContent = "Creating payment…";
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/payments/quote`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ bundle: bundle.id }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.pay_url) throw new Error(data.error || data.message || "");
+        // The pay page polls for the credit itself and links back here.
+        window.location.href = `${data.pay_url}&from=web`;
+      } catch (e) {
+        showError(e.message || "Could not create the payment. Try again in a moment.");
+        proceedBtn.disabled = false;
+        proceedBtn.textContent = "Continue";
+      }
+    }
+
+    // Step 1 → Bitcoin pay page, or Step 2 for USDT
+    proceedBtn.addEventListener("click", () => {
+      if (!bundle) return;
+      if (method === "btc") return payWithBitcoin();
+
+      confirmSlots.textContent = `${bundle.quota} inboxes`;
+      confirmBundle.textContent = `${bundle.id} bundle`;
+      confirmCost.textContent = `${bundle.usd.toFixed(2)} USDT`;
       stepSelect.classList.add("hidden");
       stepConfirm.classList.remove("hidden");
     });
@@ -226,13 +267,8 @@ function setupPaymentModal(remaining) {
 
     // Step 2 → Step 3
     modal.querySelector("#pay-now-btn").addEventListener("click", () => {
-      const qty = getQty();
-      const cost = qty / QUOTA_PER_USDT;
-      paymentWidget.setAttribute("order_amount", cost.toString());
-      const redirect = paymentWidget.getAttribute("redirect_url");
-      if (!redirect.includes("&quota=")) {
-        paymentWidget.setAttribute("redirect_url", `${redirect}&quota=${qty}`);
-      }
+      paymentWidget.setAttribute("order_amount", bundle.usd.toString());
+      paymentWidget.setAttribute("redirect_url", `/inboxes.html?payment=success&quota=${bundle.quota}`);
       stepConfirm.classList.add("hidden");
       stepPay.classList.remove("hidden");
     });
@@ -247,17 +283,15 @@ function setupPaymentModal(remaining) {
       stepSelect.classList.remove("hidden");
       stepConfirm.classList.add("hidden");
       stepPay.classList.add("hidden");
-      quotaInput.value = "100";
-      updateCost();
       selectError.classList.add("hidden");
-      chips.forEach(c => c.classList.remove("active"));
-      modal.querySelector('[data-quota="100"]')?.classList.add("active");
       paymentWidget.setAttribute("redirect_url", "/inboxes.html?payment=success");
+      proceedBtn.textContent = "Continue";
+      bundle = defaultBundle;
+      method = "btc";
+      render();
     }
 
     // Init
-    quotaInput.value = "100";
-    updateCost();
-    modal.querySelector('[data-quota="100"]')?.classList.add("active");
+    loadBundles();
   }
 }
