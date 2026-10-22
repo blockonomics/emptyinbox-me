@@ -2,6 +2,8 @@ import { createElement } from "../../../utils/domHelpers.js";
 import { keepInbox } from "../../../services/apiService.js";
 import { showToast } from "../../atoms/Toast/index.js";
 import { KEEP_INBOX_CREDITS } from "../../../utils/constants.js";
+import { confirmDialog } from "../../atoms/ConfirmDialog/index.js";
+import { formatCredits, getCreditBalance, setCreditBalance } from "../../../utils/credits.js";
 
 const DAY_MS = 86400000;
 
@@ -61,19 +63,49 @@ export function createInboxPreview(inbox) {
   return container;
 }
 
+const escapeHtml = (s) =>
+  String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// Short of credits: say so and offer the purchase, instead of a confirm the
+// server is only going to refuse.
+async function offerPurchase(have) {
+  const buy = await confirmDialog({
+    title: "Not enough credits",
+    body: `<p>Keeping an inbox costs <strong>${formatCredits(KEEP_INBOX_CREDITS)}</strong>. You have <strong>${formatCredits(have)}</strong>.</p>`,
+    confirmText: "Buy credits",
+  });
+  if (buy) document.getElementById("buy-quota-btn")?.click();
+}
+
 async function onKeep(inbox, button, footer) {
-  if (!confirm(`Keep ${inbox.inbox} permanently for ${KEEP_INBOX_CREDITS} credits?`)) return;
+  const balance = getCreditBalance();
+  if (balance !== null && balance < KEEP_INBOX_CREDITS) return offerPurchase(balance);
+
+  const ok = await confirmDialog({
+    title: inbox.expired ? "Restore this inbox permanently?" : "Keep this inbox permanently?",
+    body:
+      `<p><strong>${escapeHtml(inbox.inbox)}</strong> will never expire and keeps receiving mail, ` +
+      `so password resets for accounts signed up with it keep arriving.</p>` +
+      `<p>Costs <strong>${formatCredits(KEEP_INBOX_CREDITS)}</strong>, once` +
+      (balance !== null ? `. You will have ${formatCredits(balance - KEEP_INBOX_CREDITS)} left.` : ".") +
+      `</p>`,
+    confirmText: `Keep for ${KEEP_INBOX_CREDITS} credits`,
+  });
+  if (!ok) return;
+
   button.disabled = true;
   try {
     const { status, ok, body } = await keepInbox(inbox.inbox);
     if (ok) {
       footer.innerHTML = `<span class="lifetime-badge lifetime-permanent">Permanent</span>`;
+      if (typeof body.inbox_quota === "number") setCreditBalance(body.inbox_quota);
       showToast("Inbox is now permanent");
       return;
     }
     if (status === 402) {
-      showToast(`Needs ${KEEP_INBOX_CREDITS} credits, you have ${body.credits_available ?? 0}. Buy more first.`, "error");
-      document.getElementById("buy-quota-btn")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setCreditBalance(body.credits_available ?? 0);
+      button.disabled = false;
+      return offerPurchase(body.credits_available ?? 0);
     } else {
       showToast(body.message || "Could not keep inbox", "error");
     }

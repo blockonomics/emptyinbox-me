@@ -328,6 +328,28 @@
   background: var(--color-bg-subtle);
 }
 
+/* ===== Confirm dialog ===== */
+.confirm-dialog .qm-shell { max-width: 380px; }
+
+.cd-body {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+.cd-body p { margin: 0; }
+.cd-body p + p { margin-top: var(--space-3); }
+.cd-body strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cd-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
 /* ===== Mobile ===== */
 @media (max-width: 639px) {
   .qm-shell { border-radius: var(--radius-xl); max-width: 100%; }

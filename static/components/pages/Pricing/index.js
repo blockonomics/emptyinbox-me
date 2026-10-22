@@ -123,7 +123,7 @@ export async function renderPricingPage() {
           </ul>
 
           <div class="card-cta">
-            <a href="${buyCTA}" class="btn btn-primary btn-full">Buy inboxes</a>
+            <a href="${buyCTA}" class="btn btn-primary btn-full">Buy credits</a>
           </div>
         </div>
 

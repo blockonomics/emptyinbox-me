@@ -27,16 +27,16 @@ function buildApiKeyCard() {
 function buildQuotaCard() {
   const card = createElement('div', 'stat-card');
   card.innerHTML = `
-    <h3>Inbox Quota</h3>
+    <h3>Credits</h3>
     <div class="quota-summary">
       <span id="quota-remaining-display" class="quota-count">—</span>
-      <span id="quota-suffix" class="quota-suffix">of — inboxes available</span>
+      <span id="quota-suffix" class="quota-suffix">of — credits left</span>
     </div>
     <div class="quota-bar" style="margin-top: 12px;">
       <div class="quota-fill" id="quota-fill" style="width: 0%"></div>
     </div>
     <div id="quota-low-cta" class="quota-low-cta hidden">
-      Running low — <a href="${ROUTES.PRICING}" class="quota-buy-link">buy more inboxes</a>
+      Running low — <a href="${ROUTES.INBOXES}" class="quota-buy-link">buy more credits</a>
     </div>
   `;
   return card;

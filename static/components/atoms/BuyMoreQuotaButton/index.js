@@ -1,14 +1,22 @@
 import { API_BASE_URL } from "../../../utils/constants.js";
+import { formatCredits, getCreditBalance } from "../../../utils/credits.js";
 
-export function renderBuyQuotaButton(remaining) {
+export function renderBuyQuotaButton() {
   const wrapper = document.createElement("div");
-  wrapper.innerHTML = `<button id="buy-quota-btn" class="buy-quota-btn">Buy Inboxes</button>`;
+  wrapper.innerHTML = `<button id="buy-quota-btn" class="buy-quota-btn">Buy credits</button>`;
 
   setTimeout(() => {
-    setupPaymentModal(remaining);
+    setupPaymentModal();
   }, 0);
 
   return wrapper;
+}
+
+// Read on every open, not when the modal is built: the modal outlives the
+// header, and the balance moves as inboxes are created and kept.
+function balanceLine() {
+  const n = getCreditBalance();
+  return `${n !== null ? `${formatCredits(n)} left · ` : ""}1 credit = 1 inbox for 30 days`;
 }
 
 const HINT_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
@@ -18,7 +26,7 @@ const METHOD_HINTS = {
   usdt: "USDT on Ethereum &nbsp;&middot;&nbsp; needs a browser wallet such as MetaMask",
 };
 
-function setupPaymentModal(remaining) {
+function setupPaymentModal() {
   const buyBtn = document.getElementById("buy-quota-btn");
 
   function createModal() {
@@ -37,8 +45,8 @@ function setupPaymentModal(remaining) {
         <div class="modal-step" id="step-select">
           <div class="qm-header">
             <div>
-              <h2 id="qm-title" class="qm-title">Purchase Inboxes</h2>
-              <p class="qm-subtitle">${remaining} ${remaining === 1 ? "inbox" : "inboxes"} left</p>
+              <h2 id="qm-title" class="qm-title">Buy credits</h2>
+              <p class="qm-subtitle" id="qm-balance"></p>
             </div>
             <button class="close-modal" aria-label="Close">&times;</button>
           </div>
@@ -85,7 +93,7 @@ function setupPaymentModal(remaining) {
 
             <div class="qm-receipt">
               <div class="qm-receipt-row">
-                <span id="confirm-slots">50 inboxes</span>
+                <span id="confirm-slots">50 credits</span>
                 <span id="confirm-bundle" class="qm-receipt-muted">starter bundle</span>
               </div>
               <div class="qm-receipt-divider"></div>
@@ -95,7 +103,7 @@ function setupPaymentModal(remaining) {
               </div>
             </div>
 
-            <p class="qm-hint">Inboxes are available once your transaction confirms on-chain — usually within 1–2 minutes.</p>
+            <p class="qm-hint">Credits are added once your transaction confirms on-chain — usually within 1–2 minutes.</p>
 
             <button id="pay-now-btn" class="btn btn-primary btn-full">Pay with USDT</button>
           </div>
@@ -134,6 +142,7 @@ function setupPaymentModal(remaining) {
       modal = createModal();
       setupModalEvents(modal);
     }
+    modal.querySelector("#qm-balance").textContent = balanceLine();
     modal.style.display = "flex";
     document.body.style.overflow = "hidden";
   });
@@ -208,7 +217,7 @@ function setupPaymentModal(remaining) {
         bundles = data.bundles;
         bundlesEl.innerHTML = bundles.map(b => `
           <button class="qm-bundle" data-id="${b.id}">
-            <span class="qm-bundle-qty">${b.quota} inboxes</span>
+            <span class="qm-bundle-qty">${b.quota} credits</span>
             <span class="qm-bundle-price">$${b.usd}</span>
           </button>`).join("");
         bundlesEl.querySelectorAll(".qm-bundle").forEach((el, i) =>
@@ -252,7 +261,7 @@ function setupPaymentModal(remaining) {
       if (!bundle) return;
       if (method === "btc") return payWithBitcoin();
 
-      confirmSlots.textContent = `${bundle.quota} inboxes`;
+      confirmSlots.textContent = `${bundle.quota} credits`;
       confirmBundle.textContent = `${bundle.id} bundle`;
       confirmCost.textContent = `${bundle.usd.toFixed(2)} USDT`;
       stepSelect.classList.add("hidden");

@@ -52,7 +52,7 @@ export async function renderInboxesPage() {
       banner.className = "alert alert-info payment-pending-banner";
       banner.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span><strong>Payment submitted.</strong> Your inboxes will be credited once the transaction confirms on-chain — usually within 1–2 minutes. Refresh to see your updated count.</span>
+        <span><strong>Payment submitted.</strong> Your credits will be added once the transaction confirms on-chain — usually within 1–2 minutes. Refresh to see your updated balance.</span>
         <button class="banner-dismiss" aria-label="Dismiss">&times;</button>
       `;
       banner.querySelector(".banner-dismiss").addEventListener("click", () => banner.remove());

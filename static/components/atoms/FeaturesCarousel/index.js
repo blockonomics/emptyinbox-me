@@ -111,7 +111,7 @@ export const FEATURES = [
   {
     title: "Crypto Payments",
     description:
-      "Top up inbox quota with USDT via Blockonomics. No credit card, no KYC.",
+      "Buy inbox credits with Bitcoin or USDT via Blockonomics. No credit card, no KYC.",
   },
   {
     title: "Auto-Delete in 7 Days",

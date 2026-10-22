@@ -224,8 +224,8 @@
       quote = q;
 
       if (firstRender) {
-        $('title').textContent = `Buy ${q.quota} inboxes`;
-        $('lede').textContent = `$${q.usd} in Bitcoin`;
+        $('title').textContent = `Buy ${q.quota} credits`;
+        $('lede').textContent = `$${q.usd} in Bitcoin · 1 credit = 1 inbox for 30 days`;
         $('amount').textContent = `${q.amount_btc} BTC`;
         $('address').textContent = q.address;
         $('wallet').href = q.bip21;
@@ -245,7 +245,7 @@
       if (q.quota_credited) {
         $('pay').hidden = true;
         $('fine').hidden = true;
-        $('title').textContent = `${q.quota} inboxes added`;
+        $('title').textContent = `${q.quota} credits added`;
         setStatus('credited', `${q.settled ? 'Payment confirmed.' : 'Payment seen on the network.'} ${COPY.ready}`);
         return stop();
       }

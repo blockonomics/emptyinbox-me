@@ -1,5 +1,6 @@
 import { renderBuyQuotaButton } from "../../atoms/BuyMoreQuotaButton/index.js";
 import { createInboxButtonWithLogic } from "../InboxButtonWithLogic/index.js";
+import { formatCredits } from "../../../utils/credits.js";
 
 export function renderInboxesHeader(remaining) {
   const quotaHeader = document.createElement("div");
@@ -10,7 +11,10 @@ export function renderInboxesHeader(remaining) {
 
   const quotaText = document.createElement("span");
   quotaText.classList.add("quota-text");
-  quotaText.textContent = `${remaining} ${remaining === 1 ? "inbox" : "inboxes"} left`;
+  quotaText.id = "credit-balance";
+  quotaText.title = "1 credit creates 1 inbox for 30 days";
+  quotaText.dataset.credits = String(remaining);
+  quotaText.textContent = `${formatCredits(remaining)} left`;
 
   // Add title and createInboxButtonWithLogic to left group
   const leftGroup = document.createElement("div");
@@ -22,7 +26,7 @@ export function renderInboxesHeader(remaining) {
   const rightGroup = document.createElement("div");
   rightGroup.classList.add("quota-right");
   rightGroup.appendChild(quotaText);
-  rightGroup.appendChild(renderBuyQuotaButton(remaining));
+  rightGroup.appendChild(renderBuyQuotaButton());
 
   quotaHeader.appendChild(leftGroup);
   quotaHeader.appendChild(rightGroup);

@@ -4,6 +4,8 @@ import { ButtonStates } from "../../molecules/ButtonStates/index.js";
 import { fetchUserData } from "../../../services/apiService.js";
 import { renderInboxesHeader } from "../../molecules/InboxesHeader/index.js";
 import { createInboxCards } from "../../organisms/InboxCards/index.js";
+import { confirmDialog } from "../../atoms/ConfirmDialog/index.js";
+import { setCreditBalance } from "../../../utils/credits.js";
 
 export function createInboxButtonWithLogic() {
   const button = createCreateInboxButton();
@@ -33,10 +35,19 @@ export function createInboxButtonWithLogic() {
           button.style.background = defaultState.background;
           button.disabled = defaultState.disabled;
         }, 2000);
-      } else if (response.status === 403) {
-        const errorState = ButtonStates.error("Quota Exceeded");
+      } else if (response.status === 402) {
+        const errorState = ButtonStates.error("Out of credits");
         button.innerHTML = errorState.content;
         button.style.background = errorState.background;
+        setCreditBalance(0);
+
+        const buy = await confirmDialog({
+          title: "Out of credits",
+          body: "<p>Each new inbox costs <strong>1 credit</strong> and lasts 30 days. Buy credits to keep creating inboxes; your existing inboxes keep receiving mail either way.</p>",
+          confirmText: "Buy credits",
+          cancelText: "Not now",
+        });
+        if (buy) document.getElementById("buy-quota-btn")?.click();
 
         setTimeout(() => {
           const defaultState = ButtonStates.default(originalContent);

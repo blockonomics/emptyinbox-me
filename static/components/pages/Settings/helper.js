@@ -38,7 +38,7 @@ function _renderQuota(payments, inboxQuota) {
   const lowCta = document.getElementById("quota-low-cta");
 
   if (remainingEl) remainingEl.textContent = remaining;
-  if (suffixEl) suffixEl.textContent = `of ${totalQuota} inboxes available`;
+  if (suffixEl) suffixEl.textContent = `of ${totalQuota} credits left · 1 credit = 1 inbox`;
 
   if (fillEl) {
     fillEl.style.width = `${pct}%`;
