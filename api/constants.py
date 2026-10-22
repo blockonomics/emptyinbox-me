@@ -177,10 +177,13 @@ REGISTER_V6_PREFIX = 64
 
 # --- Inbox lifetime ---
 #
-# Inboxes are free to create and expire after FREE_INBOX_DAYS. Most agent use
-# is a one-off verification code, for which a month is plenty. An address used
-# to sign up for something the user keeps is different: it is where that
-# account's password resets go, and keeping it is the thing worth paying for.
+# Creating an inbox costs one credit and the inbox expires after
+# FREE_INBOX_DAYS. Most agent use is a one-off verification code, for which a
+# month is plenty. An address used to sign up for something the user keeps is
+# different: it is where that account's password resets go, so keeping it
+# permanently costs KEEP_INBOX_CREDITS more. Creation stays paid on purpose:
+# it is the paywall almost every purchase starts from, and free creation would
+# leave nothing to stop a network from minting addresses without limit.
 # Credits rather than a separate product, so the purchase reuses the quote and
 # pay_url flow agents already know, and an agent holding spare credits can
 # keep an address without a human or a payment at all.

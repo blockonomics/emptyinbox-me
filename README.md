@@ -162,4 +162,4 @@ sudo postfix/setup_postfix.sh YOUR_HOSTNAME YOUR_DOMAIN YOUR_SECRET
 ## Pricing
 
 - Free: 5 inboxes per account
-- Paid: 1 USDT per 10 additional inboxes (via Blockonomics — no credit card, no KYC)
+- Paid: bundles from $1 for 10 inboxes to $40 for 750, in Bitcoin or USDT (via Blockonomics — no credit card, no KYC)
