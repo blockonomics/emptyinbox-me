@@ -344,8 +344,8 @@ paths:
   /auth/me:
     get:
       operationId: getQuota
-      summary: Get account info and remaining inbox quota
-      description: Returns the authenticated account's username and remaining inbox quota.
+      summary: Get account info and remaining credits
+      description: Returns the authenticated account's username and remaining credits (`inbox_quota`).
       responses:
         "200":
           description: Account info
@@ -365,10 +365,10 @@ paths:
         JSON with `?format=json`. The inbox expires 30 days after creation and
         then stops receiving mail; `POST /inbox/{address}/keep` makes it
         permanent. The expiry is also in the `X-Inbox-Expires-At` header.
-        Each inbox consumes 1 from your quota. Accounts normally start with 5;
-        read `inbox_quota` from registration or `GET /auth/me` rather than assuming.
-        When quota runs out this returns 402 with a link to POST /payments/quote,
-        which sells more quota for Bitcoin. Humans can also buy at https://emptyinbox.me/inboxes.html
+        Each inbox costs 1 credit. Accounts normally start with 5; `inbox_quota`
+        in registration and `GET /auth/me` is the credit balance, so read it rather
+        than assuming. When credits run out this returns 402 with a link to
+        POST /payments/quote, which sells more credits for Bitcoin. Humans can also buy at https://emptyinbox.me/inboxes.html
       parameters:
         - name: format
           in: query
@@ -410,7 +410,7 @@ paths:
           description: Missing or invalid API key
         "402":
           description: |
-            Inbox quota exhausted. The body carries prices inline, absolute
+            Out of credits. The body carries prices inline, absolute
             URLs for buying more, and a note to reuse any other key you hold
             that still has credits.
           content:
@@ -703,7 +703,7 @@ paths:
   /payments/bundles:
     get:
       operationId: listBundles
-      summary: List quota bundles for sale
+      summary: List credit bundles for sale
       description: |
         Public price list. Bundles are priced in USD and quoted in BTC at
         purchase time. No authentication required.
@@ -754,7 +754,7 @@ paths:
   /payments/quote:
     post:
       operationId: createQuote
-      summary: Quote a Bitcoin price for a quota bundle
+      summary: Quote a Bitcoin price for a credit bundle
       description: |
         Returns a payment address, the exact amount to send, a BIP21 URI, and a
         `pay_url`. An agent that controls a Bitcoin wallet can pay directly,
@@ -765,7 +765,7 @@ paths:
 
         This endpoint is POST only; GET returns 405.
 
-        Quota is credited as soon as the transaction is seen on the network,
+        Credits are added as soon as the transaction is seen on the network,
         without waiting for confirmations, unless the transaction signals
         Replace-By-Fee. That credit is provisional: if the transaction has not
         confirmed within 6 hours it is reversed.

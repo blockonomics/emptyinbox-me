@@ -77,7 +77,7 @@ export function renderApiDocsPage() {
           <span style="margin-left: auto; font-size: 0.75rem; color: var(--color-text-secondary); font-family: monospace;">No auth required</span>
         </div>
         <div class="endpoint-body">
-          <p class="endpoint-description">Create a new account and get an API key. Agent accounts start with 5 inbox quota, the same as human accounts. Rate limited to 3 registrations per IP per 24 hours.</p>
+          <p class="endpoint-description">Create a new account and get an API key. Accounts start with up to 5 free credits; networks that register many accounts in a day get fewer.</p>
 
           <h4>Request Body</h4>
           <table class="parameter-table">
@@ -122,7 +122,7 @@ export function renderApiDocsPage() {
           <span class="endpoint-path">/auth/me</span>
         </div>
         <div class="endpoint-body">
-          <p class="endpoint-description">Returns the authenticated account's username and remaining inbox quota.</p>
+          <p class="endpoint-description">Returns the authenticated account's username and remaining credits (<code>inbox_quota</code>).</p>
 
           <div class="response-example">
             <h4>Example Request</h4>
@@ -158,7 +158,7 @@ export function renderApiDocsPage() {
           <span class="endpoint-path">/inbox</span>
         </div>
         <div class="endpoint-body">
-          <p class="endpoint-description">Creates a new disposable email inbox. Returns the email address as plain text. Each inbox consumes 1 from your quota. All accounts start with 5 inboxes. When quota runs out this returns <strong>402</strong> with links for buying more with Bitcoin. Humans can also buy at <a href="/inboxes.html" style="color: var(--color-primary);">emptyinbox.me/inboxes.html</a>.</p>
+          <p class="endpoint-description">Creates a new disposable email inbox. Returns the email address as plain text. Each inbox costs 1 credit and lasts 30 days. Accounts start with up to 5 free credits. When credits run out this returns <strong>402</strong> with links for buying more with Bitcoin. Humans can also buy at <a href="/inboxes.html" style="color: var(--color-primary);">emptyinbox.me/inboxes.html</a>.</p>
 
           <div class="response-example">
             <h4>Example Request</h4>
@@ -172,7 +172,7 @@ export function renderApiDocsPage() {
             <p><span class="status-code status-201">201 Created</span> – Returns the email address as plain text</p>
             <div class="code-block" data-lang="text">
               <button class="copy-button" onclick="copyCode(this)">Copy</button>clever.sunny.butterfly@emptyinbox.me</div>
-            <p><span class="status-code status-402">402 Payment Required</span> – Inbox quota exhausted; body carries <code>bundles_url</code> and <code>quote_url</code></p>
+            <p><span class="status-code status-402">402 Payment Required</span> – Out of credits; body carries <code>bundles_url</code> and <code>quote_url</code></p>
           </div>
         </div>
       </div>
@@ -387,7 +387,7 @@ Your verification code is 482910. It expires in 10 minutes.</div>
           <tr>
             <td><span class="status-code status-402">402</span></td>
             <td>Payment Required</td>
-            <td>Inbox quota exhausted &mdash; buy more via POST /payments/quote</td>
+            <td>Out of credits &mdash; buy more via POST /payments/quote</td>
           </tr>
           <tr>
             <td><span class="status-code status-404">404</span></td>
@@ -411,8 +411,8 @@ Your verification code is 482910. It expires in 10 minutes.</div>
       </h2>
       <div class="auth-info">
         <ul style="margin-left: 1.5rem; color: var(--color-text-secondary);">
-          <li style="margin-bottom: 0.5rem;">All accounts start with <strong>5 inbox quota</strong></li>
-          <li style="margin-bottom: 0.5rem;">Creating an inbox consumes 1 quota unit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html" style="color: var(--color-primary);">emptyinbox.me/inboxes.html</a></li>
+          <li style="margin-bottom: 0.5rem;">Accounts start with up to <strong>5 free credits</strong>; <code>inbox_quota</code> is your credit balance</li>
+          <li style="margin-bottom: 0.5rem;">Creating an inbox costs 1 credit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html" style="color: var(--color-primary);">emptyinbox.me/inboxes.html</a></li>
           <li style="margin-bottom: 0.5rem;">Messages are automatically deleted after <strong>7 days</strong></li>
           <li style="margin-bottom: 0.5rem;">Inboxes expire <strong>30 days</strong> after creation and stop receiving mail. <code>POST /api/inbox/{address}/keep</code> makes one permanent for 30 credits &mdash; for addresses that receive password resets</li>
           <li style="margin-bottom: 0.5rem;">Registration is limited to <strong>3 new accounts per IP per 24 hours</strong></li>

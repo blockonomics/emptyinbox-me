@@ -24,7 +24,7 @@ const FREE_FEATURES = [
   "5 inbox credits — create 5 inboxes total",
   "REST API &amp; MCP server access",
   "Email polling via <code>wait_for_message</code>",
-  "Inboxes last 30 days, messages 7 — keep one forever for 30 credits",
+  "Each inbox lasts 30 days, messages 7",
   "API key auth — no browser needed",
 ];
 
@@ -33,7 +33,7 @@ const PAID_FEATURES = [
   "Four bundle sizes, or any amount from $1 — up to 47% less per inbox",
   "Pay with Bitcoin or USDT — no KYC, no card",
   "Credits never expire",
-  "Priority email delivery",
+  "Keep any inbox forever — 30 credits (about $1.60–$3)",
   "OpenAPI spec for GPT Actions &amp; LangChain",
 ];
 
@@ -115,7 +115,7 @@ export async function renderPricingPage() {
 
           <div class="card-price-wrap">
             <div class="card-price">From $5</div>
-            <p class="card-price-detail">50 inbox credits · BTC or USDT · no expiry</p>
+            <p class="card-price-detail">1 credit = 1 inbox · BTC or USDT</p>
           </div>
 
           <ul class="card-features">

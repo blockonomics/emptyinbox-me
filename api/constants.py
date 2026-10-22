@@ -62,6 +62,13 @@ def purchase_block(unused_credits_nearby: int = 0) -> dict:
         for name, b in sorted(QUOTA_BUNDLES.items(), key=lambda kv: kv[1]['usd'])
     )
     block = {
+        # The unit before the price list, so "50 inboxes" is not misread as
+        # 50 permanent addresses.
+        'how_credits_work': (
+            f'1 credit creates 1 inbox that lives {FREE_INBOX_DAYS} days. '
+            f'{KEEP_INBOX_CREDITS} credits make an inbox permanent. '
+            'Credits never expire.'
+        ),
         'pricing': prices,
         'pricing_url': f'{SITE_URL}/pricing.html',
         'buy_with_api': (

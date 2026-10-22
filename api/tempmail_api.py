@@ -291,7 +291,7 @@ def create_mailbox(token):
         body = {
             'error': 'insufficient_quota',
             'message': (
-                'Inbox quota exhausted on this API key. Reuse another key you '
+                'Out of inbox credits on this API key. Reuse another key you '
                 'hold with credits left, or buy more with Bitcoin.'
             ),
         }

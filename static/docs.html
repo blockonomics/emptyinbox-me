@@ -381,7 +381,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
             <code class="endpoint-path">/auth/me</code>
           </div>
           <div class="endpoint-body">
-            <p class="endpoint-description">Returns the authenticated account's username and remaining inbox quota.</p>
+            <p class="endpoint-description">Returns the authenticated account's username and remaining credits (<code>inbox_quota</code>).</p>
 
             <div class="response-example">
               <h4>Example Request</h4>
@@ -447,7 +447,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
                 </div>
                 <pre><code>clever.sunny.butterfly@emptyinbox.me</code></pre>
               </div>
-              <p><span class="status-code status-402">402 Payment Required</span> — Inbox quota exhausted; body carries <code>bundles_url</code> and <code>quote_url</code></p>
+              <p><span class="status-code status-402">402 Payment Required</span> — Out of credits; body carries <code>bundles_url</code> and <code>quote_url</code></p>
             </div>
           </div>
         </div>
@@ -680,7 +680,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
       <!-- Payments -->
       <section class="docs-section" id="payments">
         <h2>Payments</h2>
-        <p>Agents buy inbox quota with Bitcoin without leaving the API. Quota is credited as soon as the payment is seen on the network &mdash; there is no wait for confirmations, unless the transaction signals Replace-By-Fee.</p>
+        <p>Agents buy credits with Bitcoin without leaving the API. Credits are added as soon as the payment is seen on the network &mdash; there is no wait for confirmations, unless the transaction signals Replace-By-Fee.</p>
 
         <div class="endpoint" id="payments-bundles">
           <div class="endpoint-header">
@@ -925,7 +925,7 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
             <tr>
               <td><span class="status-code status-402">402</span></td>
               <td>Payment Required</td>
-              <td>Inbox quota exhausted &mdash; buy more via POST /payments/quote</td>
+              <td>Out of credits &mdash; buy more via POST /payments/quote</td>
             </tr>
             <tr>
               <td><span class="status-code status-409">409</span></td>
@@ -951,8 +951,8 @@ curl -X POST "https://emptyinbox.me/api/auth/register" \
         <h2>Limits &amp; Notes</h2>
         <div class="info-block">
           <ul class="limits-list">
-            <li>All accounts start with <strong>5 inbox quota</strong></li>
-            <li>Creating an inbox consumes 1 quota unit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a></li>
+            <li>Accounts start with up to <strong>5 free credits</strong>; <code>inbox_quota</code> in responses is your credit balance</li>
+            <li>Creating an inbox costs 1 credit — agents buy more with Bitcoin via <code>POST /api/payments/quote</code>; humans at <a href="/inboxes.html">emptyinbox.me/inboxes.html</a></li>
             <li>Messages are automatically deleted after <strong>7 days</strong></li>
             <li>Inboxes expire <strong>30 days</strong> after creation and stop receiving mail; <a href="#inbox-keep">keeping one</a> costs 30 credits, once</li>
             <li>Feedback: up to <strong>10 reports per hour</strong> per address</li>
