@@ -21,7 +21,7 @@ from constants import (USER_STARTING_QUOTA, AGENT_STARTING_QUOTA, QUOTA_PER_USDT
 
 # Add these imports for passkey functionality
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import ec, rsa, padding
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 import cbor2
 
@@ -43,6 +43,33 @@ def create_user_token(identifier: str) -> str:
 
 def error_response(message: str, code: int = 400):
     return jsonify({'error': message}), code
+
+def get_authenticated_user():
+    """Resolve the request's session token or API key to a (user, session) pair.
+
+    Returns (None, None) when the request carries no valid credential.
+    """
+    token = request.cookies.get("session_token") or request.headers.get("X-API-Key", "").strip()
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+        elif auth_header:
+            token = auth_header
+    if not token:
+        return None, None
+
+    session = db.session.query(UserSession).filter_by(token=token).first()
+    if session and session.expires_at > datetime.utcnow():
+        user = db.session.query(User).filter_by(user_id=session.user_id).first()
+        if user:
+            return user, session
+
+    user = db.session.query(User).filter_by(api_key=token).first()
+    if user:
+        return user, None
+
+    return None, None
 
 def cleanup_expired_auth_records():
     """Deletes expired AuthChallenge, UserSession, and PasskeyChallenge records."""
@@ -193,6 +220,15 @@ def verify_passkey_registration(credential_data: dict, challenge: bytes) -> tupl
             attestation = cbor2.loads(attestation_object)
             auth_data = attestation['authData']
             
+            # Bind the ceremony to this relying party and require user presence
+            rp_id = get_rp_id_from_domain(DOMAIN)
+            if auth_data[:32] != hashlib.sha256(rp_id.encode()).digest():
+                app.logger.error("rpIdHash mismatch in passkey registration")
+                return False, {}
+            if not auth_data[32] & 0x01:
+                app.logger.error("User presence flag not set in passkey registration")
+                return False, {}
+            
             # Extract the actual public key
             public_key = extract_public_key_from_auth_data(auth_data)
             
@@ -250,6 +286,15 @@ def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[b
             app.logger.error(f"Wrong ceremony type: expected 'webauthn.get', got {client_data.get('type')}")
             return False, {}
         
+        # Bind the assertion to this relying party and require user presence
+        rp_id = get_rp_id_from_domain(DOMAIN)
+        if authenticator_data[:32] != hashlib.sha256(rp_id.encode()).digest():
+            app.logger.error("rpIdHash mismatch in passkey authentication")
+            return False, {}
+        if not authenticator_data[32] & 0x01:
+            app.logger.error("User presence flag not set in passkey authentication")
+            return False, {}
+        
         return True, {
             'credential_id': credential_data['id'],
             'authenticator_data': authenticator_data,
@@ -260,6 +305,46 @@ def verify_passkey_signature(credential_data: dict, challenge: bytes) -> tuple[b
     except Exception as e:
         app.logger.error(f"Passkey signature verification failed: {e}")
         return False, {}
+
+def verify_assertion_signature(public_key_b64: str, authenticator_data: bytes,
+                               client_data_json: bytes, signature: bytes) -> bool:
+    """Cryptographically verify a WebAuthn assertion against the stored COSE key.
+
+    The signed payload is authenticatorData || SHA256(clientDataJSON).
+    """
+    try:
+        cose_key = cbor2.loads(base64url_decode(public_key_b64))
+        signed_data = authenticator_data + hashlib.sha256(client_data_json).digest()
+        kty = cose_key.get(1)
+        alg = cose_key.get(3)
+
+        if kty == 2:  # EC2
+            curve = {1: ec.SECP256R1, 2: ec.SECP384R1}.get(cose_key.get(-1))
+            if curve is None:
+                app.logger.error(f"Unsupported EC curve: {cose_key.get(-1)}")
+                return False
+            public_key = ec.EllipticCurvePublicNumbers(
+                int.from_bytes(cose_key[-2], 'big'),
+                int.from_bytes(cose_key[-3], 'big'),
+                curve()
+            ).public_key()
+            hash_alg = {-7: hashes.SHA256, -35: hashes.SHA384}.get(alg, hashes.SHA256)()
+            public_key.verify(signature, signed_data, ec.ECDSA(hash_alg))
+        elif kty == 3:  # RSA
+            public_key = rsa.RSAPublicNumbers(
+                int.from_bytes(cose_key[-2], 'big'),
+                int.from_bytes(cose_key[-1], 'big')
+            ).public_key()
+            hash_alg = {-257: hashes.SHA256, -258: hashes.SHA384}.get(alg, hashes.SHA256)()
+            public_key.verify(signature, signed_data, padding.PKCS1v15(), hash_alg)
+        else:
+            app.logger.error(f"Unsupported COSE key type: {kty}")
+            return False
+
+        return True
+    except Exception as e:
+        app.logger.error(f"Assertion signature verification failed: {e}")
+        return False
 
 # 5. Add debugging endpoint (optional, for development):
 @auth_bp.route('/passkey/debug', methods=['GET'])
@@ -369,6 +454,7 @@ def passkey_register_complete():
             
             # Check if user already exists
             user = db.session.query(User).filter_by(username=username).first()
+            current_session = None
             if not user:
                 # Create new user
                 api_key = create_user_token(credential_id)[:32]
@@ -384,6 +470,17 @@ def passkey_register_complete():
                 )
                 db.session.add(user)
                 db.session.flush()  # ensure user_id is available
+            else:
+                # Binding a passkey to an existing account requires proof of
+                # ownership: a valid session or the account API key. Without
+                # this check anyone could attach their own credential to an
+                # arbitrary account and take it over.
+                authed_user, current_session = get_authenticated_user()
+                if not authed_user or authed_user.user_id != user.user_id:
+                    app.logger.warning(
+                        f"Rejected passkey registration for existing user: {username}"
+                    )
+                    return error_response('Username is already registered', 409)
             
             # Store passkey credential with actual public key
             public_key = parsed_data.get('public_key')
@@ -403,6 +500,9 @@ def passkey_register_complete():
             db.session.delete(stored_challenge)
             old_sessions = db.session.query(UserSession).filter_by(user_id=user.user_id).all()
             for old_session in old_sessions:
+                # Keep the session that authorized adding this passkey
+                if current_session is not None and old_session.token == current_session.token:
+                    continue
                 db.session.delete(old_session)
             
             # Create new session
@@ -512,11 +612,21 @@ def passkey_authenticate_complete():
                 app.logger.error("Challenge expired or not found")
                 return error_response('Challenge expired or not found')
 
-            # Verify signature
+            # Verify challenge, origin, type, rpIdHash and user presence
             is_valid, parsed_data = verify_passkey_signature(credential_data, challenge)
             if not is_valid:
                 app.logger.error("Invalid passkey authentication")
                 return error_response('Invalid passkey authentication')
+
+            # Cryptographically verify the assertion against the stored public key
+            if not verify_assertion_signature(
+                credential.public_key,
+                parsed_data['authenticator_data'],
+                base64url_decode(credential_data['response']['clientDataJSON']),
+                parsed_data['signature']
+            ):
+                app.logger.error(f"Signature verification failed for credential {credential_id}")
+                return error_response('Invalid passkey signature')
 
             # Update credential last used
             credential.last_used = datetime.utcnow()
