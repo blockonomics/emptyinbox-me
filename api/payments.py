@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
 import hmac
 import math
+import secrets
 import requests
 import os
 from sqlalchemy import func
@@ -11,9 +12,10 @@ from constants import (
     USDT_DECIMALS, QUOTA_PER_USDT, BTC_DECIMALS, QUOTA_BUNDLES, DEFAULT_BUNDLE,
     QUOTE_TTL_MINUTES, UNDERPAYMENT_TOLERANCE, MAX_PROVISIONAL_INTENTS,
     MAX_PROVISIONAL_USD, MIN_CUSTOM_USD, MAX_CUSTOM_USD, MIN_PAYMENT_SATS, SITE_URL,
+    USDT_ORDER_TTL_MINUTES, USDT_MATCH_DAYS, USDT_OFFSET_MAX,
 )
 from db_models import (
-    User, UserSession, PaymentIntent, PaymentStatus, BtcPaymentIntent, PaymentCallback,
+    User, UserSession, PaymentStatus, BtcPaymentIntent, PaymentCallback, UsdtOrder,
 )
 
 payments_bp = Blueprint('payments', __name__)
@@ -158,6 +160,34 @@ def quote_wrong_method():
     }), 405
 
 
+def parse_purchase(data):
+    """(bundle_id, usd, quota) for a request body, or an error message.
+
+    A custom whole-dollar amount and a named bundle are the same thing to
+    everything downstream: a USD figure and the quota it buys."""
+    if data.get('usd') is not None:
+        # bool is an int subclass, so {"usd": true} would otherwise book a $1
+        # quote off a JSON flag that was never meant as an amount.
+        if isinstance(data['usd'], bool):
+            return 'usd must be a whole number of dollars'
+        try:
+            usd = int(data['usd'])
+            if usd != float(data['usd']):
+                raise ValueError
+        except (TypeError, ValueError):
+            return 'usd must be a whole number of dollars'
+        if not MIN_CUSTOM_USD <= usd <= MAX_CUSTOM_USD:
+            return f'usd must be between {MIN_CUSTOM_USD} and {MAX_CUSTOM_USD}'
+        return 'custom', usd, quota_for_usd(usd)
+
+    bundle_id = data.get('bundle', DEFAULT_BUNDLE)
+    bundle = QUOTA_BUNDLES.get(bundle_id)
+    if not bundle:
+        return (f"Unknown bundle. Choose one of: {', '.join(QUOTA_BUNDLES)}, "
+                'or pass usd for a custom amount.')
+    return bundle_id, bundle['usd'], bundle['quota']
+
+
 @payments_bp.route('/quote', methods=['POST'])
 def create_quote():
     """Quote a BTC price for a quota bundle and return a payment address.
@@ -168,33 +198,10 @@ def create_quote():
     if not current_user_id:
         return unauthorized()
 
-    data = request.get_json(silent=True) or {}
-
-    # A custom whole-dollar amount and a named bundle are the same thing to
-    # everything downstream: a USD figure and the quota it buys.
-    if data.get('usd') is not None:
-        # bool is an int subclass, so {"usd": true} would otherwise book a $1
-        # quote off a JSON flag that was never meant as an amount.
-        if isinstance(data['usd'], bool):
-            return error_response('usd must be a whole number of dollars', 400)
-        try:
-            usd = int(data['usd'])
-            if usd != float(data['usd']):
-                raise ValueError
-        except (TypeError, ValueError):
-            return error_response('usd must be a whole number of dollars', 400)
-        if not MIN_CUSTOM_USD <= usd <= MAX_CUSTOM_USD:
-            return error_response(
-                f'usd must be between {MIN_CUSTOM_USD} and {MAX_CUSTOM_USD}', 400)
-        bundle_id, quota = 'custom', quota_for_usd(usd)
-    else:
-        bundle_id = data.get('bundle', DEFAULT_BUNDLE)
-        bundle = QUOTA_BUNDLES.get(bundle_id)
-        if not bundle:
-            return error_response(
-                f"Unknown bundle. Choose one of: {', '.join(QUOTA_BUNDLES)}, "
-                'or pass usd for a custom amount.', 400)
-        usd, quota = bundle['usd'], bundle['quota']
+    purchase = parse_purchase(request.get_json(silent=True) or {})
+    if isinstance(purchase, str):
+        return error_response(purchase, 400)
+    bundle_id, usd, quota = purchase
 
     now = datetime.utcnow()
 
@@ -344,18 +351,89 @@ def public_quote(address):
     }), 200
 
 
-@payments_bp.route('/monitor', methods=['POST'])
-def monitor_transaction():
-    """Register a USDT transaction hash for tracking. Quota is derived from the
-    on-chain value at callback time, never from the client."""
+def usdt_amount_str(value):
+    return f'{value // USDT_DECIMALS}.{value % USDT_DECIMALS:06d}'
+
+
+def usdt_order_payload(order: UsdtOrder):
+    return {
+        'order_id': order.id,
+        'amount': usdt_amount_str(order.expected_value),
+        'amount_micro': order.expected_value,
+        'receive_address': USDT_ADDRESS,
+        'quota': order.quota,
+        'usd': order.usd_amount,
+        'credited': order.credited,
+        'expires_at': order.expires_at.isoformat() + 'Z',
+    }
+
+
+@payments_bp.route('/usdt/order', methods=['POST'])
+def create_usdt_order():
+    """Reserve a unique USDT amount for a purchase. The buyer must send exactly
+    this amount: it is the only thing that ties the payment to this account."""
     current_user_id = get_current_user()
     if not current_user_id:
         return unauthorized()
 
-    data = request.get_json()
-    if not data:
-        return error_response("No JSON data provided", 400)
+    purchase = parse_purchase(request.get_json(silent=True) or {})
+    if isinstance(purchase, str):
+        return error_response(purchase, 400)
+    bundle_id, usd, quota = purchase
 
+    now = datetime.utcnow()
+
+    # Reuse an open order for the same purchase, so reopening the modal does
+    # not reserve a fresh amount every time.
+    existing = db.session.query(UsdtOrder).filter(
+        UsdtOrder.user_id == current_user_id,
+        UsdtOrder.bundle == bundle_id,
+        UsdtOrder.usd_amount == usd,
+        UsdtOrder.credited.is_(False),
+        UsdtOrder.expires_at > now,
+    ).first()
+    if existing:
+        return jsonify(usdt_order_payload(existing)), 200
+
+    base = usd * USDT_DECIMALS
+    reserved = {v for (v,) in db.session.query(UsdtOrder.expected_value).filter(
+        UsdtOrder.credited.is_(False),
+        UsdtOrder.created_at > now - timedelta(days=USDT_MATCH_DAYS),
+        UsdtOrder.expected_value > base,
+        UsdtOrder.expected_value <= base + USDT_OFFSET_MAX,
+    ).all()}
+    free = [base + o for o in range(1, USDT_OFFSET_MAX + 1) if base + o not in reserved]
+    if not free:
+        app.logger.error(f'USDT order: no free amount left for ${usd}')
+        return error_response('Too many open USDT orders right now. Pay with Bitcoin or retry later.', 503)
+
+    order = UsdtOrder(
+        id=secrets.token_hex(8),
+        user_id=current_user_id,
+        bundle=bundle_id,
+        quota=quota,
+        usd_amount=usd,
+        expected_value=secrets.choice(free),
+        expires_at=now + timedelta(minutes=USDT_ORDER_TTL_MINUTES),
+    )
+    db.session.add(order)
+    db.session.commit()
+
+    app.logger.info(f'USDT order {order.id} user={current_user_id} bundle={bundle_id} '
+                    f'value={order.expected_value}')
+    return jsonify(usdt_order_payload(order)), 201
+
+
+@payments_bp.route('/monitor', methods=['POST'])
+def monitor_transaction():
+    """Ask Blockonomics to watch a USDT transaction to our address. This only
+    starts the callbacks; who gets credited is decided by the amount, so it
+    does not matter who registers a hash, or how many times."""
+    current_user_id = get_current_user()
+    if not current_user_id:
+        return unauthorized()
+
+    data = request.get_json(silent=True) or {}
     txhash = data.get('txhash')
     if not txhash:
         return error_response("Missing txhash", 400)
@@ -372,21 +450,21 @@ def monitor_transaction():
                 "crypto": "USDT",
                 "match_callback": os.getenv('MATCH_CALLBACK'),
                 "testnet": 0,
-            }
+            },
+            timeout=15,
         )
+    except Exception as e:
+        app.logger.error(f'monitor_tx failed txhash={txhash}: {e}')
+        return error_response("Could not reach the payment provider", 502)
 
-        if response.status_code == 200:
-            existing = db.session.query(PaymentIntent).filter_by(txhash=txhash).first()
-            if not existing:
-                db.session.add(PaymentIntent(txhash=txhash, user_id=current_user_id))
-                db.session.commit()
-            return jsonify({"message": "Monitoring started"})
-        else:
-            return error_response(f"Blockonomics error: {response.text}", response.status_code)
-
-    except Exception:
-        db.session.rollback()
-        return error_response("Internal server error", 500)
+    if response.status_code == 200:
+        return jsonify({"message": "Monitoring started"})
+    # Already registered - by this buyer's earlier attempt or by anyone else.
+    # Either way the callbacks are coming to us.
+    if '1038' in response.text:
+        return jsonify({"message": "Already monitoring"})
+    app.logger.error(f'monitor_tx rejected txhash={txhash}: {response.status_code} {response.text[:300]}')
+    return error_response(f"Blockonomics error: {response.text}", response.status_code)
 
 
 def record_callback(txid, addr, status, value, crypto):
@@ -487,26 +565,33 @@ def handle_usdt_callback(txid, addr, status, value):
         app.logger.error(f'USDT callback address mismatch: {addr}')
         return
 
-    intent = db.session.query(PaymentIntent).filter_by(txhash=txid).first()
-    if not intent:
-        app.logger.error(f'USDT payment with no registered intent txid={txid}')
+    # Zero-conf is not credited: wait for confirmation.
+    if status < 2:
         return
 
-    # USDT has no per-order address, so zero-conf cannot be attributed safely.
-    if status < 2 or intent.status == PaymentStatus.CONFIRMED.value:
+    # The amount is the attribution. Never the txhash registrant: the address
+    # is public and a mempool watcher can register any hash first.
+    order = (db.session.query(UsdtOrder)
+             .filter(UsdtOrder.expected_value == value,
+                     UsdtOrder.credited.is_(False),
+                     UsdtOrder.created_at > datetime.utcnow() - timedelta(days=USDT_MATCH_DAYS))
+             .with_for_update().first())
+    if not order:
+        # Wrong amount, or a payment from before orders existed. Credit by
+        # hand after checking who sent it.
+        app.logger.error(f'Unmatched USDT payment txid={txid} value={value} - credit manually')
         return
 
-    # Same rates as BTC, so a dollar buys the same quota whichever coin pays it.
-    quota = quota_for_usd(value / USDT_DECIMALS)
-    if quota <= 0:
-        app.logger.error(f'USDT payment below one inbox txid={txid} value={value}')
-        return
-
-    if credit(intent.user_id, quota):
-        intent.amount = quota
-        intent.value = value
-        intent.status = PaymentStatus.CONFIRMED.value
-        app.logger.info(f'Credited {quota} inboxes to {intent.user_id} txid={txid}')
+    claimed = (db.session.query(UsdtOrder)
+               .filter(UsdtOrder.id == order.id, UsdtOrder.credited.is_(False))
+               .update({'credited': True, 'credited_at': datetime.utcnow(), 'txhash': txid},
+                       synchronize_session='fetch'))
+    if claimed != 1:
+        return                          # a concurrent callback got there first
+    if not credit(order.user_id, order.quota):
+        raise RuntimeError(f'Credit failed for USDT order {order.id}')
+    app.logger.info(f'Credited {order.quota} inboxes to {order.user_id} '
+                    f'order={order.id} txid={txid}')
 
 
 @payments_bp.route('/callback', methods=['GET'])

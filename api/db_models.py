@@ -170,6 +170,27 @@ class PaymentIntent(db.Model):
     status = db.Column(db.String(1), nullable=False, default="0")
 
 
+class UsdtOrder(db.Model):
+    """A USDT purchase. Every order pays to the same static address, so the
+    payment is tied to its buyer by amount: each open order is quoted a price
+    with a few micro-USDT added that no other open order shares, and the
+    callback credits the order whose amount arrived. The txhash plays no part
+    in attribution - anyone can register a hash they saw in the mempool."""
+    __tablename__ = 'usdt_orders'
+
+    id = db.Column(db.String(32), primary_key=True)
+    user_id = db.Column(db.String(255), nullable=False, index=True)
+    bundle = db.Column(db.String(32), nullable=False)
+    quota = db.Column(db.Integer, nullable=False)
+    usd_amount = db.Column(db.Integer, nullable=False)                # whole USD
+    expected_value = db.Column(db.BigInteger, nullable=False, index=True)  # micro-USDT
+    credited = db.Column(db.Boolean, nullable=False, default=False)
+    txhash = db.Column(db.String(66))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    credited_at = db.Column(db.DateTime)
+
+
 class BtcPaymentIntent(db.Model):
     """A BTC quota purchase. Keyed by the per-order address, which is the only
     join key the Blockonomics callback carries."""

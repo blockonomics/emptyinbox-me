@@ -2,7 +2,7 @@
 
 from flask import Blueprint, request, jsonify, make_response
 from datetime import datetime, timedelta
-import os, random, time, hashlib, base64, json, ipaddress
+import os, secrets, time, hashlib, base64, json, ipaddress
 from eth_account.messages import encode_defunct
 from eth_account import Account
 from config import db, app
@@ -12,7 +12,7 @@ import traceback
 from auth_utils import auth_required
 
 from db_models import (AuthChallenge, UserSession, User, PaymentIntent, PaymentStatus,
-                       PasskeyCredential, PasskeyChallenge, BtcPaymentIntent,
+                       PasskeyCredential, PasskeyChallenge, BtcPaymentIntent, UsdtOrder,
                        RegistrationAttempt)
 from constants import (USER_STARTING_QUOTA, AGENT_STARTING_QUOTA, QUOTA_PER_USDT, USDT_DECIMALS,
                        REGISTER_WINDOW, REGISTER_GRADES, REGISTER_HARD_CAP,
@@ -35,11 +35,13 @@ URL_SCHEME = 'http://' if IS_DEV else 'https://'
 
 # --- Utility Functions ---
 def generate_nonce() -> str:
-    return str(random.randint(100_000_000, 999_999_999))
+    return str(100_000_000 + secrets.randbelow(900_000_000))
 
 def create_user_token(identifier: str) -> str:
-    raw = f"{identifier}:{int(time.time())}:{random.randint(100_000, 999_999)}"
-    return hashlib.sha256(raw.encode()).hexdigest()
+    """64 hex chars from the OS CSPRNG. API keys take the first 32. The
+    identifier is unused: deriving a token from a username and a timestamp
+    left only ~20 bits of randomness to guess."""
+    return secrets.token_hex(32)
 
 def error_response(message: str, code: int = 400):
     return jsonify({'error': message}), code
@@ -520,7 +522,7 @@ def passkey_register_complete():
                 session_token,
                 httponly=True,
                 secure=not IS_DEV,  # False in dev so it works over HTTP
-                samesite="None" if not IS_DEV else "Lax",
+                samesite="Lax",  # same-origin dashboard; blocks cross-site POSTs (CSRF)
                 max_age=60*60*24*7,  # 1 week
                 path="/"
             )
@@ -652,7 +654,7 @@ def passkey_authenticate_complete():
             session_token,
             httponly=True,
             secure=not IS_DEV,
-            samesite="None" if not IS_DEV else "Lax",
+            samesite="Lax",  # same-origin dashboard; blocks cross-site POSTs (CSRF)
             max_age=60*60*24*7,
             path="/"
         )
@@ -723,6 +725,19 @@ def auth_me(token):
             'settled': p.settled,
             'created_at': (p.credited_at or p.created_at).isoformat()
         } for p in btc_payments)
+
+        usdt_orders = (
+            db.session.query(UsdtOrder)
+            .filter_by(user_id=user.user_id, credited=True)
+            .all()
+        )
+        payment_data.extend({
+            'txhash': o.txhash,
+            'amount': o.quota,
+            'currency': 'USDT',
+            'usd': o.expected_value / USDT_DECIMALS,
+            'created_at': (o.credited_at or o.created_at).isoformat()
+        } for o in usdt_orders)
         payment_data.sort(key=lambda p: p['created_at'], reverse=True)
 
         # Check if user has passkeys to determine auth method
@@ -749,21 +764,25 @@ def auth_me(token):
         return error_response('Failed to fetch user information', 500)
 
 @auth_bp.route('/logout', methods=['POST'])
-def auth_logout(token):
+def auth_logout():
+    # No auth_required: an expired or unknown session must still get its
+    # cookie cleared rather than a 401.
     try:
-        session = db.session.query(UserSession).filter_by(token=token).first()
-        if session:
-            db.session.delete(session)
-            db.session.commit()
+        token = request.cookies.get('session_token', '')
+        if token:
+            session = db.session.query(UserSession).filter_by(token=token).first()
+            if session:
+                db.session.delete(session)
+                db.session.commit()
 
         resp = make_response(jsonify({'success': True}))
         resp.set_cookie(
-            "session_token", 
-            "", 
+            "session_token",
+            "",
             expires=0,
             httponly=True,
             secure=not IS_DEV,
-            samesite="None" if not IS_DEV else "Lax",
+            samesite="Lax",
             path="/"
         )
         return resp, 200

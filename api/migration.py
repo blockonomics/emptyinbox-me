@@ -201,6 +201,34 @@ def migrate_usdt_value():
     print("Migration completed: payment_intents.value.")
 
 
+def migrate_usdt_orders():
+    """USDT orders tied to the buyer by a unique amount. New table; the old
+    payment_intents rows stay as purchase history."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS usdt_orders (
+            id             VARCHAR(32) NOT NULL,
+            user_id        VARCHAR(255) NOT NULL,
+            bundle         VARCHAR(32) NOT NULL,
+            quota          INTEGER NOT NULL,
+            usd_amount     INTEGER NOT NULL,
+            expected_value BIGINT NOT NULL,
+            credited       BOOLEAN NOT NULL DEFAULT 0,
+            txhash         VARCHAR(66),
+            created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
+            expires_at     DATETIME NOT NULL,
+            credited_at    DATETIME,
+            PRIMARY KEY (id)
+        );
+    """)
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_usdt_orders_user ON usdt_orders(user_id);")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_usdt_orders_value ON usdt_orders(expected_value);")
+    conn.commit()
+    conn.close()
+    print("Migration completed: usdt_orders.")
+
+
 def main():
     """Every migration is idempotent, so a deploy runs the whole set."""
     migrate_passkey_challenges()
@@ -209,6 +237,7 @@ def main():
     migrate_feedback()
     migrate_inbox_expiry()
     migrate_usdt_value()
+    migrate_usdt_orders()
 
 
 if __name__ == "__main__":

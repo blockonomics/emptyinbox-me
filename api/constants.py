@@ -123,6 +123,18 @@ MIN_PAYMENT_SATS = 546
 # quoted rate - refusing coins already sent is worse than eating the drift.
 QUOTE_TTL_MINUTES = 15
 
+# USDT orders share one receive address and are told apart by amount alone,
+# so each is quoted its bundle price plus a few micro-USDT that no other
+# recent unpaid order carries. ERC-20 transfers move the exact token amount
+# (the gas fee is paid in ETH), so the match is exact. The offset stays under
+# a cent so the price the buyer sees is the bundle price.
+USDT_ORDER_TTL_MINUTES = 60
+# How long an unpaid order keeps its amount reserved. A payment that lands
+# after expiry is still credited while the reservation holds - refusing coins
+# already sent is worse than holding an amount a little longer.
+USDT_MATCH_DAYS = 7
+USDT_OFFSET_MAX = 9_999    # micro-USDT, i.e. < $0.01
+
 # Wallets deduct the network fee from the sent amount and the price moves
 # between quote and broadcast, so an exact match is not a realistic bar.
 UNDERPAYMENT_TOLERANCE = 0.01

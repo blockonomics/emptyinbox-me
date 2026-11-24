@@ -103,7 +103,7 @@ function setupPaymentModal() {
               </div>
             </div>
 
-            <p class="qm-hint">Credits are added once your transaction confirms on-chain — usually within 1–2 minutes.</p>
+            <p class="qm-hint">The total includes a fraction of a cent that identifies your order. Send exactly this amount — credits are added once it confirms on-chain, usually within 1–2 minutes.</p>
 
             <button id="pay-now-btn" class="btn btn-primary btn-full">Pay with USDT</button>
           </div>
@@ -169,6 +169,7 @@ function setupPaymentModal() {
     let defaultBundle = null;
     let bundle = null;
     let method = "btc";
+    let usdtOrder = null;
 
     function closeModal() {
       modal.style.display = "none";
@@ -256,14 +257,42 @@ function setupPaymentModal() {
       }
     }
 
+    // Every USDT order pays the same address, so the server reserves an
+    // amount unique to this order. That amount, not the txhash, is what ties
+    // the payment to this account.
+    async function createUsdtOrder() {
+      const res = await fetch(`${API_BASE_URL}/api/payments/usdt/order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ bundle: bundle.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.amount) throw new Error(data.error || data.message || "");
+      return data;
+    }
+
     // Step 1 → Bitcoin pay page, or Step 2 for USDT
-    proceedBtn.addEventListener("click", () => {
+    proceedBtn.addEventListener("click", async () => {
       if (!bundle) return;
       if (method === "btc") return payWithBitcoin();
 
-      confirmSlots.textContent = `${bundle.quota} credits`;
+      proceedBtn.disabled = true;
+      proceedBtn.textContent = "Creating order…";
+      try {
+        usdtOrder = await createUsdtOrder();
+      } catch (e) {
+        showError(e.message || "Could not create the order. Try again in a moment.");
+        proceedBtn.disabled = false;
+        proceedBtn.textContent = "Continue";
+        return;
+      }
+      proceedBtn.disabled = false;
+      proceedBtn.textContent = "Continue";
+
+      confirmSlots.textContent = `${usdtOrder.quota} credits`;
       confirmBundle.textContent = `${bundle.id} bundle`;
-      confirmCost.textContent = `${bundle.usd.toFixed(2)} USDT`;
+      confirmCost.textContent = `${usdtOrder.amount} USDT`;
       stepSelect.classList.add("hidden");
       stepConfirm.classList.remove("hidden");
     });
@@ -276,8 +305,9 @@ function setupPaymentModal() {
 
     // Step 2 → Step 3
     modal.querySelector("#pay-now-btn").addEventListener("click", () => {
-      paymentWidget.setAttribute("order_amount", bundle.usd.toString());
-      paymentWidget.setAttribute("redirect_url", `/inboxes.html?payment=success&quota=${bundle.quota}`);
+      if (!usdtOrder) return;
+      paymentWidget.setAttribute("order_amount", usdtOrder.amount);
+      paymentWidget.setAttribute("redirect_url", `/inboxes.html?payment=success&quota=${usdtOrder.quota}`);
       stepConfirm.classList.add("hidden");
       stepPay.classList.remove("hidden");
     });
@@ -297,6 +327,7 @@ function setupPaymentModal() {
       proceedBtn.textContent = "Continue";
       bundle = defaultBundle;
       method = "btc";
+      usdtOrder = null;
       render();
     }
 
